@@ -1,0 +1,10 @@
+// Paint only the outside of each corner. Keep external video textures direct:
+// rounded clipping can otherwise cache a frame in an offscreen layer.
+export component CornerCutouts inherits Rectangle {
+    in property <length> radius: 12px;
+    in property <color> outside;
+    Image { x: 0px; y: 0px; width: root.radius; height: root.radius; source: @image-url("assets/corner-tl.svg"); colorize: root.outside; }
+    Image { x: root.width - root.radius; y: 0px; width: root.radius; height: root.radius; source: @image-url("assets/corner-tr.svg"); colorize: root.outside; }
+    Image { x: root.width - root.radius; y: root.height - root.radius; width: root.radius; height: root.radius; source: @image-url("assets/corner-br.svg"); colorize: root.outside; }
+    Image { x: 0px; y: root.height - root.radius; width: root.radius; height: root.radius; source: @image-url("assets/corner-bl.svg"); colorize: root.outside; }
+}

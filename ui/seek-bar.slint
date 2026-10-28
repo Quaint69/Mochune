@@ -1,0 +1,144 @@
+import {BufferedRange} from "buffer-range.slint";
+import {MusicSkin, SkinImage} from "music-skin.slint";
+import {AppColors} from "theme.slint";
+import {MusicTheme, ThemePaint, ThemeBox, ThemeDecoration} from "music-theme.slint";
+export component SeekBar inherits ThemeBox {
+    theme-kind: "slider";
+    theme-state: !root.enabled ? "disabled" : focus.has-focus ? "focus" : touch.pressed ? "pressed" : touch.has-hover ? "hover" : "normal";
+    in property <bool> over-video;
+    in property <bool> skinned;
+    in property <string> accessible-name: "Playback position";
+    accessible-label: root.accessible-name;
+    in property <[BufferedRange]> buffered-ranges;
+    in property <bool> buffered-estimated;
+    in property <float> position;
+    in property <color> accent: AppColors.accent;
+    in property <float> duration: 1;
+    in property <bool> enabled: true;
+    out property <bool> has-focus: focus.has-focus;
+    property <float> drag-position;
+    property <float> shown-position: touch.pressed ? root.drag-position : root.position;
+    out property <length> track-x: track.absolute-position.x;
+    out property <length> track-y: track.absolute-position.y;
+    out property <length> track-width: track.width;
+    callback seek-requested(float);
+    callback activity;
+    min-width: 0px;
+    preferred-width: 0px;
+    min-height: 18px;
+    max-height: 18px;
+    background: transparent;
+    forward-focus: focus;
+    accessible-role: slider;
+    accessible-enabled: root.enabled;
+    accessible-value: root.position;
+    accessible-value-minimum: 0;
+    accessible-value-maximum: root.duration;
+    accessible-action-set-value(v) => {
+        if v.is-float() {
+            root.seek-requested(clamp(v.to-float(),0,root.duration));
+        }
+    }
+    // A fixed opaque track avoids video colors flashing through changing ranges.
+    // Keep the range geometry clipped to this track, independent of picture fit.
+    track := ThemeBox {
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-track";
+        theme-kind: "track";
+        theme-state: root.theme-state;
+        x: 0px;
+        y: (root.height - self.height)/2;
+        width: root.width;
+        height: min(16px,3px * (self.theme-paint.has-scale ? self.theme-paint.scale : 1));
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : root.skinned && MusicSkin.enabled ? MusicSkin.track : root.over-video ? #4c4c4c : AppColors.light-mode ? #cfc2ae : #4c4840;
+        clip: true;
+        if root.skinned && MusicSkin.enabled: SkinImage {
+            slot: 3;
+            width: parent.width;
+            height: parent.height;
+        }
+        for range in root.buffered-ranges: Rectangle {
+            visible: range.end > range.start;
+            x: track.width * clamp(range.start,0,1);
+            // A short retained range on a long, high-bitrate video can be
+            // narrower than one pixel. Keep real ranges visible without
+            // changing their timeline start; the track clips the 1px minimum.
+            width: max(1px,track.width * max(0,clamp(range.end,0,1) - clamp(range.start,0,1)));
+            height: track.height;
+            background: range.estimated ? (root.over-video ? #747474 : AppColors.light-mode ? #c1b6a7 : #756e62) : (root.over-video ? #bbbbbb : #b5a88e);
+        }
+    }
+    // Keep played progress outside the repeater's clipping node and explicitly
+    // above it. Buffer row updates must never cover the played track.
+    ThemeBox {
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-fill";
+        theme-kind: "fill";
+        theme-state: root.theme-state;
+        z: 1;
+        x: 0px;
+        y: track.y;
+        height: track.height;
+        width: track.width * clamp(root.shown-position / max(1,root.duration),0,1);
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : root.accent;
+        if root.skinned && MusicSkin.enabled: SkinImage {
+            slot: 4;
+            width: track.width;
+            height: parent.height;
+        }
+        clip: true;
+    }
+    ThemeBox {
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-thumb";
+        theme-kind: "thumb";
+        theme-state: root.theme-state;
+        z: 2;
+        width: (touch.has-hover || touch.pressed || focus.has-focus ? 12px : 8px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+        height: self.width;
+        border-radius: self.theme-paint.has-radius ? self.theme-paint.radius * 1px : root.skinned && MusicSkin.enabled ? min(MusicSkin.radius * 1px,self.width/2) : self.width/2;
+        x: clamp(parent.width * root.shown-position / max(1,root.duration) - self.width/2,0,parent.width - self.width);
+        y: (parent.height - self.height)/2;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : root.accent;
+        if root.skinned && MusicSkin.enabled: SkinImage {
+            slot: 5;
+            width: parent.width;
+            height: parent.height;
+        }
+    }
+    focus := FocusScope {
+        enabled: root.enabled;
+        key-pressed(event) => {
+            if event.text == Key.LeftArrow {
+                root.seek-requested(max(0,root.position - 5));
+                return accept;
+            }
+            if event.text == Key.RightArrow {
+                root.seek-requested(min(root.duration,root.position+5));
+                return accept;
+            }
+            return reject;
+        }
+    }
+    touch := TouchArea {
+        enabled: root.enabled;
+        pointer-event(event) => {
+            if event.button == PointerEventButton.left {
+                root.drag-position=clamp(self.mouse-x / root.width,0,1)*root.duration;
+                root.activity();
+                if event.kind == PointerEventKind.down {
+                    focus.focus();
+                }
+                if event.kind == PointerEventKind.up {
+                    root.seek-requested(root.drag-position);
+                }
+            }
+        }
+        moved => {
+            root.activity();
+            if self.pressed {
+                root.drag-position=clamp(self.mouse-x / root.width,0,1)*root.duration;
+            }
+        }
+    }
+}

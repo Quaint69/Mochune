@@ -1,0 +1,29 @@
+import {Button, LineEdit, ListView, VerticalBox, HorizontalBox} from "std-widgets.slint";
+import {AppColors} from "theme.slint";
+export component TermEditor inherits Rectangle {
+    in property <string> title;
+    in property <string> placeholder;
+    in-out property <string> value;
+    pure callback split(string) -> [string];
+    callback edit(string, string, bool) -> string;
+    property <[string]> entries: root.split(root.value);
+    property <string> draft;
+    height: 72px + (root.entries.length > 0 ? 6px + min(96px, root.entries.length * 32px) : 0px);
+    vertical-stretch: 0;
+    background: AppColors.window; border-radius: 8px;
+    VerticalBox {padding: 10px; spacing: 6px;
+        Text {text: root.title; color: AppColors.text; font-size: 12px; font-weight: 600; height: 16px;}
+        if root.entries.length > 0: ListView {height: min(96px, root.entries.length * 32px); horizontal-scrollbar-policy: always-off;
+            for entry in root.entries: Rectangle {height: 32px; width: max(0px,parent.width - 14px);
+                Rectangle {height: 27px; width: parent.width; background: AppColors.raised; border-radius: 5px;
+                    Text {x: 9px; width: parent.width - 43px; height: parent.height; text: entry; color: AppColors.text; font-size: 12px; vertical-alignment: center; overflow: elide;}
+                    Button {x: parent.width - 29px; width: 27px; height: 27px; text: "×"; accessible-label: "Remove " + entry; clicked=>{root.value=root.edit(root.value,entry,true);}}
+                }
+            }
+        }
+        HorizontalBox {padding: 0px; spacing: 6px; height: 30px;
+            LineEdit {text <=> root.draft; placeholder-text: root.placeholder; horizontal-stretch: 1; accepted=>{root.value=root.edit(root.value,root.draft,false);root.draft="";}}
+            Button {text: "+"; width: 32px; height: 30px; accessible-label: "Add to " + root.title; enabled: root.draft != ""; clicked=>{root.value=root.edit(root.value,root.draft,false);root.draft="";}}
+        }
+    }
+}

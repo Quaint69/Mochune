@@ -1,0 +1,102 @@
+import {MusicTheme, ThemePaint, ThemeBox, ThemeText, ThemeImage, ThemeDecoration} from "music-theme.slint";
+import {AppColors} from "theme.slint";
+export component LoadingDots inherits ThemeBox {
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : transparent;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : 0px;
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : 0px;
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : 1;
+    theme-kind: "loading";
+    theme-state: "normal";
+    in property <bool> running: true;
+    in property <color> tint: AppColors.accent;
+    property <int> phase;
+    property <length> dot-size: min(6px,root.width/4.5);
+    width: 28px;
+    height: 14px;
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (transparent);
+    accessible-role: progress-indicator;
+    accessible-label: "Loading";
+    Timer {
+        interval: 180ms;
+        running: root.running && root.visible;
+        triggered=>{
+            root.phase=mod(root.phase+1,3);
+        }
+    }
+    for dot in 3: ThemeBox {
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-loadingdots-surface-1";
+        theme-kind: "surface";
+        theme-state: root.theme-state;
+        width: root.dot-size;
+        height: root.dot-size;
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (root.dot-size/2);
+        x: dot * (root.width - root.dot-size)/2;
+        y: (root.height - self.height)/2;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.tint);
+        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.phase == dot ? 1 : 0.25);
+        animate opacity {
+            duration: 140ms;
+        }
+    }
+}
+export component BrowseTab inherits ThemeBox {
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : 1;
+    theme-kind: "button";
+    theme-state: focus.has-focus ? "focus" : root.loading ? "loading" : root.active ? "active" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
+    in property <string> label;
+    in property <bool> active;
+    in property <bool> outlined;
+    in property <bool> loading;
+    callback clicked;
+    height: 34px;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : (7px);
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : (root.outlined ? 1px : 0px);
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : (root.active || focus.has-focus ? AppColors.accent : AppColors.border);
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (root.active ? AppColors.selected : hit.has-hover ? AppColors.hover : root.outlined && AppColors.light-mode ? AppColors.muted-surface : AppColors.raised);
+    accessible-role: button;
+    accessible-label: root.loading ? root.label + " loading" : root.label;
+    ThemeText {
+        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 14px;
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-browsetab-text-1";
+        theme-kind: "text";
+        theme-state: root.theme-state;
+        visible: !root.loading;
+        text: root.label;
+        color: self.theme-paint.has-text ? self.theme-paint.text : (root.active ? AppColors.accent-text : AppColors.text);
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (root.active ? 700 : 400);
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        width: parent.width;
+        height: parent.height;
+    }
+    if root.loading: LoadingDots {
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-browsetab-loading-1";
+        x: (parent.width - self.width)/2;
+        y: (parent.height - self.height)/2;
+    }
+    forward-focus: focus;
+    focus := FocusScope {
+        key-pressed(event)=>{
+            if !root.loading && (event.text == Key.Return || event.text == " ") {
+                root.clicked();
+                return accept;
+            }
+            return reject;
+        }
+    }
+    hit := TouchArea {
+        clicked=>{
+            focus.focus();
+            if !root.loading {
+                root.clicked();
+            }
+        }
+    }
+}

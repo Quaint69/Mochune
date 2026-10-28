@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+# dpkg also calls prerm during upgrades: those must preserve every profile.
+[ "${1:-}" = remove ] || exit 0
+for executable in /proc/[0-9]*/exe; do
+    target=$(readlink "$executable" 2>/dev/null || true)
+    case "$target" in /usr/bin/mochune|'/usr/bin/mochune (deleted)')
+        echo "Close the installed Mochune before uninstalling; saved app data will be erased." >&2
+        exit 1;;
+    esac
+done
+# Only local account homes; drop privileges before touching each user's profile.
+while IFS=: read -r account password uid gid info home shell; do
+    case "$uid" in ''|*[!0-9]*) continue;; esac
+    [ "$uid" -eq 0 ] || { [ "$uid" -ge 1000 ] && [ "$uid" -ne 65534 ]; } || continue
+    [ -d "$home" ] || continue
+    runuser -u "$account" -- env -i HOME="$home" PATH=/usr/bin:/bin /bin/sh -s <<'MOCHUNE_PROFILE_CLEANUP'
+@PROFILE_CLEANUP@
+MOCHUNE_PROFILE_CLEANUP
+done < /etc/passwd
+# Include root-installed custom themes as well as files tracked by dpkg.
+rm -rf -- /usr/share/mochune

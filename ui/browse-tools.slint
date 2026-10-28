@@ -1,0 +1,148 @@
+import {MusicTheme, ThemePaint, ThemeBox, ThemeText, ThemeImage, ThemeDecoration} from "music-theme.slint";
+import {AppColors} from "theme.slint";
+import {VerticalBox} from "std-widgets.slint";
+export component BrowseMenu inherits ThemeBox {
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : transparent;
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : 0px;
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : 1;
+    theme-kind: "button";
+    theme-state: focus.has-focus ? "focus" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
+    in property <image> icon;
+    in property <bool> align-left: false;
+    in property <string> label;
+    in property <[string]> model;
+    in-out property <int> current-index;
+    in property <int> open-request;
+    property <int> highlighted;
+    callback selected(int);
+    changed open-request=>{
+        if root.open-request > 0 {
+            root.highlighted=root.current-index;
+            menu.show();
+        }
+    }
+    width: 30px;
+    height: 32px;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : (6px);
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (root.current-index != 0 ? AppColors.selected : hit.has-hover ? AppColors.hover : transparent);
+    accessible-role: combobox;
+    accessible-label: root.label;
+    accessible-value: root.model[root.current-index];
+    forward-focus: focus;
+    ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-browsemenu-icon-1";
+        theme-kind: "icon";
+        theme-state: root.theme-state;
+        source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.icon);
+        colorize: self.theme-paint.image.width > 0 ? transparent : self.theme-paint.has-tint ? self.theme-paint.tint : (root.current-index != 0 ? AppColors.accent-text : AppColors.text);
+        width: (17px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+        height: (17px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+        x: ((parent.width - self.width)/2) + self.theme-paint.offset-x * 1px;
+        y: ((parent.height - self.height)/2) + self.theme-paint.offset-y * 1px;
+    }
+    focus := FocusScope {
+        key-pressed(event)=>{
+            if event.text == Key.Return || event.text == " " {
+                root.highlighted=root.current-index;
+                menu.show();
+                return accept;
+            }
+            return reject;
+        }
+    }
+    hit := TouchArea {
+        clicked=>{
+            root.highlighted=root.current-index;
+            menu.show();
+        }
+    }
+    menu := PopupWindow {
+        x: root.align-left ? 0px : root.width - self.width;
+        y: root.height + 4px;
+        width: 208px;
+        height: root.model.length * 36px + 8px;
+        close-policy: close-on-click-outside;
+        forward-focus: menu-focus;
+        ThemeBox {
+            opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-browsemenu-surface-1";
+            theme-kind: "surface";
+            theme-state: root.theme-state;
+            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.raised);
+            border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (7px);
+            border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px);
+            border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (AppColors.border);
+        }
+        menu-focus := FocusScope {
+            key-pressed(event)=>{
+                if event.text == Key.Escape {
+                    menu.close();
+                    focus.focus();
+                    return accept;
+                }
+                if event.text == Key.UpArrow {
+                    root.highlighted=max(0,root.highlighted - 1);
+                    return accept;
+                }
+                if event.text == Key.DownArrow {
+                    root.highlighted=min(root.model.length - 1,root.highlighted + 1);
+                    return accept;
+                }
+                if event.text == Key.Return || event.text == " " {
+                    root.current-index=root.highlighted;
+                    root.selected(root.current-index);
+                    menu.close();
+                    focus.focus();
+                    return accept;
+                }
+                return reject;
+            }
+            VerticalBox {
+                padding: 4px;
+                spacing: 0px;
+                for item[index] in root.model: ThemeBox {
+                    opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+                    border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+                    border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+                    theme-section: root.theme-section;
+                    theme-key: root.theme-key + "-browsemenu-surface-2";
+                    theme-kind: "surface";
+                    theme-state: row-hit.pressed ? "pressed" : root.highlighted == index ? "active" : row-hit.has-hover ? "hover" : "normal";
+                    height: 36px;
+                    border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
+                    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.highlighted == index ? AppColors.selected : row-hit.has-hover ? AppColors.hover : transparent);
+                    ThemeText {
+                        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+                        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+                        theme-section: root.theme-section;
+                        theme-key: root.theme-key + "-browsemenu-text-1";
+                        theme-kind: "text";
+                        theme-state: row-hit.pressed ? "pressed" : root.highlighted == index ? "active" : row-hit.has-hover ? "hover" : "normal";
+                        text: item;
+                        color: self.theme-paint.has-text ? self.theme-paint.text : (root.current-index == index ? AppColors.accent-text : AppColors.text);
+                        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px);
+                        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (root.current-index == index ? 700 : 400);
+                        x: 12px;
+                        width: parent.width - 24px;
+                        height: parent.height;
+                        vertical-alignment: center;
+                    }
+                    row-hit := TouchArea {
+                        moved=>{
+                            root.highlighted=index;
+                        }
+                        clicked=>{
+                            root.current-index=index;
+                            root.selected(index);
+                            menu.close();
+                            focus.focus();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+  "order": [
+    "shake",
+    "waddle",
+    "dance",
+    "hop",
+    "butterfly",
+    "quack",
+    "tumble",
+    "nap",
+    "snack",
+    "pond"
+  ],
+  "frames_per_scene": 28,
+  "frame_ms": 120,
+  "random_at_runtime": false
+}

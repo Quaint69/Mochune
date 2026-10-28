@@ -1,0 +1,477 @@
+{
+  "date": "2026-10-25",
+  "windows": {
+    "music": {
+      "private_bytes": 36.5,
+      "working_set": 64.0
+    },
+    "video": {
+      "private_bytes": 311.6,
+      "working_set": 347.5
+    }
+  },
+  "linux": {
+    "idle": {
+      "mode": "idle",
+      "exit": 0,
+      "samples": [
+        {
+          "seconds": 0.0,
+          "Rss": 380,
+          "Pss": 177
+        },
+        {
+          "seconds": 1.01,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 2.01,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 3.02,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 4.02,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 5.03,
+          "Rss": 119848,
+          "Pss": 111066
+        },
+        {
+          "seconds": 6.04,
+          "Rss": 119848,
+          "Pss": 111066
+        },
+        {
+          "seconds": 7.05,
+          "Rss": 119848,
+          "Pss": 111066
+        },
+        {
+          "seconds": 8.05,
+          "Rss": 119848,
+          "Pss": 111066
+        },
+        {
+          "seconds": 9.07,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 10.08,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 11.09,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 12.09,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 13.1,
+          "Rss": 119848,
+          "Pss": 111073
+        },
+        {
+          "seconds": 14.11,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 15.12,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 16.13,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 17.14,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 18.14,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 19.14,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 20.15,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 21.16,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 22.17,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 23.18,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 24.18,
+          "Rss": 119852,
+          "Pss": 111077
+        },
+        {
+          "seconds": 25.19,
+          "Rss": 119904,
+          "Pss": 111129
+        },
+        {
+          "seconds": 26.2,
+          "Rss": 120032,
+          "Pss": 111257
+        },
+        {
+          "seconds": 27.2,
+          "Rss": 120032,
+          "Pss": 111257
+        }
+      ],
+      "steady_rss_mib": 117.0,
+      "steady_pss_mib": 108.5,
+      "playback": {
+        "position": 0.0,
+        "playback": "Ready to play",
+        "acceleration_verified": false,
+        "active_decoder": ""
+      }
+    },
+    "music": {
+      "mode": "music",
+      "exit": 0,
+      "samples": [
+        {
+          "seconds": 0.0,
+          "Rss": 364,
+          "Pss": 153
+        },
+        {
+          "seconds": 1.0,
+          "Rss": 129780,
+          "Pss": 121094
+        },
+        {
+          "seconds": 2.01,
+          "Rss": 129780,
+          "Pss": 121046
+        },
+        {
+          "seconds": 3.01,
+          "Rss": 129780,
+          "Pss": 121046
+        },
+        {
+          "seconds": 4.01,
+          "Rss": 129780,
+          "Pss": 121046
+        },
+        {
+          "seconds": 5.02,
+          "Rss": 135260,
+          "Pss": 125908
+        },
+        {
+          "seconds": 6.03,
+          "Rss": 140312,
+          "Pss": 130956
+        },
+        {
+          "seconds": 7.04,
+          "Rss": 145688,
+          "Pss": 136332
+        },
+        {
+          "seconds": 8.04,
+          "Rss": 145692,
+          "Pss": 136336
+        },
+        {
+          "seconds": 9.05,
+          "Rss": 145696,
+          "Pss": 136340
+        },
+        {
+          "seconds": 10.06,
+          "Rss": 148208,
+          "Pss": 138852
+        },
+        {
+          "seconds": 11.06,
+          "Rss": 149608,
+          "Pss": 140252
+        },
+        {
+          "seconds": 12.07,
+          "Rss": 149612,
+          "Pss": 140110
+        },
+        {
+          "seconds": 13.07,
+          "Rss": 149612,
+          "Pss": 140172
+        },
+        {
+          "seconds": 14.08,
+          "Rss": 149676,
+          "Pss": 140320
+        },
+        {
+          "seconds": 15.08,
+          "Rss": 149676,
+          "Pss": 140320
+        },
+        {
+          "seconds": 16.09,
+          "Rss": 149676,
+          "Pss": 140320
+        },
+        {
+          "seconds": 17.1,
+          "Rss": 149740,
+          "Pss": 140384
+        },
+        {
+          "seconds": 18.11,
+          "Rss": 149740,
+          "Pss": 140384
+        },
+        {
+          "seconds": 19.11,
+          "Rss": 149740,
+          "Pss": 140384
+        },
+        {
+          "seconds": 20.12,
+          "Rss": 149740,
+          "Pss": 140384
+        },
+        {
+          "seconds": 21.13,
+          "Rss": 149804,
+          "Pss": 140448
+        },
+        {
+          "seconds": 22.14,
+          "Rss": 149804,
+          "Pss": 140448
+        },
+        {
+          "seconds": 23.15,
+          "Rss": 149804,
+          "Pss": 140448
+        },
+        {
+          "seconds": 24.16,
+          "Rss": 149868,
+          "Pss": 140512
+        },
+        {
+          "seconds": 25.16,
+          "Rss": 149868,
+          "Pss": 140512
+        },
+        {
+          "seconds": 26.17,
+          "Rss": 150012,
+          "Pss": 140656
+        },
+        {
+          "seconds": 27.18,
+          "Rss": 150012,
+          "Pss": 140656
+        }
+      ],
+      "steady_rss_mib": 146.3,
+      "steady_pss_mib": 137.2,
+      "playback": {
+        "position": 21.921289443969727,
+        "playback": "Playing audio only",
+        "acceleration_verified": false,
+        "active_decoder": ""
+      }
+    },
+    "video": {
+      "mode": "video",
+      "exit": 0,
+      "samples": [
+        {
+          "seconds": 0.0,
+          "Rss": 364,
+          "Pss": 169
+        },
+        {
+          "seconds": 1.0,
+          "Rss": 123364,
+          "Pss": 114631
+        },
+        {
+          "seconds": 2.01,
+          "Rss": 123364,
+          "Pss": 114584
+        },
+        {
+          "seconds": 3.01,
+          "Rss": 123364,
+          "Pss": 114584
+        },
+        {
+          "seconds": 4.02,
+          "Rss": 130196,
+          "Pss": 120804
+        },
+        {
+          "seconds": 5.02,
+          "Rss": 145588,
+          "Pss": 135761
+        },
+        {
+          "seconds": 6.04,
+          "Rss": 152392,
+          "Pss": 142549
+        },
+        {
+          "seconds": 7.05,
+          "Rss": 157104,
+          "Pss": 147261
+        },
+        {
+          "seconds": 8.06,
+          "Rss": 161440,
+          "Pss": 151597
+        },
+        {
+          "seconds": 9.07,
+          "Rss": 171872,
+          "Pss": 162029
+        },
+        {
+          "seconds": 10.08,
+          "Rss": 182260,
+          "Pss": 172417
+        },
+        {
+          "seconds": 11.09,
+          "Rss": 188464,
+          "Pss": 178621
+        },
+        {
+          "seconds": 12.1,
+          "Rss": 190536,
+          "Pss": 180693
+        },
+        {
+          "seconds": 13.11,
+          "Rss": 190616,
+          "Pss": 180762
+        },
+        {
+          "seconds": 14.12,
+          "Rss": 192820,
+          "Pss": 182966
+        },
+        {
+          "seconds": 15.12,
+          "Rss": 192828,
+          "Pss": 182896
+        },
+        {
+          "seconds": 16.14,
+          "Rss": 192912,
+          "Pss": 183062
+        },
+        {
+          "seconds": 17.15,
+          "Rss": 192912,
+          "Pss": 183062
+        },
+        {
+          "seconds": 18.17,
+          "Rss": 192912,
+          "Pss": 183062
+        },
+        {
+          "seconds": 19.17,
+          "Rss": 195340,
+          "Pss": 185490
+        },
+        {
+          "seconds": 20.19,
+          "Rss": 195340,
+          "Pss": 185497
+        },
+        {
+          "seconds": 21.2,
+          "Rss": 195340,
+          "Pss": 185497
+        },
+        {
+          "seconds": 22.22,
+          "Rss": 195516,
+          "Pss": 185673
+        },
+        {
+          "seconds": 23.23,
+          "Rss": 195536,
+          "Pss": 185693
+        },
+        {
+          "seconds": 24.25,
+          "Rss": 195600,
+          "Pss": 185757
+        },
+        {
+          "seconds": 25.26,
+          "Rss": 195600,
+          "Pss": 185757
+        },
+        {
+          "seconds": 26.28,
+          "Rss": 195728,
+          "Pss": 185885
+        },
+        {
+          "seconds": 27.29,
+          "Rss": 195732,
+          "Pss": 185889
+        }
+      ],
+      "steady_rss_mib": 190.8,
+      "steady_pss_mib": 181.2,
+      "playback": {
+        "position": 22.561267852783203,
+        "playback": "Playing inside Mochune",
+        "acceleration_verified": true,
+        "active_decoder": "vah264dec; input buffer: VAMemory"
+      }
+    }
+  }
+}

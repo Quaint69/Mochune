@@ -1,0 +1,560 @@
+import {PlaylistPicker} from "playlist-picker.slint";
+import {MusicTheme, VideoColors, ThemeBox, ThemeText, ThemeImage, ThemeInput} from "music-theme.slint";
+import {VerticalBox, HorizontalBox, ListView, ScrollView, LineEdit, ComboBox, CheckBox} from "std-widgets.slint";
+import {AppColors} from "theme.slint";
+import {CornerCutouts} from "corner-cutouts.slint";
+import {BrowseTab, LoadingDots} from "loading.slint";
+export struct PageRow { title: string, subtitle: string, stats: string, uri: string, kind: int, image: image, duration: string, loading: bool }
+export struct HomeSection { title: string, rows: [PageRow] }
+export struct ChannelRow { title: string, subtitle: string, uri: string, image: image }
+export struct CommentRow { author: string, detail: string, body: string, loading: bool }
+export global BrowsePages {
+    in-out property <int> page;
+    in-out property <bool> can-go-back;
+    in-out property <bool> busy;
+    in-out property <string> status;
+    in-out property <[PageRow]> rows;
+    in-out property <[HomeSection]> sections;
+    in-out property <[ChannelRow]> channel-hits;
+    in-out property <string> title: "Home";
+    in-out property <string> description;
+    in-out property <string> channel-url;
+    in-out property <image> channel-avatar;
+    in-out property <string> channel-subscribers;
+    in-out property <bool> saved-channel;
+    in-out property <bool> playlist-page;
+    in-out property <string> parent-channel;
+    in-out property <bool> show-recent: true;
+    in-out property <bool> show-playlists: true;
+    in-out property <int> tab;
+    in-out property <int> sort;
+    in-out property <int> duration-filter;
+    in-out property <string> filter;
+    in-out property <bool> comments-open;
+    in-out property <bool> comments-busy;
+    in-out property <bool> comments-loaded;
+    in-out property <string> comments-status;
+    in-out property <int> comments-order;
+    in-out property <[CommentRow]> comments;
+    in-out property <int> home-mode;
+    in-out property <bool> home-has-more;
+    in-out property <int> home-reset;
+    in-out property <length> home-scroll;
+    callback home-more();
+    callback home-select(int);
+    callback home();
+    callback back();
+    callback artwork-visible(string, int, bool);
+    callback artwork-window(int, int);
+    callback artwork-reflow();
+    in-out property <int> art-epoch;
+    callback search-home(string);
+    callback open-channel(string);
+    callback search-channels(string);
+    callback channel-refresh();
+    callback filter-rows();
+    callback save-channel();
+    callback configure-home();
+    callback activate(string, int);
+    callback close-page();
+    callback load-comments();
+    callback toggle-comments();
+    callback reset-comments();
+}
+component PageAction inherits ThemeBox {
+        theme-section: 4; theme-key: "video-page-action"; theme-kind: "button"; theme-state: !root.available ? "disabled" : root.active ? "active" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
+
+    in property <string> label;
+    in property <image> icon;
+    in property <bool> active;
+    in property <bool> available: true;
+    callback clicked;
+    height: 34px; width: 120px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (8px);
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.active ? AppColors.selected : hit.has-hover && root.available ? AppColors.hover : AppColors.raised);
+    border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px); border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (root.active ? AppColors.accent : AppColors.border);
+    opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.available ? 1 : 0.4);
+    accessible-role: button; accessible-label: root.label;
+    HorizontalBox {
+        padding: 8px; spacing: 6px; alignment: center;
+        if root.icon.width > 0: ThemeImage {
+        theme-section: 4; theme-key: "video-page-icon-1"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.icon); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (AppColors.text); width: 17px; height: 17px; image-fit: contain; }
+        if root.label != "": ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-1"; theme-kind: "text";
+ text: root.label; color: self.theme-paint.has-text ? self.theme-paint.text : (root.active ? AppColors.accent-text : AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); overflow: elide; }
+    }
+    hit := TouchArea { enabled: root.available; mouse-cursor: pointer; clicked => { root.clicked(); } }
+}
+component ChannelButton inherits ThemeBox {
+        theme-section: 4; theme-key: "video-channel-card"; theme-state: touch.has-hover ? "hover" : "normal"; theme-kind: "surface";
+
+    in property <ChannelRow> entry;
+    height: 88px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (12px);
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (touch.has-hover ? AppColors.hover : AppColors.panel);
+    border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px); border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (AppColors.border);
+    HorizontalBox {
+        padding: 14px; spacing: 16px;
+        ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-3"; theme-kind: "surface";
+
+            width: 56px; height: 56px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (28px); clip: true;
+            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+            ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: 4; theme-key: "video-page-artwork-1"; theme-kind: "artwork";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.entry.image); width: parent.width; height: parent.height; image-fit: cover; }
+            if root.entry.image.width == 0: ThemeImage {
+        theme-section: 4; theme-key: "video-page-icon-2"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/person.svg")); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (AppColors.muted); width: 28px; height: 28px; x: 14px; y: 14px; }
+        }
+        VerticalBox {
+            padding: 0px; spacing: 5px; alignment: center;
+            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-2"; theme-kind: "text";
+ text: root.entry.title; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (16px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); overflow: elide; }
+            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-3"; theme-kind: "text";
+ text: root.entry.subtitle; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); overflow: elide; }
+        }
+        ThemeImage {
+        theme-section: 4; theme-key: "video-page-icon-3"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/chevron.svg")); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (AppColors.muted); width: 16px; height: 16px; }
+    }
+    touch := TouchArea { mouse-cursor: pointer; clicked => { BrowsePages.open-channel(root.entry.uri); } }
+}
+export component ChannelHits inherits ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-page-surface-4"; theme-kind: "surface";
+
+    height: BrowsePages.channel-hits.length == 0 ? 0px : 26px + BrowsePages.channel-hits.length * 98px;
+    VerticalBox {
+        padding: 0px; spacing: 10px;
+        ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-4"; theme-kind: "text";
+ text: "Channels"; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (16px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); }
+        for row in BrowsePages.channel-hits: ChannelButton { entry: row; }
+    }
+}
+component VideoTile inherits ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-tile"; theme-state: hit.has-hover ? "hover" : "normal"; theme-kind: "surface";
+
+    in property <PageRow> entry;
+    height: (self.width - 12px) * 9 / 16 + self.title-height + 76px;
+    property <length> title-height: min(38px,max(18px,title-measure.preferred-height));
+    title-measure := ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-5"; theme-kind: "text";
+ visible: false; width: root.width - 20px; text: root.entry.title;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (14px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); wrap: word-wrap; }
+    border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (9px);
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (hit.has-hover ? AppColors.panel : transparent);
+    ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-6"; theme-kind: "surface";
+
+        x: 6px; y: 6px; width: parent.width - 12px; height: self.width * 9 / 16;
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (9px); clip: true; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+        ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: 4; theme-key: "video-page-artwork-2"; theme-kind: "artwork";
+ x: 0px; y: 0px; width: parent.width; height: parent.height; source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.entry.image); image-fit: cover; }
+        if root.entry.duration != "": ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-7"; theme-kind: "surface";
+
+            x: parent.width - duration.preferred-width - 14px; y: parent.height - 25px;
+            width: duration.preferred-width + 8px; height: 19px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
+            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (#000b);
+            duration := ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-6"; theme-kind: "text";
+ text: root.entry.duration; color: self.theme-paint.has-text ? self.theme-paint.text : (white); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (11px);
+                horizontal-alignment: center; vertical-alignment: center; }
+        }
+        if !root.entry.loading && root.entry.image.width == 0: ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 12px;
+        theme-section: 4; theme-key: "video-page-text-7"; theme-kind: "text";
+
+            text: root.entry.kind == 3 ? "◎" : root.entry.kind > 0 && root.entry.kind < 10 ? "☷" : "▶";
+            color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); horizontal-alignment: center; vertical-alignment: center;
+        }
+        CornerCutouts { x: 0px; y: 0px; width: parent.width; height: parent.height; radius: parent.border-radius;
+            outside: MusicTheme.enabled(4) ? VideoColors.window : hit.has-hover ? AppColors.panel : AppColors.window; }
+    }
+    if root.entry.loading: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-8"; theme-kind: "surface";
+
+        x: 10px; y: (root.width - 12px) * 9 / 16 + 6px + 10px; width: parent.width * 0.82; height: 12px;
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (5px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+    }
+    if root.entry.loading: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-9"; theme-kind: "surface";
+
+        x: 10px; y: (root.width - 12px) * 9 / 16 + 6px + 32px; width: parent.width * 0.52; height: 10px;
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (5px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+    }
+    ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-8"; theme-kind: "text";
+
+        visible: !root.entry.loading;
+        x: 10px; y: (root.width - 12px) * 9 / 16 + 6px + 9px; width: parent.width - 20px; height: root.title-height;
+        vertical-alignment: top; text: root.entry.title; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (14px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600);
+        wrap: word-wrap; overflow: elide;
+    }
+    ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-9"; theme-kind: "text";
+
+        x: 10px; y: (root.width - 12px) * 9 / 16 + 6px + 14px + root.title-height; width: parent.width - 20px; height: 17px;
+        text: root.entry.subtitle; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (11px);
+        wrap: word-wrap; overflow: elide;
+    }
+    ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-10"; theme-kind: "text";
+
+        x: 10px; y: (root.width - 12px) * 9 / 16 + 6px + 32px + root.title-height; width: parent.width - 20px; height: 17px;
+        text: root.entry.stats; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (11px); overflow: elide;
+    }
+    hit := TouchArea { enabled: !root.entry.loading && root.entry.uri != ""; mouse-cursor: pointer; clicked => { BrowsePages.activate(root.entry.uri, root.entry.kind); } }
+}
+component VideoGrid inherits Rectangle {
+    in property <[PageRow]> rows;
+    in property <int> row-limit: 120;
+    in property <length> scroll-y;
+    in property <length> page-y;
+    in property <length> view-height;
+    property <int> columns: max(1, min(6, floor((self.width + 18px) / 298px)));
+    property <int> row-count: min(root.row-limit, ceil(root.rows.length / root.columns));
+    property <length> tile-width: (self.width - (root.columns - 1) * 18px) / root.columns;
+    property <length> row-height: root.tile-width * 9 / 16 + 122px;
+    height: root.row-count * root.row-height;
+    // Keep the visible rows and exactly one row ahead. Notify once per row
+    // boundary, not once per recycled cell or per scrolling pixel.
+    property <length> view-top: -(root.scroll-y + root.page-y);
+    property <int> art-first: max(0, min(root.row-count, floor(root.view-top / root.row-height)));
+    property <int> art-end: max(0, min(root.row-count, ceil((root.view-top + root.view-height) / root.row-height) + 1));
+    property <int> art-epoch: BrowsePages.art-epoch;
+    function schedule-art() { art-settle.running = true; art-settle.restart(); }
+    changed art-first => { root.schedule-art(); }
+    changed art-end => { root.schedule-art(); }
+    changed columns => { root.schedule-art(); }
+    changed art-epoch => { root.schedule-art(); }
+    init => { root.schedule-art(); }
+    art-settle := Timer {
+        interval: 16ms; running: false;
+        triggered => {
+            self.running = false;
+            BrowsePages.artwork-window(root.art-first * root.columns, min(root.rows.length, root.art-end * root.columns));
+        }
+    }
+    property <int> pool-rows: min(root.row-count, max(1, ceil(root.view-height / root.row-height) + 2));
+    property <int> first-row: max(0, min(root.row-count - root.pool-rows, floor(-(root.scroll-y + root.page-y) / root.row-height) - 1));
+    for slot in root.pool-rows: Rectangle {
+        property <int> feed-row: root.first-row + mod(slot - mod(root.first-row,root.pool-rows) + root.pool-rows,root.pool-rows);
+        y: self.feed-row * root.row-height; height: root.row-height; width: parent.width;
+        for column in root.columns: VideoTile {
+            x: column * (root.tile-width + 18px); y: 0px; width: root.tile-width;
+            visible: column < root.columns && parent.feed-row * root.columns + column < root.rows.length;
+            entry: root.rows[self.visible ? parent.feed-row * root.columns + column : -1];
+        }
+    }
+}
+export component PersonalPage inherits ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page"; theme-kind: "surface";
+
+    property <length> frame-width: self.width;
+    property <length> frame-height: self.height;
+    changed frame-width => { BrowsePages.artwork-reflow(); }
+    changed frame-height => { BrowsePages.artwork-reflow(); }
+    property <bool> page-loading: BrowsePages.busy;
+    changed page-loading => { if root.page-loading && BrowsePages.page != 1 { body.content-y = 0px; } }
+    property <int> home-reset: BrowsePages.home-reset;
+    changed home-reset => { body.content-y = BrowsePages.home-scroll; }
+    property <bool> empty-home: BrowsePages.page == 1 && !BrowsePages.busy && BrowsePages.rows.length == 0;
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.window);
+    if root.empty-home: ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-11"; theme-kind: "text";
+
+        x: 28px; y: 0px; width: max(0px, parent.width - 56px); height: parent.height;
+        text: BrowsePages.status != "" ? BrowsePages.status : "Search for a video to get started.";
+        color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (18px); wrap: word-wrap;
+        horizontal-alignment: center; vertical-alignment: center;
+    }
+    VerticalBox {
+        visible: true;
+        padding: 0px; spacing: 14px;
+        if BrowsePages.page == 2 && BrowsePages.channel-url != "": ThemeBox {
+        theme-section: 4; theme-key: "video-page-surface-11"; theme-kind: "surface";
+
+            height: 112px; clip: true; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (14px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.panel);
+            border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px); border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (AppColors.border);
+            HorizontalBox {
+                padding: 16px; spacing: 16px;
+                ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-12"; theme-kind: "surface";
+
+                    width: 72px; height: 72px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (36px); clip: true; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+                    ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: 4; theme-key: "video-page-artwork-3"; theme-kind: "artwork";
+ width: parent.width; height: parent.height; source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (BrowsePages.channel-avatar); image-fit: cover; }
+                    if BrowsePages.channel-avatar.width == 0: ThemeImage {
+        theme-section: 4; theme-key: "video-page-icon-4"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/person.svg")); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (AppColors.muted); x: 18px; y: 18px; width: 36px; height: 36px; }
+                }
+                VerticalBox {
+                    padding: 0px; spacing: 4px; alignment: center;
+                    ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-page-surface-13"; theme-kind: "surface";
+
+                        height: 26px;
+                        if BrowsePages.busy && BrowsePages.title == "": ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-14"; theme-kind: "surface";
+ x: 0px; y: 3px; height: 20px; width: min(parent.width, 240px); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (5px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface); }
+                        ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-12"; theme-kind: "text";
+ x: 0px; y: 0px; width: parent.width; height: parent.height; text: BrowsePages.title; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (22px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700); overflow: elide; }
+                    }
+                    ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-page-surface-15"; theme-kind: "surface";
+
+                        height: 16px;
+                        if BrowsePages.busy && BrowsePages.channel-subscribers == "": ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-16"; theme-kind: "surface";
+ x: 0px; y: 3px; height: 10px; width: min(parent.width, 110px); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface); }
+                        ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-13"; theme-kind: "text";
+ x: 0px; y: 0px; width: parent.width; height: parent.height; text: BrowsePages.channel-subscribers; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.accent-text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); }
+                    }
+                    ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-14"; theme-kind: "text";
+ text: BrowsePages.description; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); wrap: word-wrap; height: 30px; overflow: elide; }
+                }
+            }
+        }
+        if BrowsePages.page == 1: HorizontalBox {
+            padding: 0px; spacing: 8px; height: 34px;
+            BrowseTab { theme-section: 4; theme-key: "video-browsetab"; width: 62px; label: "New"; loading: BrowsePages.busy && BrowsePages.home-mode == 0 && BrowsePages.rows.length <= 20; clicked => { BrowsePages.home-select(0); } }
+            BrowseTab { theme-section: 4; theme-key: "video-browsetab"; width: 86px; label: "History"; active: BrowsePages.home-mode == 1; clicked => { BrowsePages.home-select(1); } }
+            ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-page-surface-17"; theme-kind: "surface";
+ horizontal-stretch: 1; }
+        }
+        if BrowsePages.page != 1 && (BrowsePages.page != 2 || BrowsePages.channel-url == ""): ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-15"; theme-kind: "text";
+ text: BrowsePages.title; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (24px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); overflow: elide; }
+        if BrowsePages.page == 2 && BrowsePages.channel-url != "": HorizontalBox {
+            padding: 0px; spacing: 8px; height: 36px;
+            for label[index] in ["Videos", "Shorts"] : PageAction {
+                width: 86px; label: label; active: BrowsePages.tab == index;
+                clicked => { if BrowsePages.tab != index { BrowsePages.tab=index; BrowsePages.channel-refresh(); } }
+            }
+            ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-18"; theme-kind: "surface";
+ horizontal-stretch: 1; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent); }
+            filter-field := ThemeBox { theme-section: 4; theme-key: "video-channel-filter"; theme-kind: "surface";
+                width: min(220px,root.width * 0.22); height: 36px;
+                theme-state: filter-input.has-focus ? "focus" : "normal";
+                background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.raised;
+                border-width: 1px; border-color: self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;
+                border-radius: self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 6px;
+                ThemeText {theme-section: 4; theme-key: "video-filter-placeholder"; visible: BrowsePages.filter == "";
+                    x: 10px; width: parent.width - 20px; height: parent.height; vertical-alignment: center;
+                    text: "Filter videos…"; font-size: 13px; color: self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+                filter-input := ThemeInput {theme-section: 4;theme-key: "video-filter-input";
+                    x: 10px; width: parent.width - 20px; height: parent.height; vertical-alignment: center;
+                    single-line: true; text <=> BrowsePages.filter; edited=>{BrowsePages.filter-rows();}
+                    font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+                    font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 13px;
+                    color: self.theme-paint.has-text ? self.theme-paint.text : AppColors.text;
+                    accessible-label: "Filter channel videos";
+                }
+            }
+            PlaylistPicker { theme-section: 4; theme-key: "video-filter"; label: ""; accessible-name: "Video sort or duration"; available: !BrowsePages.busy; width: 150px; model: ["Original", "Latest", "Oldest", "Most viewed"];
+                current-index <=> BrowsePages.sort; selected => { BrowsePages.channel-refresh(); } }
+            PlaylistPicker { theme-section: 4; theme-key: "video-filter"; label: ""; accessible-name: "Video sort or duration"; available: !BrowsePages.busy; width: 165px; model: ["Any duration", "Under 4 minutes", "4–20 minutes", "Over 20 minutes"];
+                current-index <=> BrowsePages.duration-filter; selected => { BrowsePages.filter-rows(); } }
+        }
+        if BrowsePages.status != "" && !root.empty-home: ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 12px;
+        theme-section: 4; theme-key: "video-page-text-16"; theme-kind: "text";
+ text: BrowsePages.status; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); wrap: word-wrap; max-height: 42px; }
+        body := ScrollView {
+            horizontal-scrollbar-policy: always-off;
+            function request-more() {
+                if BrowsePages.page == 1 && !BrowsePages.busy && BrowsePages.home-has-more
+                    && self.content-height + self.content-y <= self.visible-height + 500px { BrowsePages.home-more(); }
+            }
+            changed content-y => { if BrowsePages.page == 1 { BrowsePages.home-scroll=self.content-y; } self.request-more(); }
+            property <bool> ready-more: BrowsePages.home-has-more && !BrowsePages.busy;
+            changed ready-more => { if self.ready-more { settle-more.running = true; settle-more.restart(); } }
+            settle-more := Timer {
+                interval: 100ms; running: false;
+                triggered => { self.running = false; body.request-more(); }
+            }
+            VerticalBox {
+                width: body.visible-width - 14px; padding: 0px; spacing: 24px;
+                if BrowsePages.page == 1 && BrowsePages.rows.length > 0: VideoGrid {
+                    rows: BrowsePages.rows; scroll-y: body.content-y; page-y: self.y; view-height: body.visible-height;
+                }
+                if BrowsePages.page == 1 && BrowsePages.busy && BrowsePages.rows.length > 20: LoadingDots { }
+                if BrowsePages.channel-hits.length > 0 && (BrowsePages.page == 3 || (BrowsePages.page == 2 && BrowsePages.channel-url == "")): ChannelHits { }
+                if BrowsePages.page == 3 || (BrowsePages.page == 2 && BrowsePages.channel-url != ""): VideoGrid {
+                    rows: BrowsePages.rows; scroll-y: body.content-y; page-y: self.y; view-height: body.visible-height;
+                }
+            }
+        }
+    }
+}
+component CommentCard inherits ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-comment-card"; theme-kind: "surface";
+
+    in property <CommentRow> entry;
+    height: root.entry.loading ? 88px : comment.preferred-height; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (10px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.raised);
+    comment := HorizontalBox {
+        visible: !root.entry.loading;
+        width: parent.width; padding: 12px; spacing: 12px;
+        VerticalBox { padding: 0px; alignment: start;
+            ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-20"; theme-kind: "surface";
+ width: 32px; height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (16px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
+                ThemeImage {
+        theme-section: 4; theme-key: "video-page-icon-5"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/person.svg")); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (AppColors.muted); x: 7px; y: 7px; width: 18px; height: 18px; } }
+        }
+        VerticalBox {
+            padding: 0px; spacing: 7px;
+            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: 4; theme-key: "video-page-text-17"; theme-kind: "text";
+ text: root.entry.author; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (13px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600); overflow: elide; }
+            ThemeInput {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-input-1"; theme-kind: "input";
+ text: root.entry.body; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (13px); read-only: true; single-line: false; wrap: word-wrap; height: measure.preferred-height; }
+            if root.entry.detail != "": ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-18"; theme-kind: "text";
+ text: root.entry.detail; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (11px); }
+            ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-page-surface-21"; theme-kind: "surface";
+ height: 0px; measure := ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-19"; theme-kind: "text";
+ visible: false; text: root.entry.body; width: parent.width; wrap: word-wrap; font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (13px); } }
+        }
+    }
+    if root.entry.loading: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-22"; theme-kind: "surface";
+ x: 56px; y: 18px; width: min(parent.width - 72px, 180px); height: 12px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (5px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface); }
+    if root.entry.loading: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-23"; theme-kind: "surface";
+ x: 56px; y: 44px; width: parent.width - 72px; height: 10px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (5px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface); }
+}
+export component CommentsPanel inherits ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-page-surface-24"; theme-kind: "surface";
+
+    property <int> shown: 8;
+    property <[CommentRow]> comment-rows: BrowsePages.comments;
+    changed comment-rows => { root.shown = 8; }
+    property <bool> loading: BrowsePages.comments-busy;
+    changed loading => { if root.loading { root.shown = 8; } }
+    height: content.preferred-height;
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent);
+    content := VerticalBox {
+        width: parent.width; padding: 0px; spacing: 12px;
+
+        if BrowsePages.comments-open && BrowsePages.comments-busy: LoadingDots { }
+        if BrowsePages.comments-open && BrowsePages.comments-status != "": ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-page-text-20"; theme-kind: "text";
+
+            text: BrowsePages.comments-status; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); wrap: word-wrap;
+        }
+        if BrowsePages.comments-open: VerticalBox {
+            padding: 0px; spacing: 10px;
+            for index in min(root.shown, root.comment-rows.length): CommentCard { entry: root.comment-rows[index]; }
+            if root.shown < root.comment-rows.length: PageAction {
+                label: "Show more"; clicked => { root.shown = min(root.comment-rows.length, root.shown + 8); }
+            }
+        }
+    }
+}

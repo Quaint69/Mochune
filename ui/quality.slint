@@ -1,0 +1,121 @@
+import {MusicTheme, ThemeBox, ThemeText, ThemeImage, ThemeInput} from "music-theme.slint";
+import {ScrollView,VerticalBox,HorizontalBox} from "std-widgets.slint";
+import {AppColors} from "theme.slint";
+export component QualityPicker inherits ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-quality-surface-1"; theme-kind: "surface";
+
+    property <bool> caption-active: root.enabled && root.button-label != "" && root.current-index > 0;
+    theme-state: !root.enabled ? "disabled" : root.caption-active ? "active" : root.has-focus ? "focus" : picker-hit.has-hover ? "hover" : "normal";
+    in property <[string]> model;
+    in property <[string]> compact-model;
+    in property <bool> compact: true;
+    in property <bool> over-video;
+    in property <string> button-label;
+    in property <string> accessible-name: "Playback quality";
+    in property <bool> popup-above;
+    in property <length> popup-bottom-limit: 100000px;
+    in property <bool> enabled: true;
+    changed enabled=>{if !root.enabled {menu.close();}}
+    in-out property <int> current-index;
+    out property <bool> has-focus: focus.has-focus || root.popup-has-focus;
+    property <bool> popup-has-focus;
+    out property <bool> popup-open: menu.is-open;
+    out property <length> popup-width: root.menu-width;
+    out property <length> popup-height: root.menu-height;
+    property <length> menu-width: root.button-label != "" ? 260px : root.compact ? 166px : 340px;
+    property <length> menu-height: min(328px,root.model.length * 36px + 8px);
+    property <length> menu-left: max(8px - root.absolute-position.x, root.width - root.menu-width);
+    property <length> menu-top: max(8px - root.absolute-position.y, min(root.popup-bottom-limit - root.absolute-position.y - root.menu-height - 4px, root.compact || root.popup-above ? -root.menu-height - 4px : root.height + 3px));
+    out property <length> popup-x: root.absolute-position.x + root.menu-left;
+    out property <length> popup-y: root.absolute-position.y + root.menu-top;
+    property <int> highlighted;
+    in property <int> open-request;
+    changed open-request => {if root.open-request > 0 && !root.external-popup {root.open();}}
+    in property <bool> external-popup;
+    changed external-popup=>{if root.external-popup {menu.close();}}
+    callback request-popup();
+    callback close();
+    close=>{menu.close();}
+    callback open();
+    open=>{if root.enabled && root.model.length > 0 {if root.external-popup {root.request-popup();}else{if menu.is-open {menu.close();} else {root.highlighted=clamp(root.current-index,0,root.model.length - 1);root.popup-scroll=-max(0,root.highlighted - 6)*36px;menu.show();}}}}
+    // The native video surface uses an offscreen window. Route popup clicks
+    // against the same anchored geometry used for painting, including scrolling.
+    in-out property <length> popup-scroll;
+    property <int> pressed-row: -1;
+    callback native-scroll(float) -> bool;
+    native-scroll(delta)=>{if !menu.is-open {return false;}root.popup-scroll=clamp(root.popup-scroll+delta*1px,min(0px,root.menu-height - root.model.length*36px - 8px),0px);return true;}
+    callback native-pointer(float,float,bool) -> bool;
+    native-pointer(x,y,pressed)=>{
+        if !menu.is-open {return false;}
+        if x * 1px < root.popup-x || x * 1px >= root.popup-x + root.menu-width || y * 1px < root.popup-y || y * 1px >= root.popup-y + root.menu-height {
+            root.pressed-row=-1; if pressed {menu.close();} return true;
+        }
+        let row=floor((y * 1px - root.popup-y - 4px - root.popup-scroll)/36px);
+        if pressed {root.pressed-row=row;}
+        else {if row == root.pressed-row && row >= 0 && row < root.model.length {root.current-index=row;root.selected(row);menu.close();focus.focus();} root.pressed-row=-1;}
+        root.activity(); return true;
+    }
+    callback selected(int);
+    callback activity();
+    property <string> selected-label: root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index] : "Quality";
+    property <string> compact-label: root.current-index >= 0 && root.current-index < root.compact-model.length ? root.compact-model[root.current-index] : root.selected-label;
+    out property <length> badge-width: max(74px, badge-measure.preferred-width + 24px);
+    badge-measure := ThemeText {
+        theme-section: root.theme-section; theme-key: "video-quality-text-1"; theme-kind: "text";
+visible: false; text: root.compact-label; font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : ("DejaVu Sans Mono"); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700);}
+    opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.enabled ? 1 : 0.45);
+    height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.button-label != "" ? (root.current-index > 0 ? #554022 : transparent) : root.compact ? transparent : #222222e8);
+    accessible-role: combobox; accessible-label: root.accessible-name; accessible-value: root.selected-label;
+    forward-focus: focus;
+    HorizontalBox {padding-left: root.button-label != "" ? 4px : 10px; padding-right: root.button-label != "" ? 4px : 8px; spacing: root.button-label != "" ? 0px : 6px;
+        ThemeText {
+        theme-section: root.theme-section; theme-key: "video-quality-text-2"; theme-kind: "text"; theme-state: root.theme-state;
+text: root.button-label != "" ? root.button-label : root.compact ? root.compact-label : root.selected-label; color: root.caption-active && root.theme-paint.has-text ? root.theme-paint.text : root.caption-active && root.theme-paint.has-background && self.theme-paint.has-text ? self.theme-paint.text : root.over-video ? #ffffff : self.theme-paint.has-text ? self.theme-paint.text : (#ffffff); font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : (root.compact || root.button-label != "" ? "DejaVu Sans Mono" : "DejaVu Sans"); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (root.compact || root.button-label != "" ? 700 : 400); overflow: elide; vertical-alignment: center; horizontal-stretch: 1; min-width: 0px;}
+        ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: root.theme-section; theme-key: "video-quality-artwork-1"; theme-kind: "artwork";
+visible: !root.compact && root.button-label == ""; source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/chevron.svg")); width: root.compact || root.button-label != "" ? 0px : 12px; height: 12px; image-fit: contain;}
+    }
+    focus := FocusScope {enabled: root.enabled;
+        key-pressed(event)=>{if event.text == " " || event.text == Key.Return {root.open();root.activity();return accept;}return reject;}
+    }
+    picker-hit := TouchArea {enabled: root.enabled; clicked=>{root.activity();root.open();}}
+    menu := PopupWindow {
+        x: root.menu-left; y: root.menu-top; width: root.menu-width; height: root.menu-height;
+        close-policy: close-on-click-outside;
+        forward-focus: menu-focus;
+        ThemeBox {
+        theme-section: root.theme-section; theme-key: "video-quality-surface-2"; theme-kind: "surface";
+background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.raised); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (7px); border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px); border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (AppColors.border); TouchArea {clicked=>{root.activity();}}}
+        menu-focus := FocusScope {
+            width: parent.width; height: parent.height;
+            focus-changed-event=>{root.popup-has-focus=self.has-focus;}
+            key-pressed(event)=>{
+                root.activity();
+                if event.text == Key.Escape {menu.close();focus.focus();return accept;}
+                if event.text == Key.UpArrow {root.highlighted=max(0,root.highlighted - 1);root.popup-scroll=-max(0,root.highlighted - 6)*36px;return accept;}
+                if event.text == Key.DownArrow {root.highlighted=min(root.model.length - 1,root.highlighted + 1);root.popup-scroll=-max(0,root.highlighted - 6)*36px;return accept;}
+                if event.text == Key.Return || event.text == " " {root.current-index=root.highlighted;root.selected(root.current-index);menu.close();focus.focus();return accept;}
+                return reject;
+            }
+            ScrollView {horizontal-scrollbar-policy: always-off; content-y <=> root.popup-scroll;
+                VerticalBox {width: root.button-label != "" ? 260px : root.compact ? 166px : 340px; padding: 4px; padding-right: 18px; spacing: 0px;
+                    for label[index] in root.model: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: root.theme-section; theme-key: "video-quality-surface-3"; theme-state: index == root.highlighted ? "active" : hit.has-hover ? "hover" : "normal"; theme-kind: "surface";
+height: 36px; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (index == root.highlighted ? AppColors.selected : hit.has-hover ? AppColors.hover : transparent); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
+                        ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: root.theme-section; theme-key: "video-quality-text-3"; theme-kind: "text";
+text: root.compact && index < root.compact-model.length ? root.compact-model[index] : label; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (13px); x: 10px; width: parent.width - 20px; height: parent.height; vertical-alignment: center; overflow: elide;}
+                        hit := TouchArea {moved=>{root.activity();} clicked=>{root.current-index=index;root.selected(index);menu.close();focus.focus();}}
+                    }
+                }
+            }
+        }
+    }
+}

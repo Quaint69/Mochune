@@ -1,0 +1,265 @@
+import {MusicTheme, ThemeBox, ThemeText, ThemeImage, ThemeInput} from "music-theme.slint";
+import {SeekBar} from "seek-bar.slint";
+import {BufferedRange} from "buffer-range.slint";
+// Native Windows overlay counterpart of setup.slint player controls.
+// Keep controls/caption behavior in sync; video pixels are never rendered here.
+import {AppColors} from "theme.slint";
+import {LoadingDots} from "loading.slint";
+import {QualityPicker} from "quality.slint";
+import {Slider,HorizontalBox,VerticalBox} from "std-widgets.slint";
+component PlayerButton inherits ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-control-button"; theme-kind: "button";
+        theme-state: !root.available ? "disabled" : root.loading ? "loading" : root.active ? "active" : touch.pressed ? "pressed" : touch.has-hover ? "hover" : "normal";
+
+    in property <string> label;
+    in property <image> icon;
+    in property <bool> available: true;
+    in property <bool> loading;
+    in property <bool> active;
+    callback clicked;
+    callback activity;
+    width: 34px; height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
+    background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.active ? #704044 : touch.has-hover && available ? #ffffff25 : transparent);
+    accessible-role: button; accessible-label: root.label;
+    ThemeImage {
+        theme-section: 4; theme-key: "video-native-icon-1"; theme-kind: "icon";
+visible: !root.loading; source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.icon); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (#ffffff); width: 22px; height: 22px; x: (parent.width - self.width)/2; y: (parent.height - self.height)/2; image-fit: contain; opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.available ? 1 : 0.4);}
+    if root.loading: LoadingDots { theme-section: 4; theme-key: "video-loadingdots";tint: #ffffff; width: 22px; height: 18px; x: (parent.width - self.width)/2; y: (parent.height - self.height)/2;}
+    touch := TouchArea { enabled: root.available; moved => { root.activity(); } clicked => { root.activity(); root.clicked(); } }
+}
+
+export {MusicTheme}
+export component NativePlayerOverlay inherits Window {
+    preferred-width: 900px; preferred-height: 506px; background: transparent;
+    out property <length> canvas-width: root.width;
+    out property <length> canvas-height: root.height;
+    default-font-family: "DejaVu Sans";
+    in-out property <length> picture-radius: 12px;
+    in-out property <length> picture-border-width;
+    in-out property <bool> light-mode;
+    changed light-mode=>{AppColors.light-mode=root.light-mode;}
+    in-out property <bool> controls-over-video;
+    in-out property <bool> controls-outside;
+    in-out property <bool> controls-shown;
+    in-out property <bool> fullscreen-mode;
+    in-out property <length> popup-boundary;
+    in-out property <bool> has-selection;
+    in-out property <bool> selection-playable;
+    in-out property <bool> paused;
+    in-out property <bool> resolving;
+    in-out property <bool> playback-active;
+    property <bool> controls-loading: root.resolving && (!root.video-visible || !root.playback-active);
+    in-out property <bool> video-visible;
+    in-out property <bool> music-only;
+    in-out property <bool> legacy-quality;
+    in-out property <bool> repeat-video;
+    in-out property <[BufferedRange]> buffered-ranges;
+    in-out property <bool> buffered-estimated;
+    in-out property <float> position;
+    in-out property <float> duration;
+    in-out property <float> volume;
+    in-out property <float> previous-volume;
+    in-out property <string> clock;
+    in-out property <string> caption-text;
+    in-out property <string> caption-next;
+    in-out property <string> seek-feedback;
+    in-out property <bool> seek-feedback-right;
+    in-out property <[string]> caption-labels;
+    in-out property <int> caption-choice;
+    in-out property <int> caption-open-request;
+    in-out property <[string]> quality-labels;
+    in-out property <[string]> quality-compact-labels;
+    in-out property <int> quality-choice;
+    in-out property <int> quality-open-request;
+    in-out property <image> video-frame;
+    callback player-activity();
+    callback player-click();
+    callback player-double-click(float);
+    callback toggle-pause();
+    callback play();
+    callback seek(float);
+    callback volume-change(float);
+    callback toggle-controls-position();
+    callback choose-caption(int);
+    callback toggle-video-repeat();
+    callback choose-quality(int);
+    callback toggle-fullscreen();
+    out property <length> seek-x: seek-bar.absolute-position.x;
+    out property <length> seek-y: seek-bar.absolute-position.y;
+    out property <length> seek-width: seek-bar.width;
+    out property <length> quality-x: quality-menu.absolute-position.x;
+    out property <length> quality-y: quality-menu.absolute-position.y;
+    out property <length> quality-popup-x: quality-menu.popup-x;
+    out property <length> quality-popup-y: quality-menu.popup-y;
+    out property <bool> menu-active: quality-menu.popup-open || caption-menu.popup-open;
+    callback scroll-popup(float) -> bool;
+    scroll-popup(delta)=>{return quality-menu.native-scroll(delta) || caption-menu.native-scroll(delta);}
+    callback popup-pointer(float,float,bool) -> bool;
+    popup-pointer(x,y,pressed)=>{return quality-menu.native-pointer(x,y,pressed) || caption-menu.native-pointer(x,y,pressed);}
+    callback dismiss-menus();
+    dismiss-menus=>{quality-menu.close();caption-menu.close();keys.focus();}
+    callback global-key(string);
+    callback focus-request();
+    focus-request=>{keys.focus();}
+    forward-focus: keys;
+    keys := FocusScope {
+        width: root.width; height: root.height;
+        key-pressed(event)=>{root.global-key(event.text);return accept;}
+                        // TouchArea.moved is a drag callback. Track hover coordinates on
+                        // the parent so movement also works over the child controls.
+                        TouchArea {
+                            width: parent.width; height: parent.height;
+                            changed mouse-x => { if self.has-hover { root.player-activity(); } }
+                            changed mouse-y => { if self.has-hover { root.player-activity(); } }
+                        ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : transparent;
+        theme-section: 4; theme-key: "video-native-surface-2"; theme-kind: "surface";
+
+                            x: 0px; y: 0px;
+                            width: parent.width; height: parent.height - (root.controls-over-video ? 0px : 72px);
+                        Image { visible: false; source: root.video-frame; image-fit: contain; width: parent.width; height: parent.height; }
+                        TouchArea {
+                            moved => {root.player-activity();}
+                            clicked => {root.focus-request();root.player-click();}
+                            double-clicked => {root.player-double-click(self.mouse-x / self.width);}
+                        }
+                        caption-measure := ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-1"; theme-kind: "text";
+text: root.caption-text; font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (18px); wrap: no-wrap; visible: false;}
+                        caption-next-measure := ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-2"; theme-kind: "text";
+text: root.caption-next; font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (17px); wrap: no-wrap; visible: false;}
+                        if root.caption-text != "" && !root.music-only: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-3"; theme-kind: "surface";
+
+                            width: min(parent.width - 40px, max(64px, max(caption-measure.preferred-width, caption-next-measure.preferred-width) + 24px));
+                            height: 58px; x: (parent.width - self.width)/2;
+                            y: parent.height - self.height - (root.controls-over-video ? 88px : 20px);
+                            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (#000000c0); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (6px);
+                            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-3"; theme-kind: "text";
+text: root.caption-text; color: self.theme-paint.has-text ? self.theme-paint.text : (#ffffff); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (18px); wrap: no-wrap; horizontal-alignment: center; vertical-alignment: center; x: 12px; y: 6px; width: parent.width - 24px; height: 23px; overflow: elide;}
+                            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-4"; theme-kind: "text";
+text: root.caption-next; color: self.theme-paint.has-text ? self.theme-paint.text : (#ffffffb8); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (17px); wrap: no-wrap; horizontal-alignment: center; vertical-alignment: center; x: 12px; y: 29px; width: parent.width - 24px; height: 23px; overflow: elide;}
+                        }
+                        if root.seek-feedback != "": ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-4"; theme-kind: "surface";
+width: 88px; height: 56px; x: root.seek-feedback-right ? parent.width * 0.75 - 44px : parent.width * 0.25 - 44px; y: (parent.height - 56px) / 2; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (#000000b8); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (28px);
+                            ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-5"; theme-kind: "text";
+text: root.seek-feedback; color: self.theme-paint.has-text ? self.theme-paint.text : (#ffffff); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (18px); horizontal-alignment: center; vertical-alignment: center;}
+                        }
+                        if (!root.has-selection): ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 12px;
+        theme-section: 4; theme-key: "video-native-text-6"; theme-kind: "text";
+ text: "Search for a video to get started"; color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted); horizontal-alignment: center; vertical-alignment: center; }
+                        if root.resolving: ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-5"; theme-kind: "surface";
+
+                            width: 64px; height: 64px; x: (parent.width - self.width) / 2; y: (parent.height - self.height) / 2;
+                            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (#000000a0); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (32px);
+                            LoadingDots { theme-section: 4; theme-key: "video-loadingdots"; width: 32px; height: 32px; x: 16px; y: 16px; }
+                        }
+                        if root.has-selection && !root.resolving && ((!root.video-visible && root.position <= 0) || root.paused): ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-6"; theme-kind: "surface";
+
+                            width: 58px; height: 58px; x: (parent.width - self.width) / 2; y: (parent.height - self.height - 40px) / 2;
+                            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (#000000a0); border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (29px);
+                            ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: 4; theme-key: "video-native-artwork-1"; theme-kind: "icon";
+source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/play.svg")); width: 32px; height: 32px; x: (parent.width - self.width)/2; y: (parent.height - self.height)/2; image-fit: contain;colorize: self.theme-paint.image.width > 0 ? transparent : self.theme-paint.has-tint ? self.theme-paint.tint : transparent; }
+                            TouchArea {enabled: root.selection-playable; clicked => { root.focus-request(); if root.position > 0 { root.toggle-pause(); } else { root.play(); } } }
+                        }
+
+                        }
+                                            ThemeBox {
+        decorate: !root.controls-over-video;
+        border-radius: root.controls-over-video ? 0px : self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: root.controls-over-video ? 0px : self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: root.controls-over-video ? transparent : self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-controls"; theme-kind: "surface";
+
+                            visible: !root.controls-over-video || root.controls-shown || !root.video-visible || root.paused || root.resolving || quality-menu.popup-open || caption-menu.popup-open;
+                            height: 72px; width: parent.width; y: parent.height - self.height;
+                            background: root.controls-over-video ? @linear-gradient(180deg, #00000000, #000000c0 35%, #000000ed) : (self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.controls-over-video ? @linear-gradient(180deg, #00000000, #000000c0 35%, #000000ed) : #171717));
+                            // Consume gaps/padding too; only the picture toggles playback.
+                            TouchArea { clicked=>{root.player-activity();} }
+                            VerticalBox {
+                                padding-left: 12px; padding-right: 12px; padding-bottom: 6px; padding-top: 5px; spacing: 2px;
+                                seek-bar := SeekBar { theme-section: 4; theme-key: "video-seekbar";
+                                    over-video: true;
+                                    duration: root.duration; position: root.position; buffered-ranges: root.buffered-ranges; buffered-estimated: root.buffered-estimated;
+                                    enabled: root.duration > 0 && !root.controls-loading;
+                                    activity => {root.player-activity();}
+                                    seek-requested(target) => {root.focus-request();root.seek(target);}
+                                }
+                                HorizontalBox {
+                                    padding: 0px; spacing: root.width < 560px ? 3px : 6px;
+                                    PlayerButton {width: root.width < 560px ? 28px : 34px; activity => {root.player-activity();} loading: root.controls-loading; label: root.controls-loading ? "Loading video" : root.paused || root.position <= 0 ? "Play" : "Pause"; icon: root.paused || root.position <= 0 ? @image-url("icons/play.svg") : @image-url("icons/pause.svg"); available: root.has-selection && root.selection-playable && !root.controls-loading; clicked => { root.focus-request(); if root.position > 0 { root.toggle-pause(); } else { root.play(); } } }
+                                    ThemeBox {
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-8"; theme-kind: "surface";
+
+                                        width: 34px; height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
+                                        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (mute-touch.has-hover ? #ffffff25 : transparent);
+                                        ThemeImage {
+        image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+        theme-section: 4; theme-key: "video-native-artwork-2"; theme-kind: "icon";
+ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.volume > 0 ? @image-url("icons/volume.svg") : @image-url("icons/muted.svg")); width: 24px; height: 24px; x: 5px; y: 4px; image-fit: contain; colorize: self.theme-paint.image.width > 0 ? transparent : root.controls-over-video ? #ffffff : self.theme-paint.has-tint ? self.theme-paint.tint : transparent; }
+                                        mute-touch := TouchArea { moved => {root.player-activity();} clicked => {root.player-activity();if root.volume > 0 {root.previous-volume=root.volume;root.volume=0;}else{root.volume=root.previous-volume;}root.volume-change(root.volume);} }
+                                    }
+                                    volume-slot := Rectangle { width: root.width >= 560px ? 92px : 0px; height: 32px;
+                                                    visible: root.width >= 560px;
+                                                volume-bar := SeekBar { height: 18px; y: (parent.height - self.height)/2; theme-section: 4; theme-key: "video-volume"; visible: root.width >= 560px; width: root.width >= 560px ? 92px : 0px; accessible-name: "Volume"; duration: 100; position: root.volume; activity=>{root.player-activity();} seek-requested(v)=>{root.volume-change(v);} }
+                                                }
+                                    ThemeText {
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+        theme-section: 4; theme-key: "video-native-text-7"; theme-kind: "text";
+ text: root.clock; color: root.controls-over-video ? #ffffff : self.theme-paint.has-text ? self.theme-paint.text : (#ffffff); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (root.width < 560px ? 10px : 12px); vertical-alignment: center; }
+                                    ThemeBox {
+        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+        theme-section: 4; theme-key: "video-native-surface-9"; theme-kind: "surface";
+ horizontal-stretch: 1; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent); }
+                                    if !root.fullscreen-mode: PlayerButton {width: 28px; label: root.controls-outside ? "Move controls into video" : "Move controls below video"; icon: root.controls-outside ? @image-url("icons/arrow-up.svg") : @image-url("icons/arrow-down.svg"); activity=>{root.player-activity();} clicked=>{root.toggle-controls-position();}}
+                                    caption-menu := QualityPicker { theme-key: "video-captions"; theme-kind: "button"; over-video: root.controls-over-video;popup-bottom-limit: root.popup-boundary;open-request: root.caption-open-request; model: root.caption-labels; compact: false; button-label: "CC"; accessible-name: "Captions"; popup-above: true; current-index <=> root.caption-choice; width: 34px; enabled: root.caption-labels.length > 1 && !root.music-only; activity=>{root.player-activity();} selected(index)=>{root.focus-request();root.player-activity();root.choose-caption(index);}}
+                                    PlayerButton {width: root.width < 560px ? 28px : 34px; label: "Repeat video"; icon: @image-url("icons/repeat.svg"); active: root.repeat-video; clicked=>{root.toggle-video-repeat();} activity=>{root.player-activity();}}
+                                    quality-menu := QualityPicker { over-video: root.controls-over-video;popup-bottom-limit: root.popup-boundary; popup-above: true; open-request: root.quality-open-request; model: root.quality-labels; compact-model: root.quality-compact-labels; compact: !root.legacy-quality; current-index <=> root.quality-choice; width: root.legacy-quality ? min(270px, root.width * 0.36) : quality-menu.badge-width; vertical-stretch: 0; enabled: !root.controls-loading; activity=>{root.player-activity();} selected(index) => { root.focus-request(); root.player-activity(); root.choose-quality(index); } }
+                                    PlayerButton {width: root.width < 560px ? 28px : 34px; activity => {root.player-activity();} label: "Fullscreen"; icon: @image-url("icons/fullscreen.svg"); clicked => { root.toggle-fullscreen(); } }
+                                }
+                            }
+                        }
+                        }
+                    
+    }
+}

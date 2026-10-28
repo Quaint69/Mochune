@@ -1,0 +1,25 @@
+// Shared native colors; no second UI tree or web renderer.
+export global AppColors {
+    in-out property <bool> light-mode: false;
+    out property <color> window: light-mode ? #faf8f3 : #131211;
+    out property <color> panel: light-mode ? #ffffff : #1c1a16;
+    out property <color> panel-video: light-mode ? #ffffff : #1d1b18;
+    out property <color> raised: light-mode ? #ffffff : #24211c;
+    out property <color> muted-surface: light-mode ? #eee8df : #2b2721;
+    out property <color> hover: light-mode ? #fff0d9 : #352b1d;
+    out property <color> selected: light-mode ? #ffe1b0 : #554022;
+    out property <color> active: light-mode ? #ffd28d : #8c571b;
+    out property <color> text: light-mode ? #2c2114 : #f7f1e7;
+    out property <color> muted: light-mode ? #70604c : #bcae98;
+    out property <color> weak: light-mode ? #7b6b55 : #a4937b;
+    out property <color> accent: light-mode ? #e8941d : #f4a62a;
+    out property <color> accent-text: light-mode ? #92530b : #eab35c;
+    out property <color> border: light-mode ? #dfd5c6 : #ffffff18;
+    out property <color> placeholder: light-mode ? #eee5d5 : #3c3020;
+    out property <color> gradient-top: light-mode ? #fff1d8 : #3b2e1c;
+    out property <color> gradient-bottom: light-mode ? #fffdfa : #1a1814;
+    out property <color> warning-bg: light-mode ? #fff1ce : #453b23;
+    out property <color> warning-text: light-mode ? #765300 : #f0d8a4;
+    out property <color> error: light-mode ? #b42327 : #ffa4a4;
+    out property <color> track: light-mode ? #cfc2ae : #ffffff55;
+}

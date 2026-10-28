@@ -1,0 +1,43 @@
+Mochune
+Copyright (c) 2026 Mochune contributors
+
+Mochune's original application source, UI, scripts and documentation are
+licensed under the GNU General Public License version 3 only
+(SPDX-License-Identifier: GPL-3.0-only), unless a file or accompanying notice
+explicitly specifies another license. See LICENSE for the complete terms.
+
+You may use, study, modify and redistribute Mochune under those terms.
+Redistributed covered binaries must be accompanied by corresponding source
+through a GPL-compliant distribution method, including required build and
+installation information where applicable. The software is provided without
+warranty, to the extent permitted by law. Commercial use is not prohibited.
+
+Third-party material retains its original copyright and license:
+- Slint 1.18.1: the GPL-3.0-only option is selected for this application.
+  Exact framework license texts: third-party/slint-1.18.1/.
+- Slint/GStreamer example integration: MIT; see
+  third-party/Slint-GStreamer-LICENSE.txt. This is not Slint's framework license.
+- GStreamer and native dependencies/plugins: component-specific licenses,
+  including LGPL. Packaged native dependency notices accompany binaries.
+- yt-dlp: Unlicense core; the bundled CLI includes other components with GPL
+  and other obligations. See its release-specific notices.
+- FFmpeg CLI helper: the current Windows build is GPLv3; see its license and
+  exact builder provenance in third-party/.
+- Deno: MIT core, with additional third-party runtime components.
+- DejaVu fonts: see third-party/DejaVu-Fonts.txt and ui/fonts/LICENSE.txt.
+- Mochune Display title font: its separate MIT license remains in effect;
+  see third-party/Mochune-Display-LICENSE.txt.
+- Rust dependencies: see third-party/RUST-LICENSE-INVENTORY.md and the
+  component license texts supplied with binary distributions.
+- Microsoft runtime files, when distributed, retain Microsoft's separate
+  terms; this notice does not grant redistribution rights to those files.
+
+Third-party license obligations are not replaced by Mochune's GPL notice.
+See packaging/README.md for binary-distribution requirements.
+No complete release-specific source offer is made by this notice alone.
+
+Mochune is an independent project, not affiliated with or endorsed by YouTube
+or Google. The software license grants no rights to third-party media and no
+permission to disregard service terms. Downloads and optional offline caching
+remain available. Use them only where you have the necessary authorization or
+applicable legal rights; noncommercial use is not an automatic exemption.

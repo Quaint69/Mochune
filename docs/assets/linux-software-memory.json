@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-25",
+  "build": "development",
+  "platform": "Debian Linux / Wayland / Intel i5-7200U / HD Graphics 620",
+  "media": "existing local 45-second media fixture, audio only",
+  "sampling": "median of 250 ms samples during seconds 4\u20138 of 9-second sessions",
+  "unit": "MiB",
+  "cases": [
+    {
+      "case": "software-idle",
+      "build": "local development build",
+      "metric": "resident MiB",
+      "exit": 0,
+      "median": {
+        "Rss": 74.5,
+        "Pss": 64.8,
+        "Private": 60.2,
+        "Private_Clean": 47.0,
+        "Private_Dirty": 13.2,
+        "Shared": 14.3,
+        "Shared_Clean": 7.5,
+        "Shared_Dirty": 6.9,
+        "Anonymous": 13.2,
+        "Swap": 0.0,
+        "SwapPss": 0.0
+      }
+    },
+    {
+      "case": "software-playing",
+      "build": "local development build",
+      "metric": "resident MiB",
+      "exit": 0,
+      "median": {
+        "Rss": 83.7,
+        "Pss": 73.6,
+        "Private": 68.7,
+        "Private_Clean": 52.0,
+        "Private_Dirty": 16.7,
+        "Shared": 15.1,
+        "Shared_Clean": 8.2,
+        "Shared_Dirty": 6.9,
+        "Anonymous": 16.7,
+        "Swap": 0.0,
+        "SwapPss": 0.0
+      }
+    },
+    {
+      "case": "opengl-playing",
+      "build": "local development build",
+      "metric": "resident MiB",
+      "exit": 0,
+      "median": {
+        "Rss": 151.1,
+        "Pss": 140.8,
+        "Private": 138.2,
+        "Private_Clean": 98.1,
+        "Private_Dirty": 40.1,
+        "Shared": 12.9,
+        "Shared_Clean": 12.9,
+        "Shared_Dirty": 0.0,
+        "Anonymous": 40.1,
+        "Swap": 0.0,
+        "SwapPss": 0.0
+      }
+    }
+  ]
+}

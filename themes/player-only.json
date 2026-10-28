@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "name": "Minimal \u00b7 player only",
+  "palette": {
+    "panel": "#fff0fa",
+    "surface": "#eedfff",
+    "text": "#4f3269",
+    "muted": "#87609f",
+    "accent": "#ec77bd",
+    "accent_text": "#ffffff",
+    "border": "#ba8ad7",
+    "track": "#decbed",
+    "played": "#ec77bd",
+    "button": "#f8d7ec",
+    "button_hover": "#e5b9f3",
+    "liked": "#e95096"
+  },
+  "sections": {
+    "player": {
+      "components": {
+        "music-player": {
+          "background": "#202d29",
+          "border": "#b2be9a",
+          "border_width": 2,
+          "radius": 0
+        },
+        "button": {
+          "radius": 0
+        },
+        "text": {
+          "font_family": "DejaVu Sans Mono"
+        }
+      }
+    }
+  }
+}

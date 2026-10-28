@@ -1,0 +1,75 @@
+[package]
+name = "mochune"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-only"
+publish = false
+
+[lib]
+name = "mochune_native"
+crate-type = ["rlib"]
+
+[features]
+showcase = []
+native-overlay-test = ["slint/renderer-software"]
+legacy-wgpu = ["slint/renderer-femtovg-wgpu", "slint/unstable-wgpu-30"]
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "gif"] }
+ureq = { version = "3.4", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+directories = "6"
+anyhow = "1"
+ttf-parser = "=0.25.1"
+url = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
+gst = { package = "gstreamer", version = "0.23", features = ["v1_24"] }
+gst-video = { package = "gstreamer-video", version = "0.23", features = ["v1_24"] }
+gst-base = { package = "gstreamer-base", version = "0.23", features = ["v1_24"] }
+gst-app = { package = "gstreamer-app", version = "0.23", features = ["v1_24"] }
+rfd = "0.17"
+[target.'cfg(target_os = "linux")'.dependencies]
+glow = "0.18"
+gst-gl = { package = "gstreamer-gl", version = "0.23", features = ["v1_24"] }
+slint = { version = "=1.18.1", default-features = false, features = ["std", "backend-winit", "renderer-femtovg", "renderer-software", "compat-1-18", "accessibility", "raw-window-handle-06", "unstable-winit-030"] }
+gst-gl-egl = { package = "gstreamer-gl-egl", version = "0.23" }
+glutin_egl_sys = "0.7"
+glutin_glx_sys = "0.6"
+gst-gl-x11 = { package = "gstreamer-gl-x11", version = "0.23" }
+[target.'cfg(target_os = "windows")'.dependencies]
+slint = { version = "=1.18.1", default-features = false, features = ["std", "backend-winit", "renderer-software", "compat-1-18", "accessibility", "raw-window-handle-06", "unstable-winit-030"] }
+windows = { version = "0.62", default-features = false, features = ["Win32_Graphics_Direct3D12", "Win32_Graphics_Dxgi_Common", "Win32_Foundation", "Win32_Graphics_Direct3D11on12", "Win32_Graphics_Direct3D11", "Win32_Graphics_Direct2D_Common", "Win32_Graphics_Gdi", "Win32_Graphics_Dwm", "Win32_UI_WindowsAndMessaging", "Win32_UI_Shell", "Win32_UI_HiDpi", "Win32_System_LibraryLoader", "Win32_UI_Input_KeyboardAndMouse"] }
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32_Foundation", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_JobObjects", "Win32_Security"] }
+[target.'cfg(target_os = "windows")'.dependencies.raw-window-handle]
+version = "0.6"
+
+[build-dependencies]
+slint-build = "=1.18.1"
+
+[profile.dev]
+debug = 0
+
+[profile.test]
+debug = 0
+
+[profile.dev.package.mochune]
+opt-level = 2
+
+[profile.dev.package.i-slint-core]
+opt-level = 2
+
+[profile.dev.package.i-slint-renderer-femtovg]
+opt-level = 2
+
+[profile.dev.package.i-slint-backend-winit]
+opt-level = 2
+
+[profile.dev.package.femtovg]
+opt-level = 2
+
+[profile.release]
+strip = "symbols"

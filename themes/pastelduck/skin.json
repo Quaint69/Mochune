@@ -1,0 +1,2067 @@
+{
+  "version": 2,
+  "name": "PastelDuck · Pink desktop",
+  "palette": {
+    "panel": "#fff0fa",
+    "surface": "#eedfff",
+    "text": "#4f3269",
+    "muted": "#87609f",
+    "accent": "#ec77bd",
+    "accent_text": "#ffffff",
+    "border": "#ba8ad7",
+    "track": "#decbed",
+    "played": "#ec77bd",
+    "button": "#f8d7ec",
+    "button_hover": "#e5b9f3",
+    "liked": "#e95096"
+  },
+  "style": {
+    "radius": 2,
+    "border_width": 2,
+    "font_family": "PixelMplus10",
+    "title_size": 17,
+    "icon_scale": 1,
+    "pixelated": true
+  },
+  "assets": {
+    "panel": {
+      "file": "panel.png",
+      "fit": "cover"
+    },
+    "card": {
+      "file": "walk.gif",
+      "fit": "contain"
+    },
+    "artwork_frame": {
+      "file": "frame.png",
+      "fit": "fill"
+    },
+    "track": {
+      "file": "track.png",
+      "fit": "fill"
+    },
+    "fill": {
+      "file": "fill.png",
+      "fit": "fill"
+    },
+    "thumb": {
+      "file": "thumb.png",
+      "fit": "contain"
+    }
+  },
+  "fonts": [
+    {
+      "family": "PixelMplus10",
+      "file": "fonts/PixelMplus10-Regular.ttf",
+      "license": "fonts/PixelMplus-LICENSE.txt"
+    },
+    {
+      "family": "PixelMplus10",
+      "file": "fonts/PixelMplus10-Bold.ttf",
+      "license": "fonts/PixelMplus-LICENSE.txt"
+    }
+  ],
+  "theme_assets": {
+    "section-frame": {
+      "file": "frame.png",
+      "fit": "fill"
+    }
+  },
+  "sections": {
+    "header": {
+      "defaults": {
+        "font_family": "PixelMplus10"
+      },
+      "components": {
+        "surface": {
+          "radius": 2,
+          "border": "#ba8ad7"
+        },
+        "button": {
+          "background": "#f8d7ec",
+          "border": "#ba8ad7",
+          "border_width": 0,
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "text": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ec77bd"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#4f3269",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#e95096"
+            },
+            "playing": {
+              "tint": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ec77bd",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#eedfff",
+          "radius": 2
+        },
+        "lyrics": {
+          "text": "#4f3269"
+        },
+        "slider": {
+          "radius": 2,
+          "states": {
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#decbed",
+          "radius": 2
+        },
+        "fill": {
+          "background": "#ec77bd",
+          "radius": 2
+        },
+        "thumb": {
+          "background": "#ec77bd",
+          "border": "#4f3269",
+          "border_width": 1,
+          "radius": 2
+        },
+        "scrollbar": {
+          "background": "#fff0fa",
+          "radius": 2
+        },
+        "scrollbar-thumb": {
+          "background": "#ba8ad7",
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "header": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border": "#00000000",
+          "border_width": 0
+        },
+        "header-icon-1": {
+          "pixelated": true
+        },
+        "header-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "fullscreen-button": {
+          "radius": 2
+        },
+        "settings-button": {
+          "radius": 2
+        },
+        "header-icon-2": {
+          "pixelated": true
+        },
+        "header-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "header-surface-1": {
+          "radius": 2,
+          "background": "#f8d7ec",
+          "border_width": 0,
+          "border": "#00000000"
+        },
+        "header-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "search-field": {
+          "radius": 2,
+          "background": "#eedfff",
+          "border_width": 1
+        },
+        "header-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "close-button": {
+          "radius": 2
+        },
+        "search-button": {
+          "radius": 2
+        },
+        "header-loading-1": {},
+        "header-surface-4": {
+          "radius": 2
+        },
+        "download-button": {
+          "radius": 2
+        },
+        "header-surface-5": {
+          "radius": 2
+        },
+        "settings-button-6": {
+          "radius": 2
+        },
+        "header-surface-6": {
+          "radius": 2
+        },
+        "header-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "header-button-7": {
+          "radius": 2
+        },
+        "window": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "music-tab": {
+          "radius": 2
+        },
+        "video-tab": {
+          "radius": 2
+        },
+        "search-input": {
+          "font_family": "PixelMplus10"
+        },
+        "video-back-button": {
+          "radius": 2
+        },
+        "video-home-button": {
+          "radius": 2
+        }
+      }
+    },
+    "library": {
+      "defaults": {
+        "font_family": "PixelMplus10"
+      },
+      "components": {
+        "surface": {
+          "radius": 2,
+          "border": "#ba8ad7"
+        },
+        "button": {
+          "background": "#f8d7ec",
+          "border": "#ba8ad7",
+          "border_width": 0,
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "text": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ec77bd"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#4f3269",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#e95096"
+            },
+            "playing": {
+              "tint": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ec77bd",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#eedfff",
+          "radius": 2
+        },
+        "lyrics": {
+          "text": "#4f3269"
+        },
+        "slider": {
+          "radius": 2,
+          "states": {
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#decbed",
+          "radius": 2
+        },
+        "fill": {
+          "background": "#ec77bd",
+          "radius": 2
+        },
+        "thumb": {
+          "background": "#ec77bd",
+          "border": "#4f3269",
+          "border_width": 1,
+          "radius": 2
+        },
+        "scrollbar": {
+          "background": "#fff0fa",
+          "radius": 2
+        },
+        "scrollbar-thumb": {
+          "background": "#ba8ad7",
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "library-surface-1": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 2,
+          "frame": "section-frame",
+          "frame_slice": 4
+        },
+        "library-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "library-button-1": {
+          "radius": 2
+        },
+        "library-button-2": {
+          "radius": 2
+        },
+        "library-button-3": {
+          "radius": 2
+        },
+        "library-surface-2": {
+          "radius": 2
+        },
+        "library-surface-3": {
+          "radius": 2,
+          "background": "#eedfff",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "library-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "library-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "trash-button-4": {
+          "radius": 2
+        },
+        "library-scroll": {
+          "radius": 2
+        },
+        "library-button-5": {
+          "radius": 2
+        },
+        "dialog-surface-1": {
+          "radius": 2
+        },
+        "dialog-surface-2": {
+          "radius": 2
+        },
+        "dialog-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "close-button-1": {
+          "radius": 2
+        },
+        "playlist-cancel": {
+          "radius": 2
+        },
+        "playlist-delete": {
+          "radius": 2
+        },
+        "playlist-name-field": {
+          "font_family": "PixelMplus10"
+        },
+        "playlist-removal-note": {
+          "font_family": "PixelMplus10"
+        },
+        "playlist-save": {
+          "radius": 2
+        }
+      }
+    },
+    "list": {
+      "defaults": {
+        "font_family": "PixelMplus10"
+      },
+      "components": {
+        "surface": {
+          "radius": 2,
+          "border": "#ba8ad7"
+        },
+        "button": {
+          "background": "#f8d7ec",
+          "border": "#ba8ad7",
+          "border_width": 0,
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "text": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ec77bd"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#4f3269",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#e95096"
+            },
+            "playing": {
+              "tint": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ec77bd",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#eedfff",
+          "radius": 2
+        },
+        "lyrics": {
+          "text": "#4f3269"
+        },
+        "slider": {
+          "radius": 2,
+          "states": {
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#decbed",
+          "radius": 2
+        },
+        "fill": {
+          "background": "#ec77bd",
+          "radius": 2
+        },
+        "thumb": {
+          "background": "#ec77bd",
+          "border": "#4f3269",
+          "border_width": 1,
+          "radius": 2
+        },
+        "scrollbar": {
+          "background": "#fff0fa",
+          "radius": 2
+        },
+        "scrollbar-thumb": {
+          "background": "#ba8ad7",
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "list-surface-1": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 2,
+          "frame": "section-frame",
+          "frame_slice": 4
+        },
+        "toolbar-scroll": {
+          "radius": 2
+        },
+        "list-button-1": {
+          "radius": 2
+        },
+        "list-button-2": {
+          "radius": 2
+        },
+        "list-button-3": {
+          "radius": 2
+        },
+        "list-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "edit-button": {
+          "radius": 2
+        },
+        "trash-button": {
+          "radius": 2
+        },
+        "list-button-6": {
+          "radius": 2
+        },
+        "save-played-music": {
+          "background": "#decbed",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2,
+          "states": {
+            "active": {
+              "background": "#ec77bd"
+            },
+            "hover": {
+              "border": "#ec77bd"
+            }
+          }
+        },
+        "filter-button": {
+          "radius": 2
+        },
+        "sort-button": {
+          "radius": 2
+        },
+        "list-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "list-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "list-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "list-surface-2": {
+          "radius": 2,
+          "background": "#eedfff",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "list-surface-3": {
+          "radius": 2
+        },
+        "list-skeleton-1": {},
+        "list-surface-4": {
+          "radius": 2
+        },
+        "list-loading-1": {},
+        "list-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "list-surface-5": {
+          "radius": 2
+        },
+        "list-surface-6": {
+          "radius": 2
+        },
+        "music-icon-2": {
+          "pixelated": true
+        },
+        "list-icon-3": {
+          "pixelated": false,
+          "tint": "#00000000"
+        },
+        "list-surface-7": {
+          "radius": 2
+        },
+        "download-icon": {
+          "pixelated": true
+        },
+        "list-text-6": {
+          "font_family": "PixelMplus10"
+        },
+        "list-text-7": {
+          "font_family": "PixelMplus10"
+        },
+        "list-text-8": {
+          "font_family": "PixelMplus10"
+        },
+        "list-surface-8": {
+          "radius": 2
+        },
+        "heart-button-9": {
+          "radius": 2
+        },
+        "trash-button-10": {
+          "radius": 2
+        },
+        "plus-button-11": {
+          "radius": 2
+        },
+        "arrow-up-button": {
+          "radius": 2
+        },
+        "arrow-down-button": {
+          "radius": 2
+        },
+        "trash-button-14": {
+          "radius": 2
+        },
+        "list-scroll": {
+          "radius": 2
+        },
+        "list-loading-2": {},
+        "list-text-9": {
+          "font_family": "PixelMplus10"
+        },
+        "collection-heading": {
+          "font_family": "PixelMplus10"
+        },
+        "artist-title": {
+          "font_family": "PixelMplus10"
+        },
+        "artist-detail": {
+          "font_family": "PixelMplus10"
+        },
+        "cache-switch-label": {
+          "font_family": "PixelMplus10"
+        },
+        "cache-switch-thumb": {
+          "background": "#4f3269",
+          "radius": 2,
+          "states": {
+            "active": {
+              "background": "#ffffff"
+            }
+          }
+        },
+        "list-button-6-playlistpicker-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "list-button-6-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "filter-button-browsemenu-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "filter-button-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "sort-button-browsemenu-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "sort-button-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        }
+      }
+    },
+    "player": {
+      "defaults": {
+        "font_family": "PixelMplus10"
+      },
+      "components": {
+        "surface": {
+          "radius": 2,
+          "border": "#ba8ad7"
+        },
+        "button": {
+          "background": "#f8d7ec",
+          "border": "#ba8ad7",
+          "border_width": 0,
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "text": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ec77bd"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#4f3269",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#e95096"
+            },
+            "playing": {
+              "tint": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ec77bd",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#eedfff",
+          "radius": 2
+        },
+        "lyrics": {
+          "text": "#4f3269"
+        },
+        "slider": {
+          "radius": 2,
+          "states": {
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#decbed",
+          "radius": 2
+        },
+        "fill": {
+          "background": "#ec77bd",
+          "radius": 2
+        },
+        "thumb": {
+          "background": "#ec77bd",
+          "border": "#4f3269",
+          "border_width": 1,
+          "radius": 2
+        },
+        "scrollbar": {
+          "background": "#fff0fa",
+          "radius": 2
+        },
+        "scrollbar-thumb": {
+          "background": "#ba8ad7",
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "pause-icon": {
+          "pixelated": true
+        },
+        "music-player": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 2
+        },
+        "player-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "compact-button": {
+          "radius": 2
+        },
+        "heart-button": {
+          "radius": 2
+        },
+        "plus-button": {
+          "radius": 2
+        },
+        "artwork-scroll": {
+          "radius": 2
+        },
+        "player-surface-2": {
+          "radius": 2
+        },
+        "player-surface-3": {
+          "radius": 2
+        },
+        "music-icon": {
+          "pixelated": true
+        },
+        "album-image": {
+          "pixelated": false,
+          "tint": "#00000000"
+        },
+        "album-frame": {
+          "pixelated": true
+        },
+        "player-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "player-surface-4": {
+          "radius": 2
+        },
+        "player-surface-5": {
+          "radius": 2
+        },
+        "lyrics-scroll": {
+          "radius": 2
+        },
+        "music-lyrics": {
+          "font_family": "PixelMplus10"
+        },
+        "player-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "player-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "player-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "captions-button": {
+          "radius": 2
+        },
+        "player-button-5": {
+          "radius": 2
+        },
+        "seek": {
+          "radius": 2
+        },
+        "player-text-6": {
+          "font_family": "PixelMplus10"
+        },
+        "shuffle-button": {
+          "radius": 2
+        },
+        "previous-button": {
+          "radius": 2
+        },
+        "play-pause-button": {
+          "radius": 2
+        },
+        "player-loading-1": {},
+        "next-button": {
+          "radius": 2
+        },
+        "repeat-button": {
+          "radius": 2
+        },
+        "volume-button": {
+          "radius": 2
+        },
+        "volume": {
+          "radius": 2
+        },
+        "player-text-7": {
+          "font_family": "PixelMplus10"
+        },
+        "play-icon": {
+          "pixelated": true
+        },
+        "mini-player-button": {
+          "radius": 2
+        },
+        "mini-restore": {
+          "radius": 2
+        },
+        "mini-minimize": {
+          "radius": 2
+        },
+        "mini-close": {
+          "radius": 2
+        },
+        "player-button-5-playlistpicker-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "player-button-5-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "lyrics-previous": {
+          "text": "#87609f"
+        },
+        "lyrics-current": {
+          "text": "#ec77bd",
+          "font_weight": 700
+        },
+        "lyrics-next": {
+          "text": "#4f3269"
+        },
+        "lyrics-following": {
+          "text": "#87609f"
+        }
+      }
+    },
+    "video": {
+      "defaults": {
+        "font_family": "PixelMplus10"
+      },
+      "components": {
+        "surface": {
+          "radius": 2,
+          "border": "#ba8ad7"
+        },
+        "button": {
+          "background": "#f8d7ec",
+          "border": "#ba8ad7",
+          "border_width": 0,
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "text": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ec77bd"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#4f3269",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#e95096"
+            },
+            "playing": {
+              "tint": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#4f3269",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ec77bd",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#eedfff",
+          "radius": 2
+        },
+        "lyrics": {
+          "text": "#4f3269"
+        },
+        "slider": {
+          "radius": 2,
+          "states": {
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#decbed",
+          "radius": 2
+        },
+        "fill": {
+          "background": "#ec77bd",
+          "radius": 2
+        },
+        "thumb": {
+          "background": "#ec77bd",
+          "border": "#4f3269",
+          "border_width": 1,
+          "radius": 2
+        },
+        "scrollbar": {
+          "background": "#fff0fa",
+          "radius": 2
+        },
+        "scrollbar-thumb": {
+          "background": "#ba8ad7",
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "video-page-icon-1": {
+          "pixelated": true
+        },
+        "video-page-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-surface-3": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-artwork-1": {},
+        "video-page-icon-2": {
+          "pixelated": true
+        },
+        "video-page-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-3": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-icon-3": {
+          "pixelated": true
+        },
+        "video-page-surface-4": {
+          "radius": 2
+        },
+        "video-page-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-surface-6": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-artwork-2": {},
+        "video-page-surface-7": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-page-text-6": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-7": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-surface-8": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-surface-9": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-text-8": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-9": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-text-10": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-text-11": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-surface-11": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-page-surface-12": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-artwork-3": {},
+        "video-page-icon-4": {
+          "pixelated": true
+        },
+        "video-page-surface-13": {
+          "radius": 2
+        },
+        "video-page-surface-14": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-text-12": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-surface-15": {
+          "radius": 2
+        },
+        "video-page-surface-16": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-text-13": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-14": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-surface-17": {
+          "radius": 2
+        },
+        "video-page-text-15": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-surface-18": {
+          "radius": 2
+        },
+        "video-page-text-16": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-surface-20": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-icon-5": {
+          "pixelated": true
+        },
+        "video-page-text-17": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-input-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-text-18": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-page-surface-21": {
+          "radius": 2
+        },
+        "video-page-text-19": {
+          "font_family": "PixelMplus10"
+        },
+        "video-page-surface-22": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-surface-23": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-page-surface-24": {
+          "radius": 2
+        },
+        "video-page-text-20": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-surface-2": {
+          "radius": 2
+        },
+        "video-player-artwork-1": {},
+        "video-player-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-4": {
+          "radius": 2
+        },
+        "video-player-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-5": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-player-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-6": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-surface-6": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-player-surface-7": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-player-artwork-2": {
+          "pixelated": true
+        },
+        "video-player-surface-9": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3"
+            }
+          }
+        },
+        "video-player-artwork-3": {
+          "pixelated": true
+        },
+        "video-player-text-7": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-10": {
+          "radius": 2
+        },
+        "video-player-text-8": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-11": {
+          "radius": 2
+        },
+        "video-player-text-9": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-text-10": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-text-11": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-surface-13": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-player-text-12": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-14": {
+          "radius": 2
+        },
+        "video-player-surface-15": {
+          "radius": 2
+        },
+        "video-player-text-13": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-14": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-input-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-surface-16": {
+          "radius": 2
+        },
+        "video-player-text-15": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-16": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-17": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-text-18": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-surface-17": {
+          "radius": 2
+        },
+        "video-player-surface-18": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#eedfff"
+            }
+          },
+          "background": "#00000000"
+        },
+        "video-player-surface-19": {
+          "radius": 2,
+          "background": "#eedfff"
+        },
+        "video-player-artwork-4": {},
+        "video-player-text-19": {
+          "font_family": "PixelMplus10"
+        },
+        "video-player-text-20": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-text-21": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-player-text-22": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-button-icon-1": {
+          "pixelated": true
+        },
+        "video-quality-surface-1": {
+          "radius": 2
+        },
+        "video-quality-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-quality-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "video-quality-artwork-1": {},
+        "video-quality-surface-2": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border_width": 1
+        },
+        "video-quality-surface-3": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "video-quality-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-icon-1": {
+          "pixelated": true
+        },
+        "video-native-surface-2": {
+          "radius": 2
+        },
+        "video-native-text-1": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-text-2": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-surface-3": {
+          "radius": 2
+        },
+        "video-native-text-3": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-text-4": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-surface-4": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-native-text-5": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-text-6": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-native-surface-5": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-native-surface-6": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-native-artwork-1": {
+          "pixelated": true
+        },
+        "video-native-surface-8": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3"
+            }
+          }
+        },
+        "video-native-artwork-2": {
+          "pixelated": true
+        },
+        "video-native-text-7": {
+          "font_family": "PixelMplus10"
+        },
+        "video-native-surface-9": {
+          "radius": 2
+        },
+        "video-tile": {
+          "radius": 2,
+          "background": "#00000000",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "video-page-action": {
+          "radius": 2
+        },
+        "video-channel-card": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3"
+            }
+          },
+          "background": "#fff0fa",
+          "border_width": 0
+        },
+        "video-page": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 0
+        },
+        "video-comment-card": {
+          "radius": 2,
+          "background": "#eedfff",
+          "border_width": 0
+        },
+        "video-control-button": {
+          "radius": 2,
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "video-controls": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border_width": 0
+        },
+        "video-details": {
+          "radius": 2,
+          "background": "#fff0fa",
+          "border_width": 0
+        },
+        "video-seekbar": {
+          "radius": 2
+        },
+        "video-browsetab": {
+          "radius": 2
+        },
+        "video-browsemenu": {
+          "radius": 2
+        },
+        "video-musicbutton": {
+          "radius": 2
+        },
+        "video-loadingdots": {},
+        "video-filter": {
+          "radius": 2
+        },
+        "video-volume": {
+          "radius": 2
+        },
+        "video-channel-filter": {
+          "radius": 2,
+          "background": "#fff0fa"
+        },
+        "video-filter-placeholder": {
+          "font_family": "PixelMplus10",
+          "text": "#87609f"
+        },
+        "video-filter-input": {
+          "font_family": "PixelMplus10"
+        },
+        "video-captions": {
+          "radius": 2,
+          "background": "#00000000",
+          "border_width": 0,
+          "states": {
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd",
+              "border_width": 1
+            },
+            "hover": {
+              "background": "#f8d7ec"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "video-browsemenu-browsemenu-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "video-browsemenu-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        },
+        "video-filter-playlistpicker-surface-1": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1,
+          "radius": 2
+        },
+        "video-filter-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "pressed": {
+              "background": "#ec77bd",
+              "border": "#4f3269"
+            },
+            "active": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ec77bd",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#e5b9f3",
+              "border": "#ec77bd"
+            },
+            "loading": {
+              "background": "#eedfff"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+import {AppColors} from "theme.slint";
+import {MusicTheme, ThemePaint} from "music-theme.slint";
+export global MusicSkin {
+    in-out property <bool> loaded;
+    in-out property <bool> selected: true;
+    out property <bool> enabled: loaded && selected;
+    in-out property <[image]> images;
+    in-out property <[string]> fits;
+    in-out property <float> radius: 12;
+    in-out property <float> border-width: 0;
+    in-out property <string> font-family: "DejaVu Sans";
+    in-out property <float> title-size: 17;
+    in-out property <float> icon-scale: 1;
+    in-out property <bool> pixelated;
+    in-out property <color> custom-panel;
+    out property <color> panel: enabled ? custom-panel : AppColors.panel;
+    in-out property <color> custom-surface;
+    out property <color> surface: enabled ? custom-surface : AppColors.muted-surface;
+    in-out property <color> custom-text;
+    out property <color> text: enabled ? custom-text : AppColors.text;
+    in-out property <color> custom-muted;
+    out property <color> muted: enabled ? custom-muted : AppColors.muted;
+    in-out property <color> custom-accent;
+    out property <color> accent: enabled ? custom-accent : AppColors.accent;
+    in-out property <color> custom-accent-text;
+    out property <color> accent-text: enabled ? custom-accent-text : #2b1806;
+    in-out property <color> custom-border;
+    out property <color> border: enabled ? custom-border : AppColors.border;
+    in-out property <color> custom-track;
+    out property <color> track: enabled ? custom-track : AppColors.track;
+    in-out property <color> custom-played;
+    out property <color> played: enabled ? custom-played : AppColors.accent;
+    in-out property <color> custom-button;
+    out property <color> button: enabled ? custom-button : transparent;
+    in-out property <color> custom-button-hover;
+    out property <color> button-hover: enabled ? custom-button-hover : AppColors.border;
+    in-out property <color> custom-liked;
+    out property <color> liked: enabled ? custom-liked : #ed6686;
+}
+// Keep changing frame dimensions out of the parent's layout dependencies.
+// The application supplies every slot's box; only the inner image repaints.
+export component SkinImage inherits Rectangle {
+    in property <int> theme-section: -1;
+    in property <string> theme-key;
+    in property <string> theme-kind: "icon";
+    in property <string> theme-state: "normal";
+    out property <ThemePaint> theme-paint: MusicTheme.enabled(theme-section) ? MusicTheme.resolve(theme-section,theme-key,theme-kind,theme-state,MusicTheme.revision) : {
+    }
+    ;
+    in property <int> slot;
+    in property <image> fallback;
+    in property <color> tint;
+    min-width: 0px;
+    min-height: 0px;
+    preferred-width: 0px;
+    preferred-height: 0px;
+    out property <bool> custom: MusicSkin.enabled && root.slot >= 0 && root.slot < MusicSkin.images.length && MusicSkin.images[root.slot].width > 0;
+    Image {
+        width: max(0px,parent.width - root.theme-paint.inset * 2px) * (root.theme-paint.has-scale ? root.theme-paint.scale : 1);
+        height: max(0px,parent.height - root.theme-paint.inset * 2px) * (root.theme-paint.has-scale ? root.theme-paint.scale : 1);
+        x: (parent.width - self.width)/2 + root.theme-paint.offset-x * 1px;
+        y: (parent.height - self.height)/2 + root.theme-paint.offset-y * 1px;
+        source: root.theme-paint.image.width > 0 ? root.theme-paint.image : root.custom ? MusicSkin.images[root.slot] : root.fallback;
+        colorize: root.theme-paint.image.width > 0 || root.custom ? transparent : root.theme-paint.has-tint ? root.theme-paint.tint : root.tint;
+        image-fit: root.custom && root.slot < MusicSkin.fits.length && MusicSkin.fits[root.slot] == "fill" ? fill : root.custom && root.slot < MusicSkin.fits.length && MusicSkin.fits[root.slot] == "cover" ? cover : contain;
+        image-rendering: root.theme-paint.pixelated || (MusicSkin.enabled && MusicSkin.pixelated) ? pixelated : smooth;
+    }
+}

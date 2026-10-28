@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Quaint69/Mochune/blob/main/themes/skin.schema.json",
+  "title": "Mochune experimental music skin v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "name",
+    "palette"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panel",
+        "surface",
+        "text",
+        "muted",
+        "accent",
+        "accent_text",
+        "border",
+        "track",
+        "played",
+        "button",
+        "button_hover",
+        "liked"
+      ],
+      "properties": {
+        "panel": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "surface": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "muted": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "accent_text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "border": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "track": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "played": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "button": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "button_hover": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "liked": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 12
+        },
+        "border_width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0
+        },
+        "font_family": {
+          "enum": [
+            "DejaVu Sans",
+            "DejaVu Sans Mono",
+            "Mochune Display"
+          ]
+        },
+        "title_size": {
+          "type": "number",
+          "minimum": 14,
+          "maximum": 19,
+          "default": 17
+        },
+        "icon_scale": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.15,
+          "default": 1
+        },
+        "pixelated": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "panel": {
+          "$ref": "#/$defs/asset"
+        },
+        "card": {
+          "$ref": "#/$defs/asset"
+        },
+        "artwork_frame": {
+          "$ref": "#/$defs/asset"
+        },
+        "track": {
+          "$ref": "#/$defs/asset"
+        },
+        "fill": {
+          "$ref": "#/$defs/asset"
+        },
+        "thumb": {
+          "$ref": "#/$defs/asset"
+        },
+        "play": {
+          "$ref": "#/$defs/asset"
+        },
+        "pause": {
+          "$ref": "#/$defs/asset"
+        },
+        "previous": {
+          "$ref": "#/$defs/asset"
+        },
+        "next": {
+          "$ref": "#/$defs/asset"
+        },
+        "shuffle": {
+          "$ref": "#/$defs/asset"
+        },
+        "repeat": {
+          "$ref": "#/$defs/asset"
+        },
+        "volume": {
+          "$ref": "#/$defs/asset"
+        },
+        "muted": {
+          "$ref": "#/$defs/asset"
+        },
+        "heart": {
+          "$ref": "#/$defs/asset"
+        },
+        "heart_filled": {
+          "$ref": "#/$defs/asset"
+        },
+        "plus": {
+          "$ref": "#/$defs/asset"
+        },
+        "compact": {
+          "$ref": "#/$defs/asset"
+        },
+        "captions": {
+          "$ref": "#/$defs/asset"
+        },
+        "button": {
+          "$ref": "#/$defs/asset"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file"
+      ],
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "fit": {
+          "enum": [
+            "contain",
+            "cover",
+            "fill"
+          ],
+          "default": "contain"
+        }
+      }
+    }
+  }
+}

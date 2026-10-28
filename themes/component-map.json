@@ -1,0 +1,1339 @@
+{
+  "header": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "header-icon-1": {
+    "section": "header",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "header-text-1": {
+    "section": "header",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "fullscreen-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "settings-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "header-icon-2": {
+    "section": "header",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "header-text-2": {
+    "section": "header",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "header-surface-1": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "header-text-3": {
+    "section": "header",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "search-field": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "header-text-4": {
+    "section": "header",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "close-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "search-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "header-loading-1": {
+    "section": "header",
+    "kind": "loading",
+    "source": "ui/setup.slint"
+  },
+  "header-surface-4": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "download-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "header-surface-5": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "settings-button-6": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "header-surface-6": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "header-text-5": {
+    "section": "header",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "header-button-7": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "library-surface-1": {
+    "section": "library",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "library-text-1": {
+    "section": "library",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "library-button-1": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "library-button-2": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "library-button-3": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "library-surface-2": {
+    "section": "library",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "library-surface-3": {
+    "section": "library",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "library-text-2": {
+    "section": "library",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "library-text-3": {
+    "section": "library",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "trash-button-4": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "library-scroll": {
+    "section": "library",
+    "kind": "scrollbar",
+    "source": "ui/setup.slint"
+  },
+  "library-button-5": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-1": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "toolbar-scroll": {
+    "section": "list",
+    "kind": "scrollbar",
+    "source": "ui/setup.slint"
+  },
+  "list-button-1": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-button-2": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-button-3": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-text-1": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "edit-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "trash-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-button-6": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "save-played-music": {
+    "section": "list",
+    "kind": "switch",
+    "source": "ui/setup.slint"
+  },
+  "filter-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "sort-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-text-2": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-text-3": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-text-4": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-2": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-3": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "list-skeleton-1": {
+    "section": "list",
+    "kind": "skeleton",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-4": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "list-loading-1": {
+    "section": "list",
+    "kind": "loading",
+    "source": "ui/setup.slint"
+  },
+  "pause-icon": {
+    "section": "player",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "list-text-5": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-5": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-6": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "music-icon-2": {
+    "section": "list",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "list-icon-3": {
+    "section": "list",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-7": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "download-icon": {
+    "section": "list",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "list-text-6": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-text-7": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-text-8": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "list-surface-8": {
+    "section": "list",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "heart-button-9": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "trash-button-10": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "plus-button-11": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "arrow-up-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "arrow-down-button": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "trash-button-14": {
+    "section": "list",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "list-scroll": {
+    "section": "list",
+    "kind": "scrollbar",
+    "source": "ui/setup.slint"
+  },
+  "list-loading-2": {
+    "section": "list",
+    "kind": "loading",
+    "source": "ui/setup.slint"
+  },
+  "list-text-9": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "music-player": {
+    "section": "player",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "panel-artwork": {
+    "section": "player",
+    "kind": "panel-artwork",
+    "source": "ui/setup.slint"
+  },
+  "player-text-1": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "compact-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "heart-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "plus-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "artwork-scroll": {
+    "section": "player",
+    "kind": "scrollbar",
+    "source": "ui/setup.slint"
+  },
+  "player-surface-2": {
+    "section": "player",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "player-surface-3": {
+    "section": "player",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "music-icon": {
+    "section": "player",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "album-image": {
+    "section": "player",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "album-frame": {
+    "section": "player",
+    "kind": "frame",
+    "source": "ui/setup.slint"
+  },
+  "player-text-2": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "player-surface-4": {
+    "section": "player",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "card-artwork": {
+    "section": "player",
+    "kind": "card-artwork",
+    "source": "ui/setup.slint"
+  },
+  "player-surface-5": {
+    "section": "player",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "lyrics-scroll": {
+    "section": "player",
+    "kind": "scrollbar",
+    "source": "ui/setup.slint"
+  },
+  "music-lyrics": {
+    "section": "player",
+    "kind": "lyrics",
+    "source": "ui/setup.slint"
+  },
+  "player-text-3": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "player-text-4": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "player-text-5": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "captions-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "player-button-5": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "seek": {
+    "section": "player",
+    "kind": "slider",
+    "source": "ui/setup.slint"
+  },
+  "player-text-6": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "shuffle-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "previous-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "play-pause-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "player-loading-1": {
+    "section": "player",
+    "kind": "loading",
+    "source": "ui/setup.slint"
+  },
+  "next-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "repeat-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "volume-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "volume": {
+    "section": "player",
+    "kind": "slider",
+    "source": "ui/setup.slint"
+  },
+  "player-text-7": {
+    "section": "player",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "dialog-surface-1": {
+    "section": "library",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "dialog-surface-2": {
+    "section": "library",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "dialog-text-1": {
+    "section": "library",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "close-button-1": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "window": {
+    "section": "header",
+    "kind": "surface",
+    "source": "ui/setup.slint",
+    "notes": "Background styling only. Outer application windows are opaque and square in every mode; radius is ignored."
+  },
+  "music-tab": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-tab": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "play-icon": {
+    "section": "player",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "search-input": {
+    "section": "header",
+    "kind": "input",
+    "source": "ui/setup.slint"
+  },
+  "playlist-cancel": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "playlist-delete": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "playlist-name-field": {
+    "section": "library",
+    "kind": "input",
+    "source": "ui/setup.slint"
+  },
+  "playlist-removal-note": {
+    "section": "library",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "playlist-save": {
+    "section": "library",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "collection-heading": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "artist-title": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "artist-detail": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "cache-switch-label": {
+    "section": "list",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "mini-player-button": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "mini-restore": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "mini-minimize": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "mini-close": {
+    "section": "player",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "cache-switch-thumb": {
+    "section": "list",
+    "kind": "thumb",
+    "source": "ui/setup.slint"
+  },
+  "video-page-icon-1": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-1": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-3": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-artwork-1": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/pages.slint"
+  },
+  "video-page-icon-2": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-2": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-3": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-icon-3": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-4": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-4": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-5": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-6": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-artwork-2": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-7": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-6": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-7": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-8": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-9": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-8": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-9": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-10": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-11": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-11": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-12": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-artwork-3": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/pages.slint"
+  },
+  "video-page-icon-4": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-13": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-14": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-12": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-15": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-16": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-13": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-14": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-17": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-15": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-18": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-16": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-20": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-icon-5": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-17": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-input-1": {
+    "section": "video",
+    "kind": "input",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-18": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-21": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-19": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-22": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-23": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-surface-24": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-text-20": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-player-surface-2": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint",
+    "notes": "Picture decoration: radius, border and border_width. Paint-only contour/native window regions; never rounded clipping of decoded video."
+  },
+  "video-player-artwork-1": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-1": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-2": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-4": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-3": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-4": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-5": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-5": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-6": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-6": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-7": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-artwork-2": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-9": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-artwork-3": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-7": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-10": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-8": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-11": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-9": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-10": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-11": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-13": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-12": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-14": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-15": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-13": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-14": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-input-1": {
+    "section": "video",
+    "kind": "input",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-16": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-15": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-16": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-17": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-18": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-17": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-18": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-surface-19": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-player-artwork-4": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-19": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-20": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-21": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-player-text-22": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/setup.slint"
+  },
+  "video-button-icon-1": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/setup.slint"
+  },
+  "video-quality-surface-1": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-text-1": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-text-2": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-artwork-1": {
+    "section": "video",
+    "kind": "artwork",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-surface-2": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-surface-3": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/quality.slint"
+  },
+  "video-quality-text-3": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/quality.slint"
+  },
+  "video-native-icon-1": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-2": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-1": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-2": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-3": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-3": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-4": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-4": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-5": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-6": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-5": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-6": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-artwork-1": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-8": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-artwork-2": {
+    "section": "video",
+    "kind": "icon",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-text-7": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/native-player.slint"
+  },
+  "video-native-surface-9": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/native-player.slint"
+  },
+  "video-tile": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page-action": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/pages.slint"
+  },
+  "video-channel-card": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-page": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-comment-card": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-control-button": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-controls": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-details": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/setup.slint"
+  },
+  "video-seekbar": {
+    "section": "video",
+    "kind": "slider",
+    "source": "ui/setup.slint"
+  },
+  "video-browsetab": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-browsemenu": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-musicbutton": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-loadingdots": {
+    "section": "video",
+    "kind": "loading",
+    "source": "ui/setup.slint"
+  },
+  "video-filter": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-volume": {
+    "section": "video",
+    "kind": "slider",
+    "source": "ui/setup.slint"
+  },
+  "video-channel-filter": {
+    "section": "video",
+    "kind": "surface",
+    "source": "ui/pages.slint"
+  },
+  "video-filter-placeholder": {
+    "section": "video",
+    "kind": "text",
+    "source": "ui/pages.slint"
+  },
+  "video-filter-input": {
+    "section": "video",
+    "kind": "input",
+    "source": "ui/pages.slint"
+  },
+  "video-back-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-home-button": {
+    "section": "header",
+    "kind": "button",
+    "source": "ui/setup.slint"
+  },
+  "video-captions": {
+    "section": "video",
+    "kind": "button",
+    "source": "ui/quality.slint"
+  }
+}

@@ -1,0 +1,2052 @@
+{
+  "version": 2,
+  "name": "Phosphor CRT · Terminal-inspired · Full music UI",
+  "palette": {
+    "panel": "#0a0700",
+    "surface": "#1a1206",
+    "text": "#ffb000",
+    "muted": "#a06600",
+    "accent": "#ffcc33",
+    "accent_text": "#1a0e00",
+    "border": "#663d00",
+    "track": "#241505",
+    "played": "#ffb000",
+    "button": "#3a2408",
+    "button_hover": "#553508",
+    "liked": "#ff6a33"
+  },
+  "style": {
+    "radius": 0,
+    "border_width": 2,
+    "font_family": "DejaVu Sans Mono",
+    "title_size": 17,
+    "icon_scale": 1,
+    "pixelated": true
+  },
+  "assets": {
+    "panel": {
+      "file": "panel.png",
+      "fit": "fill"
+    },
+    "card": {
+      "file": "ducklife.gif",
+      "fit": "contain"
+    },
+    "artwork_frame": {
+      "file": "frame.png",
+      "fit": "fill"
+    },
+    "track": {
+      "file": "track.png",
+      "fit": "fill"
+    },
+    "fill": {
+      "file": "fill.png",
+      "fit": "fill"
+    },
+    "thumb": {
+      "file": "thumb.png",
+      "fit": "contain"
+    }
+  },
+  "theme_assets": {
+    "section-frame": {
+      "file": "frame.png",
+      "fit": "fill"
+    }
+  },
+  "sections": {
+    "header": {
+      "defaults": {
+        "font_family": "DejaVu Sans Mono"
+      },
+      "components": {
+        "surface": {
+          "radius": 0,
+          "border": "#663d00"
+        },
+        "button": {
+          "background": "#3a2408",
+          "border": "#663d00",
+          "border_width": 0,
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "text": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ffcc33"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#ffb000",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#ff6a33"
+            },
+            "playing": {
+              "tint": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ffcc33",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#1a1206",
+          "radius": 0
+        },
+        "lyrics": {
+          "text": "#ffb000"
+        },
+        "slider": {
+          "radius": 0,
+          "states": {
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#241505",
+          "radius": 0
+        },
+        "fill": {
+          "background": "#ffb000",
+          "radius": 0
+        },
+        "thumb": {
+          "background": "#ffcc33",
+          "border": "#ffb000",
+          "border_width": 1,
+          "radius": 0
+        },
+        "scrollbar": {
+          "background": "#0a0700",
+          "radius": 0
+        },
+        "scrollbar-thumb": {
+          "background": "#663d00",
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffb000"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "header": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border": "#00000000",
+          "border_width": 0
+        },
+        "header-icon-1": {
+          "pixelated": true
+        },
+        "header-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "fullscreen-button": {
+          "radius": 0
+        },
+        "settings-button": {
+          "radius": 0
+        },
+        "header-icon-2": {
+          "pixelated": true
+        },
+        "header-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "header-surface-1": {
+          "radius": 0
+        },
+        "header-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "search-field": {
+          "radius": 0,
+          "background": "#1a1206",
+          "border_width": 1
+        },
+        "header-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "close-button": {
+          "radius": 0
+        },
+        "search-button": {
+          "radius": 0
+        },
+        "header-loading-1": {},
+        "header-surface-4": {
+          "radius": 0
+        },
+        "download-button": {
+          "radius": 0
+        },
+        "header-surface-5": {
+          "radius": 0
+        },
+        "settings-button-6": {
+          "radius": 0
+        },
+        "header-surface-6": {
+          "radius": 0
+        },
+        "header-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "header-button-7": {
+          "radius": 0
+        },
+        "window": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "music-tab": {
+          "radius": 0
+        },
+        "video-tab": {
+          "radius": 0
+        },
+        "search-input": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-back-button": {
+          "radius": 0
+        },
+        "video-home-button": {
+          "radius": 0
+        }
+      }
+    },
+    "library": {
+      "defaults": {
+        "font_family": "DejaVu Sans Mono"
+      },
+      "components": {
+        "surface": {
+          "radius": 0,
+          "border": "#663d00"
+        },
+        "button": {
+          "background": "#3a2408",
+          "border": "#663d00",
+          "border_width": 0,
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "text": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ffcc33"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#ffb000",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#ff6a33"
+            },
+            "playing": {
+              "tint": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ffcc33",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#1a1206",
+          "radius": 0
+        },
+        "lyrics": {
+          "text": "#ffb000"
+        },
+        "slider": {
+          "radius": 0,
+          "states": {
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#241505",
+          "radius": 0
+        },
+        "fill": {
+          "background": "#ffb000",
+          "radius": 0
+        },
+        "thumb": {
+          "background": "#ffcc33",
+          "border": "#ffb000",
+          "border_width": 1,
+          "radius": 0
+        },
+        "scrollbar": {
+          "background": "#0a0700",
+          "radius": 0
+        },
+        "scrollbar-thumb": {
+          "background": "#663d00",
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffb000"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "library-surface-1": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 2,
+          "frame": "section-frame",
+          "frame_slice": 4
+        },
+        "library-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "library-button-1": {
+          "radius": 0
+        },
+        "library-button-2": {
+          "radius": 0
+        },
+        "library-button-3": {
+          "radius": 0
+        },
+        "library-surface-2": {
+          "radius": 0
+        },
+        "library-surface-3": {
+          "radius": 0,
+          "background": "#1a1206",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "library-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "library-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "trash-button-4": {
+          "radius": 0
+        },
+        "library-scroll": {
+          "radius": 0
+        },
+        "library-button-5": {
+          "radius": 0
+        },
+        "dialog-surface-1": {
+          "radius": 0
+        },
+        "dialog-surface-2": {
+          "radius": 0
+        },
+        "dialog-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "close-button-1": {
+          "radius": 0
+        },
+        "playlist-cancel": {
+          "radius": 0
+        },
+        "playlist-delete": {
+          "radius": 0
+        },
+        "playlist-name-field": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "playlist-removal-note": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "playlist-save": {
+          "radius": 0
+        }
+      }
+    },
+    "list": {
+      "defaults": {
+        "font_family": "DejaVu Sans Mono"
+      },
+      "components": {
+        "surface": {
+          "radius": 0,
+          "border": "#663d00"
+        },
+        "button": {
+          "background": "#3a2408",
+          "border": "#663d00",
+          "border_width": 0,
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "text": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ffcc33"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#ffb000",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#ff6a33"
+            },
+            "playing": {
+              "tint": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ffcc33",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#1a1206",
+          "radius": 0
+        },
+        "lyrics": {
+          "text": "#ffb000"
+        },
+        "slider": {
+          "radius": 0,
+          "states": {
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#241505",
+          "radius": 0
+        },
+        "fill": {
+          "background": "#ffb000",
+          "radius": 0
+        },
+        "thumb": {
+          "background": "#ffcc33",
+          "border": "#ffb000",
+          "border_width": 1,
+          "radius": 0
+        },
+        "scrollbar": {
+          "background": "#0a0700",
+          "radius": 0
+        },
+        "scrollbar-thumb": {
+          "background": "#663d00",
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffb000"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "list-surface-1": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 2,
+          "frame": "section-frame",
+          "frame_slice": 4
+        },
+        "toolbar-scroll": {
+          "radius": 0
+        },
+        "list-button-1": {
+          "radius": 0
+        },
+        "list-button-2": {
+          "radius": 0
+        },
+        "list-button-3": {
+          "radius": 0
+        },
+        "list-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "edit-button": {
+          "radius": 0
+        },
+        "trash-button": {
+          "radius": 0
+        },
+        "list-button-6": {
+          "radius": 0
+        },
+        "save-played-music": {
+          "background": "#241505",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0,
+          "states": {
+            "active": {
+              "background": "#ffb000"
+            },
+            "hover": {
+              "border": "#ffcc33"
+            }
+          }
+        },
+        "filter-button": {
+          "radius": 0
+        },
+        "sort-button": {
+          "radius": 0
+        },
+        "list-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-surface-2": {
+          "radius": 0,
+          "background": "#1a1206",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "list-surface-3": {
+          "radius": 0
+        },
+        "list-skeleton-1": {},
+        "list-surface-4": {
+          "radius": 0
+        },
+        "list-loading-1": {},
+        "list-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-surface-5": {
+          "radius": 0
+        },
+        "list-surface-6": {
+          "radius": 0
+        },
+        "music-icon-2": {
+          "pixelated": true
+        },
+        "list-icon-3": {
+          "pixelated": false,
+          "tint": "#00000000"
+        },
+        "list-surface-7": {
+          "radius": 0
+        },
+        "download-icon": {
+          "pixelated": true
+        },
+        "list-text-6": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-text-7": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-text-8": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "list-surface-8": {
+          "radius": 0
+        },
+        "heart-button-9": {
+          "radius": 0
+        },
+        "trash-button-10": {
+          "radius": 0
+        },
+        "plus-button-11": {
+          "radius": 0
+        },
+        "arrow-up-button": {
+          "radius": 0
+        },
+        "arrow-down-button": {
+          "radius": 0
+        },
+        "trash-button-14": {
+          "radius": 0
+        },
+        "list-scroll": {
+          "radius": 0
+        },
+        "list-loading-2": {},
+        "list-text-9": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "collection-heading": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "artist-title": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "artist-detail": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "cache-switch-label": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "cache-switch-thumb": {
+          "background": "#ffb000",
+          "radius": 0,
+          "states": {
+            "active": {
+              "background": "#1a0e00"
+            }
+          }
+        },
+        "list-button-6-playlistpicker-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "list-button-6-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "filter-button-browsemenu-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "filter-button-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "sort-button-browsemenu-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "sort-button-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        }
+      }
+    },
+    "player": {
+      "defaults": {
+        "font_family": "DejaVu Sans Mono"
+      },
+      "components": {
+        "surface": {
+          "radius": 0,
+          "border": "#663d00"
+        },
+        "button": {
+          "background": "#3a2408",
+          "border": "#663d00",
+          "border_width": 0,
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "text": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ffcc33"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#ffb000",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#ff6a33"
+            },
+            "playing": {
+              "tint": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ffcc33",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#1a1206",
+          "radius": 0
+        },
+        "lyrics": {
+          "text": "#ffb000"
+        },
+        "slider": {
+          "radius": 0,
+          "states": {
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#241505",
+          "radius": 0
+        },
+        "fill": {
+          "background": "#ffb000",
+          "radius": 0
+        },
+        "thumb": {
+          "background": "#ffcc33",
+          "border": "#ffb000",
+          "border_width": 1,
+          "radius": 0
+        },
+        "scrollbar": {
+          "background": "#0a0700",
+          "radius": 0
+        },
+        "scrollbar-thumb": {
+          "background": "#663d00",
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffb000"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "pause-icon": {
+          "pixelated": true
+        },
+        "music-player": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 2
+        },
+        "player-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "compact-button": {
+          "radius": 0
+        },
+        "heart-button": {
+          "radius": 0
+        },
+        "plus-button": {
+          "radius": 0
+        },
+        "artwork-scroll": {
+          "radius": 0
+        },
+        "player-surface-2": {
+          "radius": 0
+        },
+        "player-surface-3": {
+          "radius": 0
+        },
+        "music-icon": {
+          "pixelated": true
+        },
+        "album-image": {
+          "pixelated": false,
+          "tint": "#00000000"
+        },
+        "album-frame": {
+          "pixelated": true
+        },
+        "player-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "player-surface-4": {
+          "radius": 0
+        },
+        "player-surface-5": {
+          "radius": 0
+        },
+        "lyrics-scroll": {
+          "radius": 0
+        },
+        "music-lyrics": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "player-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "player-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "player-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "captions-button": {
+          "radius": 0
+        },
+        "player-button-5": {
+          "radius": 0
+        },
+        "seek": {
+          "radius": 0
+        },
+        "player-text-6": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "shuffle-button": {
+          "radius": 0
+        },
+        "previous-button": {
+          "radius": 0
+        },
+        "play-pause-button": {
+          "radius": 0
+        },
+        "player-loading-1": {},
+        "next-button": {
+          "radius": 0
+        },
+        "repeat-button": {
+          "radius": 0
+        },
+        "volume-button": {
+          "radius": 0
+        },
+        "volume": {
+          "radius": 0
+        },
+        "player-text-7": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "play-icon": {
+          "pixelated": true
+        },
+        "mini-player-button": {
+          "radius": 0
+        },
+        "mini-restore": {
+          "radius": 0
+        },
+        "mini-minimize": {
+          "radius": 0
+        },
+        "mini-close": {
+          "radius": 0
+        },
+        "player-button-5-playlistpicker-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "player-button-5-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "lyrics-previous": {
+          "text": "#a06600"
+        },
+        "lyrics-current": {
+          "text": "#ffcc33",
+          "font_weight": 700
+        },
+        "lyrics-next": {
+          "text": "#ffb000"
+        },
+        "lyrics-following": {
+          "text": "#a06600"
+        }
+      }
+    },
+    "video": {
+      "defaults": {
+        "font_family": "DejaVu Sans Mono"
+      },
+      "components": {
+        "surface": {
+          "radius": 0,
+          "border": "#663d00"
+        },
+        "button": {
+          "background": "#3a2408",
+          "border": "#663d00",
+          "border_width": 0,
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "text": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            },
+            "playing": {
+              "text": "#ffcc33"
+            }
+          }
+        },
+        "icon": {
+          "tint": "#ffb000",
+          "pixelated": true,
+          "states": {
+            "active": {
+              "tint": "#ff6a33"
+            },
+            "playing": {
+              "tint": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "input": {
+          "text": "#ffb000",
+          "states": {
+            "disabled": {
+              "opacity": 0.55
+            }
+          }
+        },
+        "loading": {
+          "tint": "#ffcc33",
+          "opacity": 0.85
+        },
+        "skeleton": {
+          "background": "#1a1206",
+          "radius": 0
+        },
+        "lyrics": {
+          "text": "#ffb000"
+        },
+        "slider": {
+          "radius": 0,
+          "states": {
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "track": {
+          "background": "#241505",
+          "radius": 0
+        },
+        "fill": {
+          "background": "#ffb000",
+          "radius": 0
+        },
+        "thumb": {
+          "background": "#ffcc33",
+          "border": "#ffb000",
+          "border_width": 1,
+          "radius": 0
+        },
+        "scrollbar": {
+          "background": "#0a0700",
+          "radius": 0
+        },
+        "scrollbar-thumb": {
+          "background": "#663d00",
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffb000"
+            }
+          }
+        },
+        "button-texture": {
+          "pixelated": true
+        },
+        "panel-artwork": {
+          "pixelated": true
+        },
+        "card-artwork": {
+          "pixelated": true
+        },
+        "frame": {
+          "pixelated": true
+        },
+        "artwork": {
+          "tint": "#00000000",
+          "pixelated": false
+        },
+        "video-page-icon-1": {
+          "pixelated": true
+        },
+        "video-page-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-surface-3": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-artwork-1": {},
+        "video-page-icon-2": {
+          "pixelated": true
+        },
+        "video-page-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-3": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-icon-3": {
+          "pixelated": true
+        },
+        "video-page-surface-4": {
+          "radius": 0
+        },
+        "video-page-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-surface-6": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-artwork-2": {},
+        "video-page-surface-7": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-page-text-6": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-7": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-surface-8": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-surface-9": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-text-8": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-9": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-text-10": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-text-11": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-surface-11": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-page-surface-12": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-artwork-3": {},
+        "video-page-icon-4": {
+          "pixelated": true
+        },
+        "video-page-surface-13": {
+          "radius": 0
+        },
+        "video-page-surface-14": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-text-12": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-surface-15": {
+          "radius": 0
+        },
+        "video-page-surface-16": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-text-13": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-14": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-surface-17": {
+          "radius": 0
+        },
+        "video-page-text-15": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-surface-18": {
+          "radius": 0
+        },
+        "video-page-text-16": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-surface-20": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-icon-5": {
+          "pixelated": true
+        },
+        "video-page-text-17": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-input-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-text-18": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-page-surface-21": {
+          "radius": 0
+        },
+        "video-page-text-19": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-page-surface-22": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-surface-23": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-page-surface-24": {
+          "radius": 0
+        },
+        "video-page-text-20": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-surface-2": {
+          "radius": 0
+        },
+        "video-player-artwork-1": {},
+        "video-player-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-4": {
+          "radius": 0
+        },
+        "video-player-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-5": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-player-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-6": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-surface-6": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-player-surface-7": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-player-artwork-2": {
+          "pixelated": true
+        },
+        "video-player-surface-9": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508"
+            }
+          }
+        },
+        "video-player-artwork-3": {
+          "pixelated": true
+        },
+        "video-player-text-7": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-10": {
+          "radius": 0
+        },
+        "video-player-text-8": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-11": {
+          "radius": 0
+        },
+        "video-player-text-9": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-text-10": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-text-11": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-surface-13": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-player-text-12": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-14": {
+          "radius": 0
+        },
+        "video-player-surface-15": {
+          "radius": 0
+        },
+        "video-player-text-13": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-14": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-input-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-surface-16": {
+          "radius": 0
+        },
+        "video-player-text-15": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-16": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-17": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-text-18": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-surface-17": {
+          "radius": 0
+        },
+        "video-player-surface-18": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#1a1206"
+            }
+          },
+          "background": "#00000000"
+        },
+        "video-player-surface-19": {
+          "radius": 0,
+          "background": "#1a1206"
+        },
+        "video-player-artwork-4": {},
+        "video-player-text-19": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-player-text-20": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-text-21": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-player-text-22": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-button-icon-1": {
+          "pixelated": true
+        },
+        "video-quality-surface-1": {
+          "radius": 0
+        },
+        "video-quality-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-quality-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-quality-artwork-1": {},
+        "video-quality-surface-2": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border_width": 1
+        },
+        "video-quality-surface-3": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "video-quality-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-icon-1": {
+          "pixelated": true
+        },
+        "video-native-surface-2": {
+          "radius": 0
+        },
+        "video-native-text-1": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-text-2": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-surface-3": {
+          "radius": 0
+        },
+        "video-native-text-3": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-text-4": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-surface-4": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-native-text-5": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-text-6": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-native-surface-5": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-native-surface-6": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-native-artwork-1": {
+          "pixelated": true
+        },
+        "video-native-surface-8": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508"
+            }
+          }
+        },
+        "video-native-artwork-2": {
+          "pixelated": true
+        },
+        "video-native-text-7": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-native-surface-9": {
+          "radius": 0
+        },
+        "video-tile": {
+          "radius": 0,
+          "background": "#00000000",
+          "border_width": 0,
+          "states": {
+            "hover": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "video-page-action": {
+          "radius": 0
+        },
+        "video-channel-card": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508"
+            }
+          },
+          "background": "#0a0700",
+          "border_width": 0
+        },
+        "video-page": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 0
+        },
+        "video-comment-card": {
+          "radius": 0,
+          "background": "#1a1206",
+          "border_width": 0
+        },
+        "video-control-button": {
+          "radius": 0,
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "video-controls": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border_width": 0
+        },
+        "video-details": {
+          "radius": 0,
+          "background": "#0a0700",
+          "border_width": 0
+        },
+        "video-seekbar": {
+          "radius": 0
+        },
+        "video-browsetab": {
+          "radius": 0
+        },
+        "video-browsemenu": {
+          "radius": 0
+        },
+        "video-musicbutton": {
+          "radius": 0
+        },
+        "video-loadingdots": {},
+        "video-filter": {
+          "radius": 0
+        },
+        "video-volume": {
+          "radius": 0
+        },
+        "video-channel-filter": {
+          "radius": 0,
+          "background": "#0a0700"
+        },
+        "video-filter-placeholder": {
+          "font_family": "DejaVu Sans Mono",
+          "text": "#a06600"
+        },
+        "video-filter-input": {
+          "font_family": "DejaVu Sans Mono"
+        },
+        "video-captions": {
+          "radius": 0,
+          "background": "#00000000",
+          "border_width": 0,
+          "states": {
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33",
+              "border_width": 1
+            },
+            "hover": {
+              "background": "#3a2408"
+            },
+            "disabled": {
+              "opacity": 0.45
+            }
+          }
+        },
+        "video-browsemenu-browsemenu-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "video-browsemenu-browsemenu-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        },
+        "video-filter-playlistpicker-surface-1": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1,
+          "radius": 0
+        },
+        "video-filter-playlistpicker-surface-2": {
+          "states": {
+            "hover": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "pressed": {
+              "background": "#ffcc33",
+              "border": "#ffb000"
+            },
+            "active": {
+              "background": "#553508",
+              "border": "#ffcc33"
+            },
+            "disabled": {
+              "opacity": 0.45
+            },
+            "focus": {
+              "border": "#ffcc33",
+              "border_width": 2
+            },
+            "playing": {
+              "background": "#553508",
+              "border": "#ffb000"
+            },
+            "loading": {
+              "background": "#1a1206"
+            }
+          }
+        }
+      }
+    }
+  }
+}

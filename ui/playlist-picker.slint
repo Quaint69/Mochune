@@ -1,0 +1,216 @@
+import {ThemeScrollBar} from "theme-scroll.slint";
+import {MusicTheme, ThemePaint, ThemeBox, ThemeText, ThemeImage, ThemeDecoration} from "music-theme.slint";
+import {ListView,HorizontalBox} from "std-widgets.slint";
+import {MusicSkin} from "music-skin.slint";
+import {AppColors} from "theme.slint";
+export component PlaylistPicker inherits ThemeBox {
+    theme-kind: "button";
+    theme-state: focus.has-focus ? "focus" : !root.available ? "disabled" : root.active ? "active" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
+    in property <[string]> model;
+    in property <bool> skinned;
+    in property <bool> open-above;
+    out property <bool> popup-open: menu.is-open;
+    in property <bool> available: true;
+    changed available=>{
+        if !root.available {
+            menu.close();
+        }
+    }
+    in property <bool> active: false;
+    in property <bool> show-icon: false;
+    in property <image> leading-icon;
+    in property <string> accessible-name: "Save to playlist";
+    in-out property <int> current-index;
+    property <int> highlighted;
+    in property <string> label: "Save to";
+    in property <string> placeholder: "Choose a playlist";
+    callback selected(int);
+    height: 34px;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : (root.skinned && MusicSkin.enabled ? MusicSkin.radius * 1px : 8px);
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : (1px);
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : (focus.has-focus || root.active ? (root.skinned && MusicSkin.enabled ? MusicSkin.accent : AppColors.accent) : (root.skinned && MusicSkin.enabled ? MusicSkin.border : AppColors.border));
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : (root.available ? 1 : 0.55);
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (hit.has-hover ? (root.skinned && MusicSkin.enabled ? MusicSkin.button-hover : AppColors.hover) : (root.skinned && MusicSkin.enabled ? MusicSkin.surface : AppColors.raised));
+    accessible-role: combobox;
+    accessible-label: root.accessible-name;
+    accessible-value: root.available && root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index] : root.placeholder;
+    forward-focus: focus;
+    HorizontalBox {
+        padding-left: 11px;
+        padding-right: 10px;
+        spacing: 8px;
+        if root.show-icon: ThemeImage {
+            image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-playlistpicker-icon-1";
+            theme-kind: "icon";
+            theme-state: root.theme-state;
+            source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.leading-icon);
+            colorize: self.theme-paint.image.width > 0 ? transparent : self.theme-paint.has-tint ? self.theme-paint.tint : (root.active ? (root.skinned && MusicSkin.enabled ? MusicSkin.accent : AppColors.accent) : (root.skinned && MusicSkin.enabled ? MusicSkin.muted : AppColors.muted));
+            width: (16px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+            height: (16px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+            image-fit: contain;
+        }
+        ThemeText {
+            opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+            font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+            font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-playlistpicker-text-1";
+            theme-kind: "text";
+            theme-state: root.theme-state;
+            text: root.label;
+            color: self.theme-paint.has-text ? self.theme-paint.text : ((root.skinned && MusicSkin.enabled ? MusicSkin.muted : AppColors.muted));
+            font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (11px);
+            vertical-alignment: center;
+        }
+        ThemeText {
+            opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+            font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-playlistpicker-text-2";
+            theme-kind: "text";
+            theme-state: root.theme-state;
+            text: root.available && root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index] : root.placeholder;
+            color: self.theme-paint.has-text ? self.theme-paint.text : ((root.skinned && MusicSkin.enabled ? MusicSkin.text : AppColors.text));
+            font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px);
+            font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (600);
+            overflow: elide;
+            horizontal-stretch: 1;
+            min-width: 0px;
+            vertical-alignment: center;
+        }
+        ThemeImage {
+            image-rendering: self.theme-paint.pixelated ? pixelated : smooth;
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-chevron-icon";
+            theme-kind: "icon";
+            theme-state: root.theme-state;
+            source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("icons/chevron.svg"));
+            colorize: self.theme-paint.image.width > 0 ? transparent : self.theme-paint.has-tint ? self.theme-paint.tint : ((root.skinned && MusicSkin.enabled ? MusicSkin.muted : AppColors.muted));
+            width: (11px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+            height: (11px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+            image-fit: contain;
+        }
+    }
+    focus := FocusScope {
+        enabled: root.available;
+        key-pressed(event)=>{
+            if root.model.length > 0 && (event.text == " " || event.text == Key.Return) {
+                root.highlighted=max(0,root.current-index);
+                menu.show();
+                return accept;
+            }
+            return reject;
+        }
+    }
+    hit := TouchArea {
+        enabled: root.available && root.model.length > 0;
+        clicked=>{
+            root.highlighted=max(0,root.current-index);
+            menu.show();
+        }
+    }
+    menu := PopupWindow {
+        x: 0px;
+        y: root.open-above ? -self.height - 5px : root.height + 5px;
+        width: root.width;
+        height: min(280px,root.model.length * 34px + 8px);
+        close-policy: close-on-click-outside;
+        forward-focus: menu-focus;
+        ThemeBox {
+            opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+            theme-section: root.theme-section;
+            theme-key: root.theme-key + "-playlistpicker-surface-1";
+            theme-kind: "surface";
+            theme-state: root.theme-state;
+            background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : ((root.skinned && MusicSkin.enabled ? MusicSkin.surface : AppColors.raised));
+            border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px);
+            border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : ((root.skinned && MusicSkin.enabled ? MusicSkin.border : AppColors.border));
+            border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (root.skinned && MusicSkin.enabled ? MusicSkin.radius * 1px : 8px);
+        }
+        menu-focus := FocusScope {
+            key-pressed(event)=>{
+                if event.text == Key.Escape {
+                    menu.close();
+                    focus.focus();
+                    return accept;
+                }
+                if event.text == Key.UpArrow {
+                    root.highlighted=max(0,root.highlighted - 1);
+                    return accept;
+                }
+                if event.text == Key.DownArrow {
+                    root.highlighted=min(root.model.length - 1,root.highlighted + 1);
+                    return accept;
+                }
+                if event.text == Key.Return || event.text == " " {
+                    root.current-index=root.highlighted;
+                    root.selected(root.current-index);
+                    menu.close();
+                    focus.focus();
+                    return accept;
+                }
+                return reject;
+            }
+            Rectangle {
+                vertical-stretch: 1;
+                min-height: 0px;
+                themed-list-0 := ListView {
+                    width: parent.width;
+                    height: parent.height;
+                    vertical-scrollbar-policy: MusicTheme.enabled(root.theme-section) ? always-off : as-needed;
+                    horizontal-scrollbar-policy: always-off;
+                    for name[index] in root.model: ThemeBox {
+                        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+                        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
+                        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+                        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 0px;
+                        theme-section: root.theme-section;
+                        theme-key: root.theme-key + "-playlistpicker-surface-2";
+                        theme-kind: "surface";
+                        theme-state: choice-hit.pressed ? "pressed" : root.highlighted == index ? "active" : choice-hit.has-hover ? "hover" : "normal";
+                        height: 34px;
+                        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (index == root.highlighted ? (root.skinned && MusicSkin.enabled ? MusicSkin.accent : AppColors.selected) : choice-hit.has-hover ? (root.skinned && MusicSkin.enabled ? MusicSkin.button-hover : AppColors.hover) : transparent);
+                        ThemeText {
+                            opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+                            font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+                            font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+                            theme-section: root.theme-section;
+                            theme-key: root.theme-key + "-playlistpicker-text-3";
+                            theme-kind: "text";
+                            theme-state: choice-hit.pressed ? "pressed" : root.highlighted == index ? "active" : choice-hit.has-hover ? "hover" : "normal";
+                            text: name;
+                            color: self.theme-paint.has-text ? self.theme-paint.text : ((root.skinned && MusicSkin.enabled ? MusicSkin.text : AppColors.text));
+                            x: 10px;
+                            width: parent.width - 34px;
+                            height: parent.height;
+                            vertical-alignment: center;
+                            overflow: elide;
+                            font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px);
+                        }
+                        choice-hit := TouchArea {
+                            clicked=>{
+                                root.current-index=index;
+                                root.selected(index);
+                                menu.close();
+                                focus.focus();
+                            }
+                        }
+                    }
+                }
+                if MusicTheme.enabled(root.theme-section) && themed-list-0.content-height > themed-list-0.visible-height: ThemeScrollBar {
+                    theme-section: root.theme-section;
+                    theme-key: root.theme-key + "-menu-scroll" + "-vertical";
+                    x: parent.width - 14px;
+                    y: 0px;
+                    width: 14px;
+                    height: parent.height;
+                    maximum: max(0px,themed-list-0.content-height - themed-list-0.visible-height);
+                    page-size: themed-list-0.visible-height;
+                    value <=> themed-list-0.content-y;
+                }
+            }
+        }
+    }
+}

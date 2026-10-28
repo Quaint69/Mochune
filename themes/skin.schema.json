@@ -1,0 +1,552 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Quaint69/Mochune/blob/main/themes/skin.schema.json",
+  "title": "Mochune Music and Video theme (v1 compatible, v2 sections)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "name",
+    "palette"
+  ],
+  "properties": {
+    "version": {
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "panel",
+        "surface",
+        "text",
+        "muted",
+        "accent",
+        "accent_text",
+        "border",
+        "track",
+        "played",
+        "button",
+        "button_hover",
+        "liked"
+      ],
+      "properties": {
+        "panel": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "surface": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "muted": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "accent_text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "border": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "track": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "played": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "button": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "button_hover": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "liked": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 12
+        },
+        "border_width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0
+        },
+        "font_family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Built-in family or an internal font family declared in fonts."
+        },
+        "title_size": {
+          "type": "number",
+          "minimum": 14,
+          "maximum": 19,
+          "default": 17
+        },
+        "icon_scale": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.15,
+          "default": 1
+        },
+        "pixelated": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "panel": {
+          "$ref": "#/$defs/asset"
+        },
+        "card": {
+          "$ref": "#/$defs/asset"
+        },
+        "artwork_frame": {
+          "$ref": "#/$defs/asset"
+        },
+        "track": {
+          "$ref": "#/$defs/asset"
+        },
+        "fill": {
+          "$ref": "#/$defs/asset"
+        },
+        "thumb": {
+          "$ref": "#/$defs/asset"
+        },
+        "play": {
+          "$ref": "#/$defs/asset"
+        },
+        "pause": {
+          "$ref": "#/$defs/asset"
+        },
+        "previous": {
+          "$ref": "#/$defs/asset"
+        },
+        "next": {
+          "$ref": "#/$defs/asset"
+        },
+        "shuffle": {
+          "$ref": "#/$defs/asset"
+        },
+        "repeat": {
+          "$ref": "#/$defs/asset"
+        },
+        "volume": {
+          "$ref": "#/$defs/asset"
+        },
+        "muted": {
+          "$ref": "#/$defs/asset"
+        },
+        "heart": {
+          "$ref": "#/$defs/asset"
+        },
+        "heart_filled": {
+          "$ref": "#/$defs/asset"
+        },
+        "plus": {
+          "$ref": "#/$defs/asset"
+        },
+        "compact": {
+          "$ref": "#/$defs/asset"
+        },
+        "captions": {
+          "$ref": "#/$defs/asset"
+        },
+        "button": {
+          "$ref": "#/$defs/asset"
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "header": {
+          "$ref": "#/$defs/section"
+        },
+        "library": {
+          "$ref": "#/$defs/section"
+        },
+        "list": {
+          "$ref": "#/$defs/section"
+        },
+        "player": {
+          "$ref": "#/$defs/section"
+        },
+        "video": {
+          "$ref": "#/$defs/section"
+        }
+      }
+    },
+    "theme_assets": {
+      "type": "object",
+      "maxProperties": 40,
+      "propertyNames": {
+        "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "maxItems": 4,
+      "description": "Optional theme-local font faces. Missing/invalid files fall back; unsafe paths reject the theme.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "family",
+          "file",
+          "license"
+        ],
+        "properties": {
+          "family": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "file": {
+            "type": "string",
+            "maxLength": 240,
+            "pattern": "^(?!/)(?!.*(?:\\\\|:|(?:^|/)\\.{1,2}(?:/|$))).+\\.(ttf|otf)$"
+          },
+          "license": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "pattern": "^(?!/)(?!.*(?:\\\\|:|(?:^|/)\\.{1,2}(?:/|$))).+$"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file"
+      ],
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "fit": {
+          "enum": [
+            "contain",
+            "cover",
+            "fill"
+          ],
+          "default": "contain"
+        }
+      }
+    },
+    "paint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "gradient_end": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "border": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "tint": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "border_width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 32
+        },
+        "font_weight": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 900
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.5
+        },
+        "offset_x": {
+          "type": "number",
+          "minimum": -16,
+          "maximum": 16
+        },
+        "offset_y": {
+          "type": "number",
+          "minimum": -16,
+          "maximum": 16
+        },
+        "inset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 24
+        },
+        "frame_slice": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "font_family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Built-in family or an internal font family declared in fonts."
+        },
+        "pixelated": {
+          "type": "boolean"
+        },
+        "replace_chrome": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "frame": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "gradient_end": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "border": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "text": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "tint": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$"
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "border_width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 32
+        },
+        "font_weight": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 900
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1.5
+        },
+        "offset_x": {
+          "type": "number",
+          "minimum": -16,
+          "maximum": 16
+        },
+        "offset_y": {
+          "type": "number",
+          "minimum": -16,
+          "maximum": 16
+        },
+        "inset": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 24
+        },
+        "frame_slice": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "font_family": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Built-in family or an internal font family declared in fonts."
+        },
+        "pixelated": {
+          "type": "boolean"
+        },
+        "replace_chrome": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "frame": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "states": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "normal": {
+              "$ref": "#/$defs/paint"
+            },
+            "hover": {
+              "$ref": "#/$defs/paint"
+            },
+            "pressed": {
+              "$ref": "#/$defs/paint"
+            },
+            "active": {
+              "$ref": "#/$defs/paint"
+            },
+            "disabled": {
+              "$ref": "#/$defs/paint"
+            },
+            "focus": {
+              "$ref": "#/$defs/paint"
+            },
+            "playing": {
+              "$ref": "#/$defs/paint"
+            },
+            "loading": {
+              "$ref": "#/$defs/paint"
+            }
+          }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaults": {
+          "$ref": "#/$defs/paint"
+        },
+        "components": {
+          "type": "object",
+          "maxProperties": 192,
+          "propertyNames": {
+            "pattern": "^[a-zA-Z0-9_-]{1,96}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/component"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sections": {
+            "maxProperties": 0
+          },
+          "theme_assets": {
+            "maxProperties": 0
+          }
+        }
+      }
+    }
+  ]
+}

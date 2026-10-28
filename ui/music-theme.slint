@@ -1,0 +1,139 @@
+import {AppColors} from "theme.slint";
+export struct ThemePaint {
+    background: color, has-background: bool, gradient-end: color, has-gradient-end: bool,
+    border: color, has-border: bool, text: color, has-text: bool, tint: color, has-tint: bool,
+    radius: float, has-radius: bool, border-width: float, has-border-width: bool,
+    font-family: string, has-font-family: bool, font-size: float, has-font-size: bool,
+    font-weight: float, has-font-weight: bool, opacity: float, has-opacity: bool,
+    scale: float, has-scale: bool, offset-x: float, offset-y: float, inset: float, frame-slice: float,
+    pixelated: bool, replace-chrome: bool, image: image, frame: image,
+}
+export global MusicTheme {
+    in-out property <[bool]> available: [false, false, false, false, false];
+    in-out property <[bool]> defined: [false, false, false, false, false];
+    in-out property <[bool]> selected: [true, true, true, true, true];
+    in-out property <bool> music-mode;
+    in-out property <int> revision;
+    pure callback resolve(int, string, string, string, int) -> ThemePaint;
+    public pure function enabled(section: int) -> bool {
+        return section >= 0 && section < 5 && root.defined[section] && root.selected[section] && (section == 4 ? !root.music-mode : section == 0 ? root.music-mode || (root.defined[4] && root.selected[4]) : root.music-mode);
+    }
+}
+// Decoration never owns layout, input or playback. A nine-slice frame preserves
+// corners using source clipping; all decoded images remain shared references.
+export component ThemeDecoration inherits Rectangle {
+    in property <ThemePaint> paint;
+    in property <bool> foreground;
+    min-width: 0px;
+    min-height: 0px;
+    preferred-width: 0px;
+    preferred-height: 0px;
+    clip: true;
+    background: foreground ? transparent : paint.has-gradient-end ? @linear-gradient(180deg, paint.background, paint.gradient-end) : paint.has-background ? paint.background : transparent;
+    border-radius: paint.radius * 1px;
+    if !foreground: Image {
+        source: root.paint.image;
+        x: root.paint.inset * 1px + root.paint.offset-x * 1px;
+        y: root.paint.inset * 1px + root.paint.offset-y * 1px;
+        width: max(0px,parent.width - root.paint.inset * 2px);
+        height: max(0px,parent.height - root.paint.inset * 2px);
+        image-fit: fill;
+        image-rendering: root.paint.pixelated ? pixelated : smooth;
+    }
+    if foreground && paint.frame-slice <= 0: Image {
+        source: root.paint.frame;
+        width: parent.width;
+        height: parent.height;
+        image-fit: fill;
+        image-rendering: root.paint.pixelated ? pixelated : smooth;
+    }
+    if foreground && paint.frame-slice > 0: Rectangle {
+        width: parent.width;
+        height: parent.height;
+        property <length> edge: min(root.paint.frame-slice * 1px, self.width / 2, self.height / 2);
+        for cell in 9: Image {
+            property <int> column: mod(cell,3);
+            property <int> slice-row: floor(cell/3);
+            source: root.paint.frame;
+            x: column == 0 ? 0px : column == 1 ? parent.edge : parent.width - parent.edge;
+            y: slice-row == 0 ? 0px : slice-row == 1 ? parent.edge : parent.height - parent.edge;
+            width: column == 1 ? max(0px,parent.width - parent.edge * 2) : parent.edge;
+            height: slice-row == 1 ? max(0px,parent.height - parent.edge * 2) : parent.edge;
+            source-clip-x: column == 0 ? 0 : column == 1 ? root.paint.frame-slice : root.paint.frame.width - root.paint.frame-slice;
+            source-clip-y: slice-row == 0 ? 0 : slice-row == 1 ? root.paint.frame-slice : root.paint.frame.height - root.paint.frame-slice;
+            source-clip-width: column == 1 ? max(0,root.paint.frame.width - root.paint.frame-slice * 2) : root.paint.frame-slice;
+            source-clip-height: slice-row == 1 ? max(0,root.paint.frame.height - root.paint.frame-slice * 2) : root.paint.frame-slice;
+            image-fit: fill;
+            image-rendering: root.paint.pixelated ? pixelated : smooth;
+        }
+    }
+    if foreground: Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: transparent;
+        border-radius: root.paint.radius * 1px;
+        border-width: root.paint.border-width * 1px;
+        border-color: root.paint.border;
+    }
+}
+export component ThemeBox inherits Rectangle {
+    // Native video overlays own their backdrop; themes only style their controls.
+    in property <bool> decorate: true;
+    in property <int> theme-section: -1;
+    in property <string> theme-key;
+    in property <string> theme-kind: "surface";
+    in property <string> theme-state: "normal";
+    out property <ThemePaint> theme-paint: MusicTheme.enabled(theme-section) ? MusicTheme.resolve(theme-section,theme-key,theme-kind,theme-state,MusicTheme.revision) : {
+    }
+    ;
+    if root.decorate && MusicTheme.enabled(theme-section) && (theme-paint.has-background || theme-paint.has-gradient-end || theme-paint.image.width > 0): ThemeDecoration {
+        paint: root.theme-paint;
+        width: parent.width;
+        height: parent.height;
+    }
+    @children
+    if root.decorate && MusicTheme.enabled(theme-section) && (theme-paint.frame.width > 0 || theme-paint.has-border-width): ThemeDecoration {
+        foreground: true;
+        paint: root.theme-paint;
+        width: parent.width;
+        height: parent.height;
+    }
+}
+export component ThemeText inherits Text {
+    in property <int> theme-section: -1;
+    in property <string> theme-key;
+    in property <string> theme-kind: "text";
+    in property <string> theme-state: "normal";
+    out property <ThemePaint> theme-paint: MusicTheme.enabled(theme-section) ? MusicTheme.resolve(theme-section,theme-key,theme-kind,theme-state,MusicTheme.revision) : {
+    }
+    ;
+    // Call sites keep their original defaults; generated bindings select these
+    // overrides only when explicitly present in the resolved style.
+}
+export component ThemeImage inherits Image {
+    // This shared wrapper is lowered to ClippedImage because some callers crop
+    // artwork. Other callers still need the complete source, not an empty clip.
+    source-clip-width: self.source.width;
+    source-clip-height: self.source.height;
+    in property <int> theme-section: -1;
+    in property <string> theme-key;
+    in property <string> theme-kind: "icon";
+    in property <string> theme-state: "normal";
+    out property <ThemePaint> theme-paint: MusicTheme.enabled(theme-section) ? MusicTheme.resolve(theme-section,theme-key,theme-kind,theme-state,MusicTheme.revision) : {
+    }
+    ;
+}
+
+export component ThemeInput inherits TextInput {
+    in property <int> theme-section: -1;
+    in property <string> theme-key;
+    in property <string> theme-kind: "input";
+    in property <string> theme-state: "normal";
+    out property <ThemePaint> theme-paint: MusicTheme.enabled(theme-section) ? MusicTheme.resolve(theme-section,theme-key,theme-kind,theme-state,MusicTheme.revision) : {};
+}
+
+// Corner masks use the themed surrounding surface, never a hardcoded dark edge.
+export global VideoColors {
+    property <ThemePaint> page-paint: MusicTheme.enabled(4) ? MusicTheme.resolve(4,"video-page","surface","normal",MusicTheme.revision) : {};
+    out property <color> window: page-paint.has-background ? page-paint.background : AppColors.window;
+}

@@ -1,0 +1,87 @@
+import {MusicTheme, ThemePaint, ThemeBox, ThemeText, ThemeImage, ThemeDecoration} from "music-theme.slint";
+import {MusicSkin} from "music-skin.slint";
+import {AppColors} from "theme.slint";
+component LyricLine inherits ThemeText {
+    height: max(32px, self.preferred-height);
+    color: root.theme-paint.has-text ? root.theme-paint.text : MusicSkin.text;
+    font-family: root.theme-paint.has-font-family ? root.theme-paint.font-family : MusicSkin.font-family;
+    wrap: word-wrap;
+    vertical-alignment: center;
+}
+export component LyricsView inherits ThemeBox {
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : transparent;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : 0px;
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : 0px;
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : 1;
+    theme-kind: "lyrics";
+    theme-state: "normal";
+    in property <string> previous;
+    in property <string> current;
+    in property <string> next;
+    in property <string> following;
+    in property <int> frame;
+    in property <bool> animate-step;
+    property <bool> scrolling;
+    property <duration> started;
+    // Use one bounded animation clock, rather than a one-frame reset that can
+    // disappear between paints. Nothing ticks while lyrics are stationary.
+    property <length> step-height: previous-line.height;
+    property <float> remaining: root.scrolling ? clamp(1 - (animation-tick() - root.started) / 260ms, 0, 1) : 0;
+    property <float> progress: root.remaining * root.remaining * root.remaining;
+    property <length> offset: root.step-height * root.progress;
+    changed frame=>{
+        root.started=animation-tick();
+        root.scrolling=root.animate-step;
+        if root.scrolling {
+            settle.restart();
+        }
+    }
+    settle := Timer {
+        interval: 280ms;
+        running: root.scrolling;
+        triggered=>{
+            root.scrolling=false;
+        }
+    }
+    height: 64px + current-line.height + next-line.height;
+    vertical-stretch: 0;
+    clip: true;
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (transparent);
+    previous-line := LyricLine {
+        theme-section: root.theme-section;
+        theme-key: "lyrics-previous";
+        width: root.width;
+        text: root.previous;
+        y: 32px - self.height + root.offset;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 13px;
+        opacity: root.progress;
+    }
+    current-line := LyricLine {
+        theme-section: root.theme-section;
+        theme-key: "lyrics-current";
+        width: root.width;
+        text: root.current;
+        y: 32px + root.offset;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 14px;
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 600;
+        opacity: 1 - 0.45 * root.progress;
+    }
+    next-line := LyricLine {
+        theme-section: root.theme-section;
+        theme-key: "lyrics-next";
+        width: root.width;
+        text: root.next;
+        y: 32px + current-line.height + root.offset;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 13px;
+        opacity: 0.55 * (1 - root.progress);
+    }
+    LyricLine {
+        theme-section: root.theme-section;
+        theme-key: "lyrics-following";
+        width: root.width;
+        text: root.following;
+        y: 32px + current-line.height + next-line.height + root.offset;
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 13px;
+        opacity: 0;
+    }
+}

@@ -1,0 +1,90 @@
+import {ScrollView, ListView} from "std-widgets.slint";
+import {MusicTheme, ThemeBox} from "music-theme.slint";
+import {AppColors} from "theme.slint";
+export component ThemeScrollBar inherits ThemeBox {
+    in property <bool> horizontal;
+    in property <length> maximum;
+    in property <length> page-size;
+    in-out property <length> value;
+    theme-kind: "scrollbar";
+    theme-state: drag.pressed ? "pressed" : drag.has-hover ? "hover" : "normal";
+    background: root.theme-paint.has-background ? root.theme-paint.background : transparent;
+    property <length> extent: horizontal ? root.width : root.height;
+    property <length> thumb-size: min(extent,max(16px,extent * page-size / max(1px,maximum + page-size)));
+    ThemeBox {
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-thumb";
+        theme-kind: "scrollbar-thumb";
+        theme-state: root.theme-state;
+        width: root.horizontal ? root.thumb-size : parent.width - 6px;
+        height: root.horizontal ? parent.height - 6px : root.thumb-size;
+        x: root.horizontal ? (parent.width - self.width) * clamp(-root.value / max(1px,root.maximum),0,1) : 3px;
+        y: root.horizontal ? 3px : (parent.height - self.height) * clamp(-root.value / max(1px,root.maximum),0,1);
+        border-radius: self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 4px;
+        background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.muted;
+    }
+    drag := TouchArea {
+        property <length> initial;
+        property <length> anchor;
+        pointer-event(e)=>{
+            if e.button == PointerEventButton.left && e.kind == PointerEventKind.down {
+                self.initial=root.value;
+                self.anchor=root.horizontal ? self.mouse-x : self.mouse-y;
+            }
+        }
+        moved=>{
+            if self.pressed {
+                root.value=clamp(self.initial - ((root.horizontal ? self.mouse-x : self.mouse-y) - self.anchor) * root.maximum / max(1px,root.extent - root.thumb-size),-root.maximum,0px);
+            }
+        }
+    }
+}
+export component ThemeScrollView inherits Rectangle {
+    in property <int> theme-section: -1;
+    in property <string> theme-key: "scroll";
+    in property <bool> enabled: true;
+    in property <ScrollBarPolicy> horizontal-scrollbar-policy: as-needed;
+    in property <ScrollBarPolicy> vertical-scrollbar-policy: as-needed;
+    out property <length> visible-width: body.visible-width;
+    out property <length> visible-height: body.visible-height;
+    in-out property <length> content-width <=> body.content-width;
+    in-out property <length> content-height <=> body.content-height;
+    in-out property <length> content-x <=> body.content-x;
+    in-out property <length> content-y <=> body.content-y;
+    property <bool> themed: MusicTheme.enabled(theme-section);
+    min-width: 50px;
+    min-height: 50px;
+    horizontal-stretch: 1;
+    vertical-stretch: 1;
+    body := ScrollView {
+        width: parent.width;
+        height: parent.height;
+        enabled: root.enabled;
+        horizontal-scrollbar-policy: root.themed ? always-off : root.horizontal-scrollbar-policy;
+        vertical-scrollbar-policy: root.themed ? always-off : root.vertical-scrollbar-policy;
+        @children
+    }
+    if themed && vertical-scrollbar-policy != always-off && (vertical-scrollbar-policy == always-on || content-height > visible-height): ThemeScrollBar {
+        visible: root.enabled;
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-vertical";
+        x: parent.width - 14px;
+        width: 14px;
+        height: parent.height;
+        maximum: max(0px,root.content-height - root.visible-height);
+        page-size: root.visible-height;
+        value <=> root.content-y;
+    }
+    if themed && horizontal-scrollbar-policy != always-off && (horizontal-scrollbar-policy == always-on || content-width > visible-width): ThemeScrollBar {
+        visible: root.enabled;
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-horizontal";
+        horizontal: true;
+        y: parent.height - 14px;
+        height: 14px;
+        width: parent.width;
+        maximum: max(0px,root.content-width - root.visible-width);
+        page-size: root.visible-width;
+        value <=> root.content-x;
+    }
+}

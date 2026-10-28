@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "name": "Pastel Desktop \u00b7 Pastel desktop \u00b7 Full music UI",
+  "palette": {
+    "panel": "#fff0fa",
+    "surface": "#eedfff",
+    "text": "#4f3269",
+    "muted": "#87609f",
+    "accent": "#ec77bd",
+    "accent_text": "#ffffff",
+    "border": "#ba8ad7",
+    "track": "#decbed",
+    "played": "#ec77bd",
+    "button": "#f8d7ec",
+    "button_hover": "#e5b9f3",
+    "liked": "#e95096"
+  },
+  "style": {
+    "radius": 2,
+    "border_width": 2,
+    "font_family": "DejaVu Sans",
+    "title_size": 17,
+    "icon_scale": 1,
+    "pixelated": true
+  },
+  "assets": {
+    "panel": {
+      "file": "panel.png",
+      "fit": "cover"
+    },
+    "card": {
+      "file": "walk.gif",
+      "fit": "contain"
+    },
+    "artwork_frame": {
+      "file": "frame.png",
+      "fit": "fill"
+    },
+    "track": {
+      "file": "track.png",
+      "fit": "fill"
+    },
+    "fill": {
+      "file": "fill.png",
+      "fit": "fill"
+    },
+    "thumb": {
+      "file": "thumb.png",
+      "fit": "contain"
+    }
+  }
+}

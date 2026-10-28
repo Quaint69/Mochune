@@ -1,0 +1,11 @@
+// Foreground decoration only; never wrap decoded video in this component.
+export component VideoFrame inherits Rectangle {
+    in property <length> radius;
+    in property <length> stroke-width;
+    in property <color> stroke;
+    background: transparent;
+    border-radius: max(0px,min(root.radius,root.width/2,root.height/2));
+    border-width: max(0px,min(root.stroke-width,root.width/2,root.height/2));
+    border-color: root.stroke;
+    // No children, clip, opacity layer or image cache.
+}

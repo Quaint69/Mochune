@@ -1,0 +1,57 @@
+import {MusicTheme, ThemePaint, ThemeBox, ThemeText, ThemeImage, ThemeDecoration} from "music-theme.slint";
+import {AppColors} from "theme.slint";
+export component ActionButton inherits ThemeBox {
+    theme-kind: "button";
+    theme-state: focus.has-focus ? "focus" : !root.available ? "disabled" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
+    in property <string> label;
+    in property <bool> primary;
+    in property <bool> danger;
+    in property <bool> available: true;
+    callback clicked;
+    height: 34px;
+    vertical-stretch: 0;
+    border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : (7px);
+    border-width: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-border-width ? root.theme-paint.border-width * 1px : (1px);
+    border-color: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-border ? root.theme-paint.border : (focus.has-focus ? AppColors.accent : root.primary ? transparent : AppColors.border);
+    background: root.theme-paint.replace-chrome ? transparent : root.theme-paint.has-background ? root.theme-paint.background : (root.primary ? AppColors.accent : hit.has-hover ? AppColors.hover : AppColors.muted-surface);
+    opacity: root.theme-paint.has-opacity ? root.theme-paint.opacity : (root.available ? 1 : 0.4);
+    accessible-role: button;
+    accessible-label: root.label;
+    accessible-enabled: root.available;
+    ThemeText {
+        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
+        font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+        theme-section: root.theme-section;
+        theme-key: root.theme-key + "-actionbutton-text-1";
+        theme-kind: "text";
+        theme-state: root.theme-state;
+        text: root.label;
+        color: self.theme-paint.has-text ? self.theme-paint.text : (root.primary ? #2b1806 : root.danger ? AppColors.error : AppColors.text);
+        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (13px);
+        font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (root.primary ? 700 : 500);
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        width: parent.width;
+        height: parent.height;
+        overflow: elide;
+    }
+    forward-focus: focus;
+    focus := FocusScope {
+        enabled: root.available;
+        key-pressed(event)=>{
+            if event.text == Key.Return || event.text == " " {
+                root.clicked();
+                return accept;
+            }
+            return reject;
+        }
+    }
+    hit := TouchArea {
+        enabled: root.available;
+        mouse-cursor: pointer;
+        clicked=>{
+            focus.focus();
+            root.clicked();
+        }
+    }
+}
