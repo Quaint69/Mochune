@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "Pixelduck · Full music UI",
+  "name": "Pixelduck \u00b7 Full music UI",
   "palette": {
     "panel": "#272b23",
     "surface": "#393a31",
@@ -29,7 +29,7 @@
       "fit": "fill"
     },
     "card": {
-      "file": "walk.gif",
+      "file": "mochune.gif",
       "fit": "contain"
     },
     "artwork_frame": {
@@ -72,6 +72,10 @@
     },
     "pixel-heart-liked": {
       "file": "heart-pixel-liked.png",
+      "fit": "contain"
+    },
+    "brand-logo": {
+      "file": "mochune-logo.png",
       "fit": "contain"
     }
   },
@@ -229,10 +233,14 @@
           "border_width": 0
         },
         "header-icon-1": {
-          "pixelated": true
+          "pixelated": true,
+          "image": "brand-logo",
+          "scale": 1.1666666666666667
         },
         "header-text-1": {
-          "font_family": "DuckPixel"
+          "font_family": "Mochune Display",
+          "font_size": 22,
+          "font_weight": 700
         },
         "fullscreen-button": {
           "radius": 0
@@ -241,10 +249,14 @@
           "radius": 0
         },
         "header-icon-2": {
-          "pixelated": true
+          "pixelated": true,
+          "image": "brand-logo",
+          "scale": 1.1428571428571428
         },
         "header-text-2": {
-          "font_family": "DuckPixel"
+          "font_family": "Mochune Display",
+          "font_size": 30,
+          "font_weight": 700
         },
         "header-surface-1": {
           "radius": 0
@@ -794,9 +806,6 @@
               "background": "#393a31"
             }
           }
-        },
-        "list-surface-3": {
-          "radius": 0
         },
         "list-skeleton-1": {},
         "list-surface-4": {
@@ -2092,5 +2101,9 @@
         }
       }
     }
+  },
+  "card_alternative": {
+    "file": "walk.gif",
+    "fit": "contain"
   }
 }

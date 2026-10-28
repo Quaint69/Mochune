@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "Phosphor CRT · Terminal-inspired · Full music UI",
+  "name": "Phosphor CRT \u00b7 Terminal-inspired \u00b7 Full music UI",
   "palette": {
     "panel": "#0a0700",
     "surface": "#1a1206",
@@ -29,7 +29,7 @@
       "fit": "fill"
     },
     "card": {
-      "file": "ducklife.gif",
+      "file": "mochune.gif",
       "fit": "contain"
     },
     "artwork_frame": {
@@ -53,6 +53,10 @@
     "section-frame": {
       "file": "frame.png",
       "fit": "fill"
+    },
+    "brand-logo": {
+      "file": "mochune-logo.png",
+      "fit": "contain"
     }
   },
   "sections": {
@@ -209,10 +213,14 @@
           "border_width": 0
         },
         "header-icon-1": {
-          "pixelated": true
+          "pixelated": true,
+          "image": "brand-logo",
+          "scale": 1.1666666666666667
         },
         "header-text-1": {
-          "font_family": "DejaVu Sans Mono"
+          "font_family": "Mochune Display",
+          "font_size": 22,
+          "font_weight": 700
         },
         "fullscreen-button": {
           "radius": 0
@@ -221,10 +229,14 @@
           "radius": 0
         },
         "header-icon-2": {
-          "pixelated": true
+          "pixelated": true,
+          "image": "brand-logo",
+          "scale": 1.1428571428571428
         },
         "header-text-2": {
-          "font_family": "DejaVu Sans Mono"
+          "font_family": "Mochune Display",
+          "font_size": 30,
+          "font_weight": 700
         },
         "header-surface-1": {
           "radius": 0
@@ -774,9 +786,6 @@
               "background": "#1a1206"
             }
           }
-        },
-        "list-surface-3": {
-          "radius": 0
         },
         "list-skeleton-1": {},
         "list-surface-4": {
@@ -2048,5 +2057,9 @@
         }
       }
     }
+  },
+  "card_alternative": {
+    "file": "ducklife.gif",
+    "fit": "contain"
   }
 }

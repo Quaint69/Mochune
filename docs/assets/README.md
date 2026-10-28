@@ -11,3 +11,5 @@ Compact GIFs show the actual themed interface with its bundled animated card art
 The performance document retains historical numeric playback measurements collected before the rename. The previous Task Manager screenshot is retained privately with the original development records rather than relabeled as new evidence.
 
 Mochune UI and original artwork retain the repository license. Theme fonts retain their bundled notices; see [themes](../../themes/README.md). `landscape-*.svg`/`.png` and `record.svg`/`.png` are original GPL-3.0-only test artwork used by the screenshot helper. Dependencies, logo and font notices remain in their accompanying files.
+
+The current music gallery selects **なとり — Overdose** and reproduces the song list from the owner’s supplied screenshot, using the corresponding cached artwork. The full, compact and mini captures share this selection. All three stock theme headers use the Mochune wordmark font, with their own mascot palette and pixel icons.

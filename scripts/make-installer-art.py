@@ -15,7 +15,7 @@ def font(size, bold=False):
 def canvas(size):
     return Image.new("RGB", tuple(v * SCALE for v in size), "#131211")
 
-def duck(image, xy, size):
+def brand_mark(image, xy, size):
     logo = Image.open(ROOT / "ui/assets/logo-256.png").convert("RGBA")
     logo.thumbnail((size * SCALE, size * SCALE), Image.Resampling.LANCZOS)
     image.paste(logo, tuple(v * SCALE for v in xy), logo)
@@ -23,11 +23,11 @@ def duck(image, xy, size):
 sidebar = canvas((164, 314))
 draw = ImageDraw.Draw(sidebar)
 draw.rounded_rectangle(box(15, 37, 149, 171), radius=28 * SCALE, fill="#24211c")
-duck(sidebar, (26, 47), 112)
+brand_mark(sidebar, (26, 47), 112)
 draw.text(point(17, 190), "Mochune", font=font(23, True), fill="#f7f1e7")
 sidebar.save(ROOT / "packaging/installer-sidebar.bmp")
 header = canvas((150, 57))
-duck(header, (99, 5), 46)
+brand_mark(header, (99, 5), 46)
 header.save(ROOT / "packaging/installer-header.bmp")
 
 # RichEdit receives explicit paper/text colors instead of black text on a dark box.

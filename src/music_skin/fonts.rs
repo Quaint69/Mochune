@@ -35,7 +35,7 @@ pub(super) fn safe_path(file: &str) -> Result<()> {
 }
 fn inside(source: &Source, file: &str) -> Result<PathBuf> {
     safe_path(file)?;
-    let Source::File(path) = source else {
+    let (Source::File(path) | Source::AlternateFile(path)) = source else {
         bail!("Local fonts require an external theme")
     };
     let root = path

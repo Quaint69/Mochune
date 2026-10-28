@@ -229,9 +229,10 @@ def main():
             (stage / "usr/lib/mochune" / name).chmod(0o755)
         runtime_deps = debian_dependencies([stage / "usr/bin/mochune", *(stage / "usr/lib/mochune").iterdir()])
         dependencies = runtime_deps + ", util-linux, ffmpeg, libgstreamer1.0-0 (>= 1.24), libgstreamer-gl1.0-0, gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-gl, gstreamer1.0-libav, libfontconfig1, libxkbcommon0, libxkbcommon-x11-0, libx11-xcb1, libxcursor1, libx11-6, libegl1, libgl1"
-        icon_dir=stage / "usr/share/icons/hicolor/128x128/apps"
-        icon_dir.mkdir(parents=True)
-        shutil.copy2(PROJECT / "ui/assets/logo-128.png",icon_dir / "mochune.png")
+        for size in (16, 22, 24, 32, 48, 64, 96, 128, 256, 512):
+            icon_dir=stage / f"usr/share/icons/hicolor/{size}x{size}/apps"
+            icon_dir.mkdir(parents=True)
+            shutil.copy2(PROJECT / f"ui/assets/logo-{size}.png", icon_dir / "mochune.png")
         applications=stage / "usr/share/applications"
         applications.mkdir(parents=True)
         (applications / "mochune.desktop").write_text("[Desktop Entry]\nType=Application\nName=Mochune\nExec=mochune\nIcon=mochune\nStartupWMClass=mochune\nTerminal=false\nCategories=AudioVideo;Player;\n")

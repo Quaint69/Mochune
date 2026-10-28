@@ -327,8 +327,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             w.set_rec_indices(ModelRc::new(VecModel::from((0..rows.len() as i32).collect::<Vec<_>>())));
             w.set_playlist_id("".into());
             w.set_save_to(0);
-            w.set_history_view(true);
-            w.set_collection_title("Recently played".into());
+            let collection = input["collection"].as_str().unwrap_or("Recently played");
+            w.set_history_view(collection == "Recently played");
+            w.set_collection_title(collection.into());
+            if let Some(playlists) = input["playlists"].as_array() {
+                let playlists = playlists.iter().map(|v| PlaylistCard {
+                    id: v["id"].as_str().unwrap_or("").into(),
+                    name: v["name"].as_str().unwrap_or("").into(),
+                    count: v["count"].as_str().unwrap_or("").into(),
+                }).collect::<Vec<_>>();
+                w.set_playlist_names(ModelRc::new(VecModel::from(playlists.iter().map(|v| v.name.clone()).collect::<Vec<_>>())));
+                w.set_playlists(ModelRc::new(VecModel::from(playlists)));
+            }
         }
     }
     #[cfg(feature = "showcase")]

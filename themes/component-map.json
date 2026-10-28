@@ -244,11 +244,6 @@
     "kind": "surface",
     "source": "ui/setup.slint"
   },
-  "list-surface-3": {
-    "section": "list",
-    "kind": "surface",
-    "source": "ui/setup.slint"
-  },
   "list-skeleton-1": {
     "section": "list",
     "kind": "skeleton",

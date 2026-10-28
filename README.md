@@ -1,4 +1,4 @@
-<p align="center"><img src="ui/assets/logo-128.png" width="80" alt="Mochune"></p>
+<p align="center"><img src="ui/assets/logo-128.png?v=mochune-20261028" width="80" alt="Mochune"></p>
 <h1 align="center">Mochune</h1>
 <p align="center"><strong>A low-ram and fast yt-dlp wrapper for listening to music and playing videos. Built with Rust and Slint using AI.</strong></p>
 <p align="center">
@@ -9,9 +9,9 @@
 <p align="center"><a href="#light-and-fast">RAM &amp; Performance</a> · <a href="#music-with-your-own-look">Themes</a> · <a href="#compact-music-player">Compact player</a> · <a href="docs/DEVELOPMENT.md">Build</a></p>
 
 <p align="center">
-  <img src="docs/assets/music-full.png" width="75.889%" alt="Full Mochune Music interface">
+  <img src="docs/assets/music-full.png?v=mochune-20261028" width="75.889%" alt="Full Mochune Music interface">
   &nbsp;&nbsp;
-  <img src="docs/assets/music-default-compact.png" width="21.111%" alt="Compact Mochune Music player">
+  <img src="docs/assets/music-default-compact.png?v=mochune-20261028" width="21.111%" alt="Compact Mochune Music player">
 </p>
 
 ## Light and fast
@@ -31,7 +31,7 @@ Observed samples, not limits. Windows and Linux columns use different memory met
 
 A lightweight Music player you can theme: colors, fonts, images and animated GIFs.
 
-![Music themes: Phosphor CRT, PastelDuck, then PixelDuck](docs/assets/themes-carousel.gif)
+![Music themes: Phosphor CRT, PastelDuck, then PixelDuck](docs/assets/themes-carousel.gif?v=mochune-20261028)
 
 **Phosphor CRT → PastelDuck → PixelDuck** — all included. Open the themes folder from Settings to customize yours. [Make a theme →](themes/AUTHORING.md)
 
@@ -43,14 +43,14 @@ Keep just the player, or shrink it to the mini controls.
   <tr><th>Phosphor CRT</th><th>PastelDuck</th></tr>
   <tr>
     <td align="center" valign="top">
-      <img src="docs/assets/music-crt-compact.png" width="300" alt="Compact Phosphor CRT Music player">
+      <img src="docs/assets/music-crt-compact.png?v=mochune-20261028" width="300" alt="Compact Phosphor CRT Music player">
       <br><br>
-      <img src="docs/assets/music-crt-mini.png" width="332" alt="Mini Phosphor CRT Music player">
+      <img src="docs/assets/music-crt-mini.png?v=mochune-20261028" width="332" alt="Mini Phosphor CRT Music player">
     </td>
     <td align="center" valign="top">
-      <img src="docs/assets/music-pastel-compact.png" width="300" alt="Compact PastelDuck Music player">
+      <img src="docs/assets/music-pastel-compact.png?v=mochune-20261028" width="300" alt="Compact PastelDuck Music player">
       <br><br>
-      <img src="docs/assets/music-pastel-mini.png" width="332" alt="Mini PastelDuck Music player">
+      <img src="docs/assets/music-pastel-mini.png?v=mochune-20261028" width="332" alt="Mini PastelDuck Music player">
     </td>
   </tr>
 </table>

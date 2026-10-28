@@ -9,7 +9,7 @@ no arbitrary JSON file picker and no embedded Pastel/DuckPixel preset list.
 
 - `pastelduck`: pink desktop appearance, with licensed PixelMplus10 regular/bold.
 - `pixelduck`: crisp pixel appearance, with the locally renamed DuckPixel font.
-- `crt-full`: amber Phosphor CRT appearance and original animated duck scenes.
+- `crt-full`: amber Phosphor CRT appearance with a Mochune card and optional original animated duck scenes.
 - `reference`: small authoring example; not one of the three complete themes.
 
 All three complete themes ship with portable, per-user installer and Debian
@@ -61,3 +61,5 @@ loaded; individual clips are retained for authoring. Animation visibility and
 the Animate skin artwork switch still gate decoding/redraw work.
 
 Version-two themes may include a `video` section for browsing and video-player chrome. The three bundled themes cover both modes and share one artwork budget. See [AUTHORING.md](AUTHORING.md) and [component-map.json](component-map.json). Existing music-only and version-one files remain compatible.
+
+All three stock themes now default to the matching Mochune mascot. **Original duck card** in Settings → Themes restores their retained duck animation.

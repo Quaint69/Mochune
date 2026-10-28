@@ -486,6 +486,9 @@ export component SetupWindow inherits Window {
     in-out property <bool> music-extra-card: false;
     in-out property <int> music-skin-choice;
     in-out property <string> music-skin-path;
+    in-out property <bool> music-duck-card;
+    in property <bool> skin-has-alternate-card;
+    changed music-duck-card=>{ root.skin-reload(); }
     in-out property <[string]> skin-names: ["Mochune default"];
     in-out property <bool> skin-animations: true;
     in-out property <bool> theme-header: true;
@@ -1034,8 +1037,8 @@ export component SetupWindow inherits Window {
                         theme-kind: "icon";
                         theme-state: "normal";
                         source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("assets/logo-64.png"));
-                        width: (24px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
-                        height: (24px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+                        width: (MusicTheme.enabled(0) ? 24px : 28px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+                        height: (MusicTheme.enabled(0) ? 24px : 28px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
                         image-fit: contain;
                     }
                     ThemeText {
@@ -1048,7 +1051,7 @@ export component SetupWindow inherits Window {
                         text: "Mochune";
                         color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text);
                         font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "Mochune Display";
-                        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (18px);
+                        font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (22px);
                         horizontal-stretch: 1;
                         min-width: 0px; overflow: elide;
                         vertical-alignment: center;
@@ -1110,7 +1113,7 @@ export component SetupWindow inherits Window {
                     padding: 0px;
                     spacing: root.music-layout ? 14px : root.width < 1060px ? 8px : 12px;
                     Rectangle {
-                        width: root.music-layout ? 204px : root.width < 1060px ? 28px : 183px;
+                        width: root.music-layout ? 204px : root.width < 1060px ? (MusicTheme.enabled(0) ? 28px : 32px) : 183px;
                         height: 36px; background: transparent;
                         HorizontalBox {
                             y: 4px; width: parent.width; height: parent.height;
@@ -1123,8 +1126,8 @@ export component SetupWindow inherits Window {
                                 theme-kind: "icon";
                                 theme-state: "normal";
                                 source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url("assets/logo-64.png"));
-                                width: (28px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
-                                height: (28px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+                                width: (MusicTheme.enabled(0) ? 28px : 32px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
+                                height: (MusicTheme.enabled(0) ? 28px : 32px) * (self.theme-paint.has-scale ? self.theme-paint.scale : 1);
                                 image-fit: contain;
                             }
                             ThemeText {
@@ -1136,7 +1139,7 @@ export component SetupWindow inherits Window {
                                 theme-state: "normal";
                                 text: "Mochune";
                                 color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.text);
-                                font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (26px);
+                                font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (30px);
                                 font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "Mochune Display";
                                 width: root.music-layout ? min(164px,self.preferred-width) : root.width < 1060px ? 0px : 143px;
                                 visible: root.music-layout || root.width >= 1060px;
@@ -2833,21 +2836,6 @@ export component SetupWindow inherits Window {
                                             }
                                         }
                                     }
-                                    if index >= 0 && root.selected-id == song.source-id: ThemeBox {
-                                        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
-                                        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
-                                        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
-                                        theme-section: 2;
-                                        theme-key: "list-surface-3";
-                                        theme-kind: "surface";
-                                        theme-state: "normal";
-                                        x: 0px;
-                                        y: 12px;
-                                        width: 2px;
-                                        height: 48px;
-                                        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (1px);
-                                        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.accent);
-                                    }
                                     RowSkeleton {
                                         theme-section: 2;
                                         theme-key: "list-skeleton-1";
@@ -3999,6 +3987,10 @@ export component SetupWindow inherits Window {
                                             selected(v)=>{
                                                 root.music-skin-choice=self.current-index;
                                             }
+                                        }
+                                        if root.skin-has-alternate-card: CheckBox {
+                                            text: "Original duck card";
+                                            checked <=> root.music-duck-card;
                                         }
                                         HorizontalBox {
                                             padding: 0px;

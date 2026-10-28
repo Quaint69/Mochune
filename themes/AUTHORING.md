@@ -300,3 +300,10 @@ The clock, stock volume glyph and closed CC/quality labels use opaque white over
 its themed background is supplied; other in-picture labels stay high-contrast.
 
 The outer application window is always opaque and square in normal, maximized, compact and mini modes. The `window` paint controls its background; its `radius` is ignored. Internal cards, thumbnails and the video picture retain their own themeable corner radii.
+
+
+## Mascot and alternative card
+
+The bundled themes use a fixed-palette `mochune-logo.png` through the header's `header-icon-1` and `header-icon-2` image rules. Customize that named asset to redraw the brand in your theme's style. Keep the front-facing squashed mochi, two eyes and symmetrical headphones recognizable.
+
+`assets.card` is the default animation. An optional top-level `card_alternative` uses the same `{ "file": "...", "fit": "contain" }` format. It appears as **Original duck card** in Settings; the three bundled themes use it to preserve their duck animation. Both paths obey the same confinement and resource limits. Only the selected card loads; switching replaces its worker animation epoch. Existing themes without an alternative remain supported.

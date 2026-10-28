@@ -60,6 +60,7 @@ struct Settings {
     music_extra_card: bool,
     music_skin: i32,
     music_skin_path: String,
+    music_duck_card: bool,
     skin_animations: bool,
     theme_header: bool,
     theme_library: bool,
@@ -117,6 +118,7 @@ impl Default for Settings {
             music_extra_card: false,
             music_skin: 0,
             music_skin_path: String::new(),
+            music_duck_card: false,
             skin_animations: true,
             theme_header: true,
             theme_library: true,
@@ -311,6 +313,7 @@ fn settings(window: &SetupWindow) -> Settings {
         music_extra_card: window.get_music_extra_card(),
         music_skin: window.get_music_skin_choice().clamp(0, 3),
         music_skin_path: window.get_music_skin_path().to_string(),
+        music_duck_card: window.get_music_duck_card(),
         skin_animations: window.get_skin_animations(),
         theme_header: window.get_theme_header(),
         theme_library: window.get_theme_library(),
@@ -360,6 +363,7 @@ fn apply_settings(w: &SetupWindow, s: &Settings) {
     w.set_music_extra_card(s.music_extra_card);
     w.set_music_skin_path(s.music_skin_path.clone().into());
     w.set_music_skin_choice(s.music_skin.max(0));
+    w.set_music_duck_card(s.music_duck_card);
     w.set_skin_animations(s.skin_animations);
     w.set_theme_header(s.theme_header);
     w.set_theme_library(s.theme_library);
@@ -1996,6 +2000,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
             // A changed index may invoke selection against a reordered catalog.
             // Restore the saved identity before asking the loader to resolve it.
             w.set_music_skin_path(s.music_skin_path.clone().into());
+            w.set_music_duck_card(s.music_duck_card);
             w.set_skin_animations(s.skin_animations);
             w.set_theme_header(s.theme_header);
             w.set_theme_library(s.theme_library);

@@ -257,6 +257,10 @@
           }
         }
       }
+    },
+    "card_alternative": {
+      "$ref": "#/$defs/asset",
+      "description": "Optional alternative card animation; only the selected card is decoded."
     }
   },
   "$defs": {

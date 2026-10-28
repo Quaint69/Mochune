@@ -1,36 +1,29 @@
 #!/usr/bin/env python3
-"""Regenerate the original 1.7 KiB title font. Requires fontTools (development only)."""
+"""Original rounded, banner-inspired Mochune wordmark font (not a full UI family). Requires fontTools."""
 from pathlib import Path
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.svgLib.path import parse_path
-root=Path(__file__).resolve().parent.parent
-# The display face is drawn from original geometric outlines, not a modified system font.
+from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
+ROOT=Path(__file__).resolve().parent.parent
 paths={
-'M':('M65 0V700H190L375 240L560 700H685V0H575V495L420 100H330L175 495V0Z',750),
-'o':('M45 255Q45 520 280 520Q515 520 515 255Q515 -10 280 -10Q45 -10 45 255Z M150 255Q150 80 280 80Q410 80 410 255Q410 430 280 430Q150 430 150 255Z',560),
-'h':('M65 0V720H165V455Q225 520 320 520Q510 520 510 320V0H410V305Q410 430 290 430Q165 430 165 300V0Z',570),
-'n':('M65 0V510H155V450Q220 520 315 520Q510 520 510 320V0H410V305Q410 430 290 430Q165 430 165 300V0Z',570),
-'D':('M70 0V700H300Q610 700 610 350Q610 0 300 0Z M175 100H300Q500 100 500 350Q500 600 300 600H175Z',650),
-'u':('M60 510H160V195Q160 90 270 90Q380 90 380 195V510H480V0H390V55Q335 -10 250 -10Q60 -10 60 190Z',540),
-'c':('M470 425L390 365Q345 430 260 430Q150 430 150 255Q150 80 260 80Q345 80 390 145L470 85Q395 -10 260 -10Q45 -10 45 255Q45 520 260 520Q395 520 470 425Z',515),
-'k':('M65 0V720H165V280L350 510H475L280 275L495 0H365L165 255V0Z',525),
-'T':('M25 600V700H605V600H370V0H260V600Z',630),
-'b':('M65 0V720H165V465Q220 520 310 520Q510 520 510 255Q510 -10 310 -10Q220 -10 155 55V0Z M165 255Q165 80 285 80Q405 80 405 255Q405 430 285 430Q165 430 165 255Z',560),
-'e':('M485 220H150Q160 80 285 80Q365 80 410 145L485 85Q415 -10 280 -10Q45 -10 45 255Q45 520 275 520Q490 520 490 275Z M150 305H385Q375 430 275 430Q165 430 150 305Z',535),
+'M':('M60 55V645Q60 700 115 700H175Q202 700 217 674L350 438L483 674Q498 700 528 700H590Q645 700 645 645V55Q645 0 590 0H555Q500 0 500 55V385L411 230Q393 200 370 200H330Q308 200 289 230L205 385V55Q205 0 150 0H115Q60 0 60 55Z',705),
+'o':('M40 260Q40 530 290 530Q540 530 540 260Q540 -10 290 -10Q40 -10 40 260Z M205 260Q205 140 290 140Q375 140 375 260Q375 380 290 380Q205 380 205 260Z',580),
+'c':('M505 438Q525 410 500 388L454 340Q434 320 408 342Q364 383 300 383Q200 383 200 260Q200 137 300 137Q364 137 408 178Q434 200 454 180L500 132Q525 110 505 82Q430 -10 300 -10Q40 -10 40 260Q40 530 300 530Q430 530 505 438Z',550),
+'h':('M60 55V665Q60 720 115 720H155Q210 720 210 665V472Q259 530 337 530Q520 530 520 330V55Q520 0 465 0H425Q370 0 370 55V297Q370 385 300 385Q210 385 210 285V55Q210 0 155 0H115Q60 0 60 55Z',580),
+'u':('M60 480Q60 530 110 530H160Q210 530 210 480V220Q210 135 290 135Q370 135 370 220V480Q370 530 420 530H470Q520 530 520 480V55Q520 0 470 0H435Q389 0 380 47Q340 -10 260 -10Q60 -10 60 220Z',580),
+'n':('M60 55V465Q60 520 115 520H150Q196 520 205 480Q255 530 337 530Q520 530 520 330V55Q520 0 465 0H425Q370 0 370 55V297Q370 385 300 385Q210 385 210 285V55Q210 0 155 0H115Q60 0 60 55Z',580),
+'e':('M525 225H203Q220 125 310 125Q377 125 425 161Q450 180 468 158L505 112Q524 90 503 80Q420 -10 300 -10Q40 -10 40 260Q40 530 295 530Q540 530 540 285V260Q540 225 525 225Z M205 330H377Q360 400 295 400Q225 400 205 330Z',580),
 }
-fb=FontBuilder(1000,isTTF=True); order=['.notdef','space']+list(paths);fb.setupGlyphOrder(order)
+fb=FontBuilder(1000,isTTF=True);order=['.notdef','space']+list(paths);fb.setupGlyphOrder(order)
 glyphs={};metrics={}
 for name in order:
  pen=TTGlyphPen(None)
- if name in paths:
-  data,advance=paths[name];parse_path(data,pen)
- else:
-  advance=300
-  if name=='.notdef':parse_path('M40 0V700H260V0Z M80 40H220V660H80Z',pen)
+ if name in paths:data,advance=paths[name];parse_path(data,pen)
+ else:advance=300
  glyphs[name]=pen.glyph();metrics[name]=(advance,0)
-fb.setupCharacterMap({ord(c):c for c in paths}|{32:'space'})
-fb.setupGlyf(glyphs);fb.setupHorizontalMetrics(metrics);fb.setupHorizontalHeader(ascent=800,descent=-200)
-fb.setupNameTable({'familyName':'Mochune Display','styleName':'Regular','uniqueFontIdentifier':'MochuneDisplay-Regular-1.0','fullName':'Mochune Display Regular','psName':'MochuneDisplay-Regular','version':'Version 1.0','copyright':'Original Mochune display lettering. 2026. MIT License.'})
-fb.setupOS2(sTypoAscender=800,sTypoDescender=-200,usWinAscent=800,usWinDescent=200);fb.setupPost();fb.setupMaxp()
-fb.save(root/'ui/fonts/MochuneDisplay.ttf')
+fb.setupCharacterMap({ord(c):c for c in paths}|{32:'space'});fb.setupGlyf(glyphs);fb.setupHorizontalMetrics(metrics);fb.setupHorizontalHeader(ascent=800,descent=-200)
+fb.setupNameTable({'familyName':'Mochune Display','styleName':'Bold','uniqueFontIdentifier':'MochuneDisplay-Bold-1.1','fullName':'Mochune Display Bold','psName':'MochuneDisplay-Bold','version':'Version 1.1','copyright':'Original banner-inspired Mochune wordmark outlines. 2026. MIT License.'})
+fb.setupOS2(sTypoAscender=800,sTypoDescender=-200,usWinAscent=800,usWinDescent=200,sxHeight=530,sCapHeight=700,usWeightClass=750);fb.setupPost();fb.setupMaxp()
+addOpenTypeFeaturesFromString(fb.font,'feature kern { pos M o -25; pos o c -20; pos c h -10; pos h u -10; pos u n -15; pos n e -15; } kern;')
+fb.save(ROOT/'ui/fonts/MochuneDisplay.ttf')
