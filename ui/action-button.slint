@@ -4,10 +4,13 @@ export component ActionButton inherits ThemeBox {
     theme-kind: "button";
     theme-state: focus.has-focus ? "focus" : !root.available ? "disabled" : hit.pressed ? "pressed" : hit.has-hover ? "hover" : "normal";
     in property <string> label;
+    in property <image> icon;
+    in property <length> horizontal-padding: 0px;
     in property <bool> primary;
     in property <bool> danger;
     in property <bool> available: true;
     callback clicked;
+    min-width: root.icon.width > 0 ? 34px : root.horizontal-padding > 0px ? action-label.preferred-width + root.horizontal-padding*2 : 0px;
     height: 34px;
     vertical-stretch: 0;
     border-radius: root.theme-paint.replace-chrome ? 0px : root.theme-paint.has-radius ? root.theme-paint.radius * 1px : (7px);
@@ -18,7 +21,9 @@ export component ActionButton inherits ThemeBox {
     accessible-role: button;
     accessible-label: root.label;
     accessible-enabled: root.available;
-    ThemeText {
+    action-label := ThemeText {
+        visible: root.icon.width == 0;
+        x: root.horizontal-padding;
         opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
         font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
         theme-section: root.theme-section;
@@ -31,9 +36,15 @@ export component ActionButton inherits ThemeBox {
         font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (root.primary ? 700 : 500);
         horizontal-alignment: center;
         vertical-alignment: center;
-        width: parent.width;
+        width: max(0px,parent.width - root.horizontal-padding*2);
         height: parent.height;
         overflow: elide;
+    }
+    if root.icon.width > 0: ThemeImage {
+        theme-section: root.theme-section; theme-key: root.theme-key + "-icon"; theme-kind: "icon"; theme-state: root.theme-state;
+        source: self.theme-paint.image.width > 0 ? self.theme-paint.image : root.icon;
+        colorize: self.theme-paint.has-tint ? self.theme-paint.tint : root.danger ? AppColors.error : root.theme-paint.has-text ? root.theme-paint.text : root.primary ? #2b1806 : AppColors.text;
+        width:20px; height:20px; x:(parent.width - self.width)/2; y:(parent.height - self.height)/2;image-fit:contain;
     }
     forward-focus: focus;
     focus := FocusScope {

@@ -20,6 +20,8 @@ struct Geometry {
 struct Handoff {
     version: u8,
     music: bool,
+    #[serde(default)]
+    source_mode: i32,
     sessions: [Option<session::Session>; 2],
     geometry: Geometry,
     started_ms: u64,
@@ -37,6 +39,9 @@ fn now_ms() -> u64 {
 }
 pub(crate) fn enabled() -> bool {
     !std::env::args().any(|a| a == OPENGL_OVERRIDE)
+}
+pub(super) fn switch_pending() -> bool {
+    REQUEST.lock().unwrap().is_some()
 }
 pub(crate) fn restoring() -> bool {
     RESTORING.load(Ordering::Relaxed)
@@ -99,6 +104,7 @@ pub(super) fn prepare(w: &SetupWindow, state: &Arc<Mutex<State>>, paths: &Paths)
     let data = Handoff {
         version: 1,
         music,
+        source_mode: if music {0}else{w.global::<crate::Sources>().get_pending_mode().clamp(0,3)},
         sessions,
         geometry: Geometry {
             width: size.width,
@@ -184,6 +190,7 @@ pub(super) fn restore(w: &SetupWindow, state: &Arc<Mutex<State>>, paths: &Paths)
             w.set_music_layout(!data.music);
             w.invoke_mode_change(data.music);
             RESTORING.store(false, Ordering::Relaxed);
+            if !data.music && data.source_mode>0 {w.global::<crate::Sources>().invoke_select_mode(data.source_mode.clamp(0,3));}
             true
         }
         Err(error) => {
@@ -295,6 +302,7 @@ mod tests {
         let data = Handoff {
             version: 1,
             music: true,
+            source_mode: 0,
             sessions: [Some(session.clone()), Some(session)],
             geometry: Geometry {
                 width: 1180.,

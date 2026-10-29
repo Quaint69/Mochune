@@ -99,6 +99,7 @@ component PlayerButton inherits ThemeBox {
     in property <bool> available: true;
     in property <bool> loading;
     in property <bool> active;
+    in property <bool> toggle-marker;
     callback clicked;
     callback activity;
     width: 34px;
@@ -127,6 +128,10 @@ component PlayerButton inherits ThemeBox {
         x: (parent.width - self.width)/2;
         y: (parent.height - self.height)/2;
     }
+    if root.active && root.toggle-marker: Rectangle {
+        x:(parent.width - self.width)/2;y:parent.height - 4px;width:12px;height:2px;
+        background:root.theme-paint.has-text ? root.theme-paint.text : #ffffff;
+    }
     touch := TouchArea {
         enabled: root.available;
         moved => {
@@ -147,6 +152,7 @@ component MusicButton inherits ThemeBox {
     in property <length> icon-size: 19px;
     in property <string> label;
     in property <bool> active;
+    in property <bool> toggle-marker;
     in property <bool> heart: false;
     in property <bool> repeat-one: false;
     in property <bool> available: true;
@@ -202,8 +208,12 @@ component MusicButton inherits ThemeBox {
         text: "1";
         font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (9px);
         font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700);
-        color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.accent-text);
+        color: self.theme-paint.has-text ? self.theme-paint.text : root.skinned ? MusicSkin.text : AppColors.text;
         horizontal-alignment: center;
+    }
+    if root.active && root.toggle-marker: Rectangle {
+        x:(parent.width - self.width)/2;y:parent.height - 4px;width:12px;height:2px;
+        background:root.skinned ? MusicSkin.text : AppColors.text;
     }
     hit := TouchArea {
         enabled: root.available;
@@ -377,6 +387,7 @@ component MusicTransport inherits Rectangle {
             MusicButton {
                 theme-section: 3;
                 theme-key: "repeat-button";
+                toggle-marker:true;
                 width: 28px; height: 36px;
                 skinned: true;
                 skin-slot: 11;
@@ -855,7 +866,8 @@ export component SetupWindow inherits Window {
     property <bool> player-hover;
     property <bool> quality-popup-open;
     property <bool> caption-popup-open;
-    out property <bool> player-pointer-hidden: root.player-hover && root.page-scroll == 0px && !root.music-layout && !root.browsing-page && root.controls-over-video && root.video-visible && !root.controls-shown && root.playback-active && !root.paused && !root.resolving && !root.settings-open && !root.download-open && !root.playlist-editor && !root.quality-popup-open && !root.caption-popup-open;
+    property <bool> interpolation-popup-open;
+    out property <bool> player-pointer-hidden: root.player-hover && root.page-scroll == 0px && !root.music-layout && !root.browsing-page && root.controls-over-video && root.video-visible && !root.controls-shown && root.playback-active && !root.paused && !root.resolving && !root.settings-open && !root.download-open && !root.playlist-editor && !root.quality-popup-open && !root.caption-popup-open && !root.interpolation-popup-open;
     changed player-pointer-hidden=>{
         root.player-cursor-change(root.player-pointer-hidden);
     }
@@ -918,6 +930,14 @@ export component SetupWindow inherits Window {
     in property <bool> acceleration-verified;
     in property <string> acceleration-status: "Not verified — play a video";
     in property <string> acceleration-details;
+    in property <float> video-source-fps:0;
+    out property <string> interpolation-badge: root.interpolation-mode==0 ? "fps" : root.interpolation-mode==2 ? "60fps" : root.video-source-fps>0 ? round(root.video-source-fps*2)+"fps" : "2×";
+    in-out property <int> interpolation-mode:0;
+    in-out property <bool> interpolation-auto-fallback:true;
+    in property <bool> interpolation-enabled: root.interpolation-mode>0;
+    callback change-interpolation(int);
+    in property <bool> interpolation-supported:false;
+    in property <string> interpolation-status:"Waiting for video";
     in property <string> diagnostics: "Player idle";
     in-out property <bool> timeline-probe: false;
     in-out property <length> timeline-x;
@@ -1163,55 +1183,11 @@ export component SetupWindow inherits Window {
                             }
                         }
                     }
-                    ThemeBox {
-                        opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
-                        border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
-                        border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
-                        theme-section: 0;
-                        theme-key: "header-surface-1";
-                        theme-kind: "surface";
-                        theme-state: "normal";
-                        width: 166px;
-                        height: 36px;
-                        background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
-                        border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (18px);
-                        HorizontalBox {
-                            padding: 3px;
-                            spacing: 2px;
-                            for mode[index] in ["Music", "Video"]: ThemeBox {
-                                opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
-                                border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
-                                border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
-                                theme-section: 0;
-                                theme-key: index == 0 ? "music-tab" : "video-tab";
-                                theme-kind: "button";
-                                theme-state: (index == 0) == root.music-layout ? "active" : "normal";
-                                background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : ((index == 0) == root.music-layout ? AppColors.accent : transparent);
-                                border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (15px);
-                                ThemeText {
-                                    opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : 1;
-                                    font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 14px;
-                                    font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
-                                    theme-section: 0;
-                                    theme-key: "header-text-3";
-                                    theme-kind: "text";
-                                    theme-state: "normal";
-                                    text: mode;
-                                    color: self.theme-paint.has-text ? self.theme-paint.text : (index == 1 && root.offline ? AppColors.muted : (index == 0) == root.music-layout ? #2b1806 : AppColors.muted);
-                                    font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700);
-                                    horizontal-alignment: center;
-                                    vertical-alignment: center;
-                                }
-                                TouchArea {
-                                    enabled: index == 0 || !root.offline;
-                                    clicked => {
-                                        root.mode-change(index == 0);
-                                    }
-                                }
-                            }
-                        }
+                    SourcePicker {
+                        width: !root.music-layout && root.width < 1060px ? 104px : 112px;
+                        music: root.music-layout;
+                        offline: root.offline;
                     }
-                    if !root.music-layout: SourcePicker { width: root.width < 1060px ? 72px : 84px; }
                     if !root.music-layout && !root.anime-mode: MusicButton {
                         theme-section: 0; theme-key: "video-back-button";
                         icon: @image-url("icons/video-player.svg");
@@ -1234,7 +1210,7 @@ export component SetupWindow inherits Window {
                         theme-state: search-input.has-focus ? "focus" : "normal";
                         height: 36px;
                         // Reserve fixed header controls even at the minimum full-library width.
-                        width: root.music-layout ? max(96px,root.width - 788px) : max(96px,root.width - 407px - (root.width < 1060px ? 314px : 485px) + (root.anime-mode ? (root.width < 1060px ? 44px : 40px) : -96px));
+                        width: root.music-layout ? max(96px,root.width - 734px) : max(96px,root.width - 407px - (root.width < 1060px ? 314px : 485px) + (root.anime-mode ? (root.width < 1060px ? 44px : 40px) : -96px) + (root.width < 1060px ? 142px : 150px));
                         horizontal-stretch: 0;
                         background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
                         border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px);
@@ -1730,7 +1706,7 @@ export component SetupWindow inherits Window {
                                         changed visible => {
                                             root.main-player-controls-visible=self.visible;
                                         }
-                                        visible: (!root.native-video-enabled || root.music-only || !root.controls-over-video) && (!root.controls-over-video || root.controls-shown || !root.video-visible || root.paused || root.resolving || quality-menu.popup-open || caption-menu.popup-open);
+                                        visible: (!root.native-video-enabled || root.music-only || !root.controls-over-video) && (!root.controls-over-video || root.controls-shown || !root.video-visible || root.paused || root.resolving || quality-menu.popup-open || caption-menu.popup-open || root.interpolation-popup-open);
                                         height: 72px;
                                         width: parent.width;
                                         y: parent.height - self.height;
@@ -1858,6 +1834,18 @@ export component SetupWindow inherits Window {
                                                     horizontal-stretch: 1;
                                                     background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent);
                                                 }
+                                                if root.interpolation-supported && !root.music-only: QualityPicker {
+                                                    theme-key:"video-interpolation";theme-kind:"button";
+                                                    over-video:root.controls-over-video;
+                                                    model:["Off","2×","60 fps"];
+                                                    button-label:root.interpolation-badge;
+                                                    accessible-name:"Frame interpolation (experimental)";
+                                                    compact:false;popup-above:true;width:self.button-width;
+                                                    current-index <=> root.interpolation-mode;
+                                                    changed popup-open=>{root.interpolation-popup-open=self.popup-open;}
+                                                    activity=>{root.player-activity();}
+                                                    selected(index)=>{shortcuts.focus();root.player-activity();root.change-interpolation(index);}
+                                                }
                                                 if !root.fullscreen-mode: PlayerButton {
                                                     width: 28px;
                                                     label: root.controls-outside ? "Move controls into video" : "Move controls below video";
@@ -1901,6 +1889,7 @@ export component SetupWindow inherits Window {
                                                     label: "Repeat video";
                                                     icon: @image-url("icons/repeat.svg");
                                                     active: root.repeat-video;
+                                                    toggle-marker:true;
                                                     clicked=>{
                                                         root.toggle-video-repeat();
                                                     }
@@ -3945,6 +3934,13 @@ export component SetupWindow inherits Window {
                                                     color: AppColors.muted;
                                                     wrap: word-wrap;
                                                     font-size: 11px;
+                                                }
+                                                if root.interpolation-supported: CheckBox {
+                                                    text:"Automatically disable interpolation when GPU is slow";
+                                                    checked <=> root.interpolation-auto-fallback;
+                                                }
+                                                if root.interpolation-mode>0: Text {
+                                                    text:root.interpolation-status;color:AppColors.muted;wrap:word-wrap;font-size:11px;
                                                 }
                                             }
                                         }

@@ -1268,6 +1268,40 @@ pub(super) fn install(
             }
         }
     });
+    let weak=w.as_weak();
+    w.global::<Sources>().on_select_player_mode(move |choice| {
+        let Some(w)=weak.upgrade()else{return;};
+        if !(0..=4).contains(&choice){return;}
+        let music=choice==0;
+        if !music && w.get_offline() && w.get_music_layout(){
+            w.invoke_notify("Offline — this mode needs a connection.".into());
+            return;
+        }
+        let source=match choice {2=>1,3=>3,4=>2,_=>0};
+        let g=sources(&w);
+        // Restore the YouTube session before crossing Music/Video boundaries.
+        if g.get_mode()>0 && source==0 {g.invoke_select_mode(0);}
+        if music!=w.get_music_layout(){
+            g.set_pending_mode(source);
+            w.invoke_mode_change(music);
+            g.set_pending_mode(0);
+            #[cfg(target_os="linux")]
+            if linux_renderer::switch_pending(){return;}
+            if music!=w.get_music_layout(){return;}
+        }
+        if !music {g.invoke_select_mode(source);}
+    });
+    if smoke && let Ok(sequence)=std::env::var("MOCHUNE_SMOKE_MODE_PICKER") {
+        for (step,choice) in sequence.split(',').take(16).filter_map(|v|v.parse::<i32>().ok()).enumerate(){
+            let weak=w.as_weak();
+            slint::Timer::single_shot(Duration::from_millis(800+step as u64*800),move||{
+                if let Some(w)=weak.upgrade(){
+                    let g=sources(&w);g.invoke_select_player_mode(choice);
+                    crate::diagnostics::record("mode_picker_smoke",serde_json::json!({"choice":choice,"music":w.get_music_layout(),"source":g.get_mode()}));
+                }
+            });
+        }
+    }
     if smoke {
         let mode = std::env::var("MOCHUNE_SMOKE_SOURCE")
             .ok()

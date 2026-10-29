@@ -49,6 +49,8 @@ export global Sources {
     in-out property <bool> can-previous: false;
     in-out property <bool> can-next: false;
     callback select-mode(int);
+    callback select-player-mode(int);
+    in-out property <int> pending-mode: 0;
     callback select-provider(int);
     callback set-dubbed(bool);
     callback search(string);
@@ -63,28 +65,39 @@ export global Sources {
 }
 export component SourcePicker inherits ThemeBox {
     theme-section: 0; theme-key: "source-selector"; theme-kind: "surface";
-    width: 84px; height: 34px;
+    in property <bool> music;
+    in property <bool> offline;
+    property <int> active-index: Sources.mode == 0 ? (root.music ? 0 : 1) : Sources.mode == 1 ? 2 : Sources.mode == 3 ? 3 : 4;
+    width: 112px; height: 34px;
     ActionButton {
         theme-section: 0; theme-key: "source-selector-button";
-        label: ["YouTube","Anime","Movies","Manga"][Sources.mode];
+        label: ["YT Music","YT Video","Anime","Manga","Movie"][root.active-index];
         width: parent.width;
         clicked => { menu.show(); }
     }
     menu := PopupWindow {
-        x: 0px; y: 36px; width: 150px; height: 172px;
+        x: 0px; y: 36px; width: 150px; height: 206px;
         ThemeBox {
-            theme-section: 4; theme-key: "source-menu"; theme-kind: "surface";
+            theme-section: 0; theme-key: "source-menu"; theme-kind: "surface";
             background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;
             border-width: 1px; border-color: AppColors.border; border-radius: 8px;
             VerticalBox { padding: 6px; spacing: 4px;
-                for label[index] in ["YouTube","Anime","Movies","Manga"]: ActionButton {
-                    theme-section: 4; theme-key: "source-menu-button";
+                for label[index] in ["YT Music","YT Video","Anime","Manga","Movie"]: ActionButton {
+                    theme-section: 0; theme-key: "source-menu-button";
+                    theme-state: root.active-index == index ? "active" : "normal";
+                    primary: root.active-index == index;
+                    available: index == 0 || !root.offline || !root.music;
                     label: label;
-                    clicked=>{ menu.close(); Sources.select-mode(index); }
+                    clicked=>{ menu.close(); Sources.select-player-mode(index); }
                 }
             }
         }
     }
+}
+
+component MangaButton inherits ActionButton {
+    horizontal-padding: 14px;
+    horizontal-stretch: 0;
 }
 component SourceText inherits ThemeText {
     theme-section: 4; theme-kind: "text";
@@ -101,26 +114,24 @@ export component SourcePanel inherits ThemeBox {
     border-width: self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
     VerticalBox {padding: 12px; spacing: 8px;
         SourceText {theme-key: "sources-heading"; text: Sources.title; wrap: word-wrap; font-weight: 700;}
-        if Sources.mode == 2 || Sources.mode == 3: HorizontalBox {padding: 0px; spacing: 6px;
-            for title[index] in (Sources.mode == 2 ? ["Dramachi","VixSrc"] : ["MangaDex","MangaPill"]): ActionButton {
-                theme-section: 4; theme-key: "sources-provider-button"; theme-state: Sources.provider == index ? "active" : "normal";
-                primary: Sources.provider == index; label: title;
-                clicked=>{Sources.select-provider(index);}
+        HorizontalBox {padding:0px;spacing:6px;
+            if Sources.mode == 2 || Sources.mode == 3: HorizontalBox {padding:0px;spacing:6px;
+                for title[index] in (Sources.mode == 2 ? ["Dramachi","VixSrc"] : ["MangaDex","MangaPill"]): ActionButton {
+                    theme-section:4;theme-key:"sources-provider-button";theme-state:Sources.provider==index ? "active" : "normal";
+                    horizontal-padding:10px;primary:Sources.provider==index;label:title;clicked=>{Sources.select-provider(index);}
+                }
             }
-        }
-        if Sources.mode == 1: HorizontalBox {padding: 0px; spacing: 6px;
-            for label[index] in ["Sub","Dub"]: ActionButton {
-                theme-section: 4; theme-key: "sources-language-button";
-                theme-state: Sources.dubbed == (index == 1) ? "active" : "normal";
-                primary: Sources.dubbed == (index == 1); label: label;
-                clicked=>{Sources.set-dubbed(index == 1);}
+            if Sources.mode == 1: HorizontalBox {padding:0px;spacing:6px;
+                for label[index] in ["Sub","Dub"]: ActionButton {
+                    theme-section:4;theme-key:"sources-language-button";theme-state:Sources.dubbed==(index==1) ? "active" : "normal";
+                    horizontal-padding:10px;primary:Sources.dubbed==(index==1);label:label;clicked=>{Sources.set-dubbed(index==1);}
+                }
             }
+            Rectangle {horizontal-stretch:1;}
+            ActionButton {theme-section:4;theme-key:"sources-retry";label:Sources.busy ? "Cancel loading" : "Retry";icon:Sources.busy ? @image-url("icons/close.svg") : @image-url("icons/refresh.svg");width:34px;clicked=>{Sources.retry();}}
         }
         if Sources.mode == 1 && Sources.nested: ActionButton {theme-section: 4; theme-key: "sources-autonext";label: Sources.auto-next ? "Auto next: On" : "Auto next: Off";clicked=>{Sources.auto-next = !Sources.auto-next;}}
-        HorizontalBox {padding: 0px; spacing: 6px;
-            if Sources.nested: ActionButton {theme-section:4; theme-key:"sources-back";label:"Back to results";clicked=>{Sources.back();}}
-            ActionButton {theme-section:4; theme-key:"sources-retry";label:Sources.busy ? "Cancel" : "Retry"; clicked=>{Sources.retry();}}
-        }
+        if Sources.nested: ActionButton {theme-section:4;theme-key:"sources-back";horizontal-padding:12px;label:"Back to results";clicked=>{Sources.back();}}
         SourceText {theme-key:"sources-status";text:Sources.status;wrap:word-wrap;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
         if Sources.busy: LoadingDots {width:30px;height:18px;}
         ListView {
@@ -152,19 +163,19 @@ export component SourceSidebar inherits ThemeBox {
     property <int> menu-index: -1;
     VerticalBox {padding:12px;spacing:10px;
         SourceText {theme-key:"sources-sidebar-heading";text:Sources.mode==1 ? "MY ANIME" : Sources.mode==2 ? "MY MOVIES" : "MY MANGA";font-weight:700;}
-        ActionButton {theme-section:4;theme-key:"sources-bookmark";label:Sources.bookmarked ? "★ Saved" : "+ Bookmark";available:Sources.can-bookmark;clicked=>{Sources.bookmark();}}
-        PlaylistPicker {theme-section:4;theme-key:"sources-folder-picker";label:"";accessible-name:"Bookmark folder";model:Sources.folder-names;current-index:Sources.folder-index;selected(index)=>{Sources.select-folder(index);}}
-        HorizontalBox {padding:0px;spacing:4px;
-            ActionButton {theme-section:4;theme-key:"sources-folder-new";label:"+";clicked=>{Sources.folder-name="";Sources.folder-error="";Sources.folder-rename=false;Sources.folder-editor=true;editor.show();}}
-            ActionButton {theme-section:4;theme-key:"sources-folder-edit";label:"Edit";available:Sources.folder-index>=2;clicked=>{Sources.folder-name=Sources.folder-names[Sources.folder-index];Sources.folder-error="";Sources.folder-rename=true;Sources.folder-editor=true;editor.show();}}
+        HorizontalBox {padding:0px;spacing:6px;alignment:start;
+            ActionButton {theme-section:4;theme-key:"sources-bookmark";label:Sources.bookmarked ? "Remove bookmark" : "Save bookmark";icon:Sources.bookmarked ? @image-url("icons/bookmark-filled.svg") : @image-url("icons/bookmark.svg");width:34px;primary:Sources.bookmarked;available:Sources.can-bookmark;clicked=>{Sources.bookmark();}}
+            ActionButton {theme-section:4;theme-key:"sources-folder-new";label:"New bookmark folder";icon:@image-url("icons/plus.svg");width:34px;clicked=>{Sources.folder-name="";Sources.folder-error="";Sources.folder-rename=false;Sources.folder-editor=true;editor.show();}}
+            ActionButton {theme-section:4;theme-key:"sources-folder-edit";label:"Edit bookmark folder";icon:@image-url("icons/edit.svg");width:34px;available:Sources.folder-index>=2;clicked=>{Sources.folder-name=Sources.folder-names[Sources.folder-index];Sources.folder-error="";Sources.folder-rename=true;Sources.folder-editor=true;editor.show();}}
         }
+        PlaylistPicker {theme-section:4;theme-key:"sources-folder-picker";label:"";accessible-name:"Bookmark folder";model:Sources.folder-names;current-index:Sources.folder-index;selected(index)=>{Sources.select-folder(index);}}
         if Sources.bookmarks.length==0: SourceText {theme-key:"sources-bookmarks-empty";text:"Bookmark a title to find it here. Reading progress is saved automatically.";wrap:word-wrap;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
         ListView {vertical-stretch:1;
             for row[index] in Sources.bookmarks: ThemeBox {
-                theme-section:4;theme-key:"sources-bookmark-row";theme-kind:"row";theme-state:hit.has-hover ? "hover" : row.active ? "active" : "normal";
+                clip:true;theme-section:4;theme-key:"sources-bookmark-row";theme-kind:"row";theme-state:hit.has-hover ? "hover" : row.active ? "active" : "normal";
                 background:self.theme-paint.has-background ? self.theme-paint.background : hit.has-hover || row.active ? AppColors.hover : transparent;
                 border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 8px;height:76px;
-                VerticalBox {padding:8px;padding-right:32px;spacing:4px;SourceText {theme-key:"sources-bookmark-title";text:row.title;wrap:word-wrap;overflow:elide;font-weight:600;}SourceText {theme-key:"sources-bookmark-progress";text:row.detail;overflow:elide;font-size:11px;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}}
+                VerticalBox {padding:8px;padding-right:32px;spacing:4px;SourceText {theme-key:"sources-bookmark-title";text:row.title;wrap:word-wrap;overflow:elide;font-weight:600;min-width:0px;height:36px;vertical-stretch:0;}SourceText {theme-key:"sources-bookmark-progress";text:row.detail;overflow:elide;font-size:11px;min-width:0px;height:16px;vertical-stretch:0;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}}
                 hit:=TouchArea {mouse-cursor:pointer;clicked=>{Sources.open-bookmark(index);}}
                 ActionButton {theme-section:4;theme-key:"sources-bookmark-options";label:"⋯";width:26px;height:28px;x:parent.width - 28px;y:24px;clicked=>{root.menu-index=index;move-menu.show();}}
             }
@@ -181,7 +192,7 @@ export component SourceSidebar inherits ThemeBox {
                 if Sources.folder-rename: SourceText {theme-key:"sources-folder-note";text:"Deleting a folder keeps its bookmarks in Ungrouped.";wrap:word-wrap;font-size:11px;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
                 HorizontalBox {padding:0px;spacing:6px;
                     ActionButton {theme-section:4;theme-key:"sources-folder-save";label:Sources.folder-rename ? "Save" : "Create";primary:true;clicked=>{Sources.save-folder();if !Sources.folder-editor {editor.close();}}}
-                    if Sources.folder-rename: ActionButton {theme-section:4;theme-key:"sources-folder-delete";label:"Delete";danger:true;clicked=>{Sources.delete-folder();Sources.folder-editor=false;editor.close();}}
+                    if Sources.folder-rename: ActionButton {theme-section:4;theme-key:"sources-folder-delete";label:"Delete folder";icon:@image-url("icons/trash.svg");width:34px;danger:true;clicked=>{Sources.delete-folder();Sources.folder-editor=false;editor.close();}}
                     ActionButton {theme-section:4;theme-key:"sources-folder-cancel";label:"Cancel";clicked=>{Sources.folder-editor=false;editor.close();}}
                 }
             }
@@ -191,7 +202,7 @@ export component SourceSidebar inherits ThemeBox {
         ThemeBox {theme-section:4;theme-key:"sources-bookmark-menu";theme-kind:"surface";background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.raised;border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 1px;border-color:self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 10px;
             VerticalBox {padding:12px;spacing:8px;
                 PlaylistPicker {theme-section:4;theme-key:"sources-bookmark-move";label:"Move to";model:Sources.move-folder-names;current-index:max(0,Sources.folder-index - 1);selected(index)=>{Sources.move-bookmark(root.menu-index,index+1);move-menu.close();}}
-                ActionButton {theme-section:4;theme-key:"sources-bookmark-remove";label:"Remove bookmark";danger:true;clicked=>{Sources.remove-bookmark(root.menu-index);move-menu.close();}}
+                ActionButton {theme-section:4;theme-key:"sources-bookmark-remove";label:"Remove bookmark";icon:@image-url("icons/trash.svg");width:34px;danger:true;clicked=>{Sources.remove-bookmark(root.menu-index);move-menu.close();}}
             }
         }
     }
@@ -209,11 +220,11 @@ export component MangaReader inherits ThemeBox {
     VerticalBox {padding:root.is-fullscreen ? 0px : 10px;spacing:8px;
         HorizontalBox {padding:0px;spacing:6px;height:34px;
             SourceText {theme-key:"manga-title";text:Sources.reader-title=="" ? "Choose a chapter to begin reading" : Sources.reader-title;overflow:elide;font-weight:700;vertical-alignment:center;horizontal-stretch:1;}
-            ActionButton {theme-section:4;theme-key:"manga-reading-mode";label:Sources.scrolling ? "Scroll" : "Pages";clicked=>{Sources.scrolling=!Sources.scrolling;Sources.jump-serial+=1;}}
-            ActionButton {theme-section:4;theme-key:"manga-zoom-out";label:"−";width:30px;clicked=>{Sources.zoom=max(0.25,Sources.zoom - 0.1);}}
-            ActionButton {theme-section:4;theme-key:"manga-zoom-reset";label:round(Sources.zoom*100)+"%";clicked=>{Sources.zoom=1;}}
-            ActionButton {theme-section:4;theme-key:"manga-zoom-in";label:"+";width:30px;clicked=>{Sources.zoom=min(3,Sources.zoom+0.1);}}
-            ActionButton {theme-section:4;theme-key:"manga-fullscreen";label:root.is-fullscreen ? "Exit fullscreen" : "Fullscreen";clicked=>{root.fullscreen();}}
+            MangaButton {theme-section:4;theme-key:"manga-reading-mode";label:Sources.scrolling ? "Scroll" : "Pages";clicked=>{Sources.scrolling=!Sources.scrolling;Sources.jump-serial+=1;}}
+            MangaButton {theme-section:4;theme-key:"manga-zoom-out";label:"−";width:44px;clicked=>{Sources.zoom=max(0.25,Sources.zoom - 0.1);}}
+            MangaButton {theme-section:4;theme-key:"manga-zoom-reset";label:round(Sources.zoom*100)+"%";clicked=>{Sources.zoom=1;}}
+            MangaButton {theme-section:4;theme-key:"manga-zoom-in";label:"+";width:44px;clicked=>{Sources.zoom=min(3,Sources.zoom+0.1);}}
+            MangaButton {theme-section:4;theme-key:"manga-fullscreen";label:root.is-fullscreen ? "Exit fullscreen" : "Fullscreen";clicked=>{root.fullscreen();}}
         }
         view:=Rectangle {
             vertical-stretch:1;clip:true;
@@ -275,11 +286,11 @@ export component MangaReader inherits ThemeBox {
             }
         }
         HorizontalBox {padding:0px;spacing:6px;height:34px;
-            ActionButton {theme-section:4;theme-key:"manga-previous-chapter";label:"‹ Chapter";available:Sources.can-previous;clicked=>{Sources.next(-1,false);}}
-            ActionButton {theme-section:4;theme-key:"manga-previous-page";label:"‹";width:34px;available:Sources.page>0;clicked=>{Sources.turn-page(-1);}}
+            MangaButton {theme-section:4;theme-key:"manga-previous-chapter";label:"‹ Chapter";available:Sources.can-previous;clicked=>{Sources.next(-1,false);}}
+            MangaButton {theme-section:4;theme-key:"manga-previous-page";label:"‹";width:44px;available:Sources.page>0;clicked=>{Sources.turn-page(-1);}}
             SourceText {theme-key:"manga-position";text:Sources.page-count>0 ? "Page "+(Sources.page+1)+" / "+Sources.page-count : "";vertical-alignment:center;horizontal-alignment:center;horizontal-stretch:1;}
-            ActionButton {theme-section:4;theme-key:"manga-next-page";label:"›";width:34px;available:Sources.page+1<Sources.page-count;clicked=>{Sources.turn-page(1);}}
-            ActionButton {theme-section:4;theme-key:"manga-next-chapter";label:"Chapter ›";available:Sources.can-next;clicked=>{Sources.next(1,false);}}
+            MangaButton {theme-section:4;theme-key:"manga-next-page";label:"›";width:44px;available:Sources.page+1<Sources.page-count;clicked=>{Sources.turn-page(1);}}
+            MangaButton {theme-section:4;theme-key:"manga-next-chapter";label:"Chapter ›";available:Sources.can-next;clicked=>{Sources.next(1,false);}}
         }
     }
 }

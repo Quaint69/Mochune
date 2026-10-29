@@ -1218,7 +1218,15 @@
           "radius": 0
         },
         "repeat-button": {
-          "radius": 0
+          "radius": 0,
+          "states": {
+            "active": {
+              "background": "#6a4000",
+              "border": "#ffcc33",
+              "border_width": 2,
+              "text": "#ffb000"
+            }
+          }
         },
         "volume-button": {
           "radius": 0
@@ -1906,8 +1914,10 @@
               "border": "#ffb000"
             },
             "active": {
-              "background": "#553508",
-              "border": "#ffcc33"
+              "background": "#6a4000",
+              "border": "#ffcc33",
+              "border_width": 2,
+              "text": "#ffb000"
             },
             "disabled": {
               "opacity": 0.45

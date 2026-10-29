@@ -1233,7 +1233,15 @@
           "radius": 2
         },
         "repeat-button": {
-          "radius": 2
+          "radius": 2,
+          "states": {
+            "active": {
+              "background": "#e4a5d2",
+              "border": "#ec77bd",
+              "border_width": 2,
+              "text": "#4f3269"
+            }
+          }
         },
         "volume-button": {
           "radius": 2
@@ -1921,8 +1929,10 @@
               "border": "#4f3269"
             },
             "active": {
-              "background": "#e5b9f3",
-              "border": "#ec77bd"
+              "background": "#e4a5d2",
+              "border": "#ec77bd",
+              "border_width": 2,
+              "text": "#4f3269"
             },
             "disabled": {
               "opacity": 0.45

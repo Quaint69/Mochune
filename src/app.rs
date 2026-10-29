@@ -69,6 +69,9 @@ struct Settings {
     theme_video: bool,
     controls_outside: bool,
     legacy_quality: bool,
+    interpolation_enabled:bool,
+    interpolation_mode:i32,
+    interpolation_auto_fallback:bool,
     interests: String,
     recommendation_mode: i32,
     recommendation_count: i32,
@@ -126,6 +129,9 @@ impl Default for Settings {
             theme_video: true,
             controls_outside: false,
             legacy_quality: false,
+            interpolation_enabled:false,
+            interpolation_mode:0,
+            interpolation_auto_fallback:true,
             interests: "technology, music, science".into(),
             recommendation_mode: 0,
             recommendation_count: 30,
@@ -321,6 +327,9 @@ fn settings(window: &SetupWindow) -> Settings {
         theme_video: window.get_theme_video(),
         controls_outside: window.get_controls_outside(),
         legacy_quality: window.get_legacy_quality(),
+        interpolation_enabled:window.get_interpolation_enabled(),
+        interpolation_mode:window.get_interpolation_mode().clamp(0,2),
+        interpolation_auto_fallback:window.get_interpolation_auto_fallback(),
         interests: String::new(),
         recommendation_mode: 0,
         recommendation_count: recommendations::video_limit(window.get_recommendation_count()),
@@ -359,6 +368,9 @@ fn apply_settings(w: &SetupWindow, s: &Settings) {
     w.set_light_mode(s.light_mode);
     w.set_immersive(s.immersive);
     w.set_launch_maximized(s.launch_maximized);
+    w.set_interpolation_supported(cfg!(target_os="linux"));
+    w.set_interpolation_mode(s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0}));
+            w.set_interpolation_auto_fallback(s.interpolation_auto_fallback);
     w.set_music_extra_card(s.music_extra_card);
     w.set_music_skin_path(s.music_skin_path.clone().into());
     w.set_music_skin_choice(s.music_skin.max(0));
@@ -1252,6 +1264,14 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
             w.invoke_notify("Control position changed for this session; could not save it.".into());
         }
     });
+    let interpolation_state=state.clone();let interpolation_paths=paths.clone();let weak=w.as_weak();
+    w.on_change_interpolation(move |mode|{
+        let Some(w)=weak.upgrade()else{return;};
+        if !w.get_interpolation_supported(){return;}
+        let mode=mode.clamp(0,2);w.set_interpolation_mode(mode);
+        let mut state=interpolation_state.lock().unwrap();state.settings.interpolation_mode=mode;state.settings.interpolation_enabled=mode>0;
+        if interpolation_paths.save("settings.json",&state.settings).is_err(){w.invoke_notify("Interpolation changed for this session; could not save it.".into());}
+    });
     browse_view::install(w, state.clone());
     settings_terms::install(w);
     let repaint = w.as_weak();
@@ -1996,6 +2016,8 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
             w.set_light_mode(s.light_mode);
             w.set_immersive(s.immersive);
             w.set_launch_maximized(s.launch_maximized);
+            w.set_interpolation_mode(s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0}));
+            w.set_interpolation_auto_fallback(s.interpolation_auto_fallback);
             w.set_music_extra_card(s.music_extra_card);
             w.set_music_skin_path(s.music_skin_path.clone().into());
             w.set_music_skin_choice(s.music_skin.max(0));

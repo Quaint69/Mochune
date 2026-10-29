@@ -61,10 +61,11 @@ export component QualityPicker inherits ThemeBox {
     callback activity();
     property <string> selected-label: root.current-index >= 0 && root.current-index < root.model.length ? root.model[root.current-index] : "Quality";
     property <string> compact-label: root.current-index >= 0 && root.current-index < root.compact-model.length ? root.compact-model[root.current-index] : root.selected-label;
+    out property <length> button-width: max(36px,badge-measure.preferred-width+8px);
     out property <length> badge-width: max(74px, badge-measure.preferred-width + 24px);
     badge-measure := ThemeText {
         theme-section: root.theme-section; theme-key: "video-quality-text-1"; theme-kind: "text";
-visible: false; text: root.compact-label; font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : ("DejaVu Sans Mono"); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700);}
+visible: false; text: root.button-label != "" ? root.button-label : root.compact-label; font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : ("DejaVu Sans Mono"); font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : (700);}
     opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.enabled ? 1 : 0.45);
     height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px); background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.button-label != "" ? (root.current-index > 0 ? #554022 : transparent) : root.compact ? transparent : #222222e8);
     accessible-role: combobox; accessible-label: root.accessible-name; accessible-value: root.selected-label;

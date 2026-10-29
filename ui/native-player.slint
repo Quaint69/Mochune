@@ -18,6 +18,7 @@ component PlayerButton inherits ThemeBox {
     in property <bool> available: true;
     in property <bool> loading;
     in property <bool> active;
+    in property <bool> toggle-marker;
     callback clicked;
     callback activity;
     width: 34px; height: 32px; border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (4px);
@@ -27,6 +28,10 @@ component PlayerButton inherits ThemeBox {
         theme-section: 4; theme-key: "video-native-icon-1"; theme-kind: "icon";
 visible: !root.loading; source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (root.icon); colorize: self.theme-paint.has-tint ? self.theme-paint.tint : (#ffffff); width: 22px; height: 22px; x: (parent.width - self.width)/2; y: (parent.height - self.height)/2; image-fit: contain; opacity: self.theme-paint.has-opacity ? self.theme-paint.opacity : (root.available ? 1 : 0.4);}
     if root.loading: LoadingDots { theme-section: 4; theme-key: "video-loadingdots";tint: #ffffff; width: 22px; height: 18px; x: (parent.width - self.width)/2; y: (parent.height - self.height)/2;}
+    if root.active && root.toggle-marker: Rectangle {
+        x:(parent.width - self.width)/2;y:parent.height - 4px;width:12px;height:2px;
+        background:root.theme-paint.has-text ? root.theme-paint.text : #ffffff;
+    }
     touch := TouchArea { enabled: root.available; moved => { root.activity(); } clicked => { root.activity(); root.clicked(); } }
 }
 
@@ -253,7 +258,7 @@ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url(
  horizontal-stretch: 1; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent); }
                                     if !root.fullscreen-mode: PlayerButton {width: 28px; label: root.controls-outside ? "Move controls into video" : "Move controls below video"; icon: root.controls-outside ? @image-url("icons/arrow-up.svg") : @image-url("icons/arrow-down.svg"); activity=>{root.player-activity();} clicked=>{root.toggle-controls-position();}}
                                     caption-menu := QualityPicker { theme-key: "video-captions"; theme-kind: "button"; over-video: root.controls-over-video;popup-bottom-limit: root.popup-boundary;open-request: root.caption-open-request; model: root.caption-labels; compact: false; button-label: "CC"; accessible-name: "Captions"; popup-above: true; current-index <=> root.caption-choice; width: 34px; enabled: root.caption-labels.length > 1 && !root.music-only; activity=>{root.player-activity();} selected(index)=>{root.focus-request();root.player-activity();root.choose-caption(index);}}
-                                    PlayerButton {width: root.width < 560px ? 28px : 34px; label: "Repeat video"; icon: @image-url("icons/repeat.svg"); active: root.repeat-video; clicked=>{root.toggle-video-repeat();} activity=>{root.player-activity();}}
+                                    PlayerButton {width: root.width < 560px ? 28px : 34px; label: "Repeat video"; icon: @image-url("icons/repeat.svg"); active: root.repeat-video;toggle-marker:true; clicked=>{root.toggle-video-repeat();} activity=>{root.player-activity();}}
                                     quality-menu := QualityPicker { over-video: root.controls-over-video;popup-bottom-limit: root.popup-boundary; popup-above: true; open-request: root.quality-open-request; model: root.quality-labels; compact-model: root.quality-compact-labels; compact: !root.legacy-quality; current-index <=> root.quality-choice; width: root.legacy-quality ? min(270px, root.width * 0.36) : quality-menu.badge-width; vertical-stretch: 0; enabled: !root.controls-loading; activity=>{root.player-activity();} selected(index) => { root.focus-request(); root.player-activity(); root.choose-quality(index); } }
                                     PlayerButton {width: root.width < 560px ? 28px : 34px; activity => {root.player-activity();} label: "Fullscreen"; icon: @image-url("icons/fullscreen.svg"); clicked => { root.toggle-fullscreen(); } }
                                 }

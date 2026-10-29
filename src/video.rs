@@ -13,6 +13,12 @@ mod buffered;
 pub(crate) mod buffering;
 mod delivery;
 mod indexed_http;
+#[cfg(target_os = "linux")]
+mod interpolation;
+pub(crate) fn interpolation_stats()->serde_json::Value {
+    #[cfg(target_os="linux")] { interpolation::stats() }
+    #[cfg(not(target_os="linux"))] { serde_json::json!({"supported":false}) }
+}
 #[cfg(any(target_os = "windows", feature = "native-overlay-test"))]
 #[cfg_attr(not(target_os = "windows"), allow(dead_code))]
 mod native_overlay;
@@ -114,10 +120,19 @@ struct FrameMailbox {
     next: Option<(gst_video::VideoInfo, gst::Buffer)>,
     epoch: u64,
     flushing: bool,
+    #[cfg(target_os="linux")]
+    received:Option<std::time::Instant>,
+    #[cfg(target_os="linux")]
+    timed:bool,
+    #[cfg(target_os="linux")]
+    motion:Option<std::sync::Weak<interpolation::worker::Shared>>,
+    #[cfg(target_os="linux")]
+    due:Option<std::time::Instant>,
 }
 impl FrameMailbox {
     fn clear(&mut self, flushing: bool) {
         self.next = None;
+        #[cfg(target_os="linux")] {self.received=None;self.due=None;self.timed=false;if let Some(w)=self.motion.take().and_then(|w|w.upgrade()){w.cancel();}}
         self.epoch = self.epoch.wrapping_add(1);
         self.flushing = flushing;
     }
@@ -1554,6 +1569,8 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
     let mut draw_start = std::time::Instant::now();
     let mut presented_pts = None;
     let mut frame_error = None;
+    #[cfg(target_os="linux")]
+    let interpolation_timer=slint::Timer::default();
     app.window()
         .set_rendering_notifier(move |state, api| match state {
             slint::RenderingState::RenderingSetup => {
@@ -1619,7 +1636,17 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
                     sink.clear();
                 }
                 if render_enabled.load(Ordering::Acquire) {
-                    match sink.next_image() {
+                    #[cfg(target_os="linux")]
+                    let image={
+                        let mode=weak.upgrade().map_or(0,|w|{
+                            sink.auto_fallback=w.get_interpolation_auto_fallback();
+                            if w.get_paused()||pipe.current_state()!=gst::State::Playing{0}else{w.get_interpolation_mode()}
+                        });
+                        sink.next_image(mode)
+                    };
+                    #[cfg(not(target_os="linux"))]
+                    let image=sink.next_image();
+                    match image {
                         Ok(Some((image, changed, pts))) => {
                             LAST_VIDEO_PTS.store(pts, Ordering::Release);
                             presented_pts = Some(pts);
@@ -1648,6 +1675,25 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
                             }
                         }
                         Ok(None) => {}
+                    }
+                }
+                #[cfg(target_os="linux")]
+                {
+                    if let Some(w)=weak.upgrade(){
+                        if w.get_video_source_fps()!=sink.source_fps {w.set_video_source_fps(sink.source_fps);}
+                        if sink.blocked.is_some() && w.get_interpolation_mode()>0 {
+                            w.set_interpolation_mode(0);
+                            let weak=w.as_weak();
+                            let _=slint::invoke_from_event_loop(move||{if let Some(w)=weak.upgrade(){
+                                if w.get_interpolation_mode()==0 {w.invoke_change_interpolation(0);}
+                            }});
+                        }
+                        if w.get_interpolation_status().as_str()!=sink.effect_status {w.set_interpolation_status(sink.effect_status.clone().into());}
+                        let pending={let mut mailbox=sink.next.lock().unwrap();mailbox.timed=sink.motion.is_some();!mailbox.timed&&mailbox.next.is_some()};
+                        if pending {w.window().request_redraw();}
+                        if let Some(worker)=sink.motion.as_ref(){
+                            let weak=w.as_weak();interpolation_timer.start(slint::TimerMode::SingleShot,worker.delay(),move||{if let Some(w)=weak.upgrade(){w.window().request_redraw();}});
+                        }else{interpolation_timer.stop();}
                     }
                 }
                 IMPORT_MICROS.fetch_add(started.elapsed().as_micros() as u64, Ordering::Relaxed);
@@ -1707,6 +1753,16 @@ struct TextureSink {
     redraw_pending: Option<Arc<AtomicBool>>,
     surface: Option<Surface>,
     display_aspect: f32,
+    source_fps: f32,
+    motion:Option<interpolation::worker::Worker>,
+    motion_notify:Option<Arc<Mutex<Box<dyn Fn()+Send>>>>,
+    current_pts:Option<u64>,
+    generation:u64,
+    requested:i32,
+    blocked:Option<String>,
+    effect_status:String,
+    early_offset:i64,
+    auto_fallback:bool,
 }
 #[cfg(not(target_os = "windows"))]
 impl TextureSink {
@@ -1751,6 +1807,8 @@ impl TextureSink {
             redraw_pending: None,
             surface: None,
             display_aspect: 0.,
+            source_fps: 0.,
+            motion:None,motion_notify:None,current_pts:None,generation:0,requested:0,blocked:None,effect_status:"Off".into(),early_offset:0,auto_fallback:true,
         })
     }
     fn connect(
@@ -1865,6 +1923,7 @@ impl TextureSink {
             gst::BusSyncReply::Drop
         });
         let notify = Arc::new(Mutex::new(notify));
+        self.motion_notify=Some(notify.clone());
         let next = self.next.clone();
         let preroll_next = next.clone();
         let preroll_notify = notify.clone();
@@ -1876,39 +1935,100 @@ impl TextureSink {
         );
         Ok(())
     }
-    fn next_image(&mut self) -> Result<Option<(slint::Image, bool, u64)>> {
-        if let Some(q) = &self.redraw_pending {
-            q.store(false, Ordering::Release);
+    fn reset_motion(&mut self) {
+        self.next.lock().unwrap().motion=None;
+        self.motion=None;
+        if self.early_offset != 0 {
+            self.appsink.set_property("ts-offset", 0i64);
+            self.early_offset = 0;
         }
-        let Some((info, buffer)) = self.next.lock().unwrap().next.take() else {
+        interpolation::inactive();
+    }
+    fn motion_failed(&mut self, error: anyhow::Error) {
+        let reason = error.to_string();
+        crate::diagnostics::record(
+            "interpolation_fallback",
+            serde_json::json!({"reason":reason}),
+        );
+        self.effect_status = reason.clone();
+        self.blocked = Some(reason);
+        self.reset_motion();
+    }
+    fn current_image(&mut self) -> Result<Option<(slint::Image, bool, u64)>> {
+        let Some(frame) = self.current.as_ref() else {
             return Ok(None);
         };
-        // Missing preroll timestamps are unknown, not the start of the video.
-        // Keep the last presented clock instead of reporting a false rewind.
-        let pts = buffer
-            .pts()
-            .map(|t| t.nseconds())
-            .unwrap_or_else(|| LAST_VIDEO_PTS.load(Ordering::Acquire));
-        buffer
-            .meta::<gst_gl::GLSyncMeta>()
-            .context("Missing GPU frame synchronization")?
-            .wait(
-                self.context
-                    .as_ref()
-                    .context("Missing display GL context")?,
-            );
-        let frame = gst_gl::GLVideoFrame::from_buffer_readable(buffer, &info)
-            .map_err(|_| anyhow::anyhow!("Cannot import the decoded OpenGL frame"))?;
-        let par = info.par();
-        self.display_aspect = display_aspect(info.width(), info.height(), par.numer(), par.denom());
-        let id = frame.texture_id(0).context("Missing video texture")?;
         let surface = self.surface.as_mut().context("Missing video surface")?;
-        let changed = surface.copy(id, frame.width(), frame.height())?;
-        let image = surface.image.clone();
-        self.current = Some(frame);
-        Ok(Some((image, changed, pts)))
+        let changed = surface.copy(frame.texture_id(0)?, frame.width(), frame.height())?;
+        Ok(Some((
+            surface.image.clone(),
+            changed,
+            self.current_pts.unwrap_or(0),
+        )))
+    }
+    fn prepared_image(&mut self)->Result<Option<(slint::Image,bool,u64)>> {
+        let worker=self.motion.as_ref().context("Missing interpolation worker")?;
+        let surface=self.surface.as_mut().context("Missing video surface")?;
+        let Some(frame)=worker.take_ready(&surface.gl)? else {return Ok(None);};
+        let pts=frame.pts;
+        let synthetic=frame.synthetic;
+        let result=surface.copy(frame.texture,self.current.as_ref().map_or(surface.size.0,|f|f.width()),self.current.as_ref().map_or(surface.size.1,|f|f.height()));
+        worker.recycle(&surface.gl,frame)?;
+        let changed=result?;
+        if synthetic {interpolation::presented();}
+        self.current=None;self.current_pts=Some(pts);
+        Ok(Some((surface.image.clone(),changed,pts)))
+    }
+    fn next_image(&mut self,mode:i32)->Result<Option<(slint::Image,bool,u64)>> {
+        if let Some(q)=&self.redraw_pending {q.store(false,Ordering::Release);}
+        let (epoch,flushing)={let m=self.next.lock().unwrap();(m.epoch,m.flushing)};
+        if self.generation!=epoch||self.requested!=mode {
+            self.reset_motion(); self.blocked=None;
+            if self.generation!=epoch {self.current=None;self.current_pts=None;}
+            self.generation=epoch; self.requested=mode;
+        }
+        if flushing {return Ok(None);}
+        if let Some(worker)=self.motion.as_ref() {
+            worker.shared.auto_fallback.store(self.auto_fallback,Ordering::Relaxed);
+            if let Some(error)=worker.error() {
+                self.motion_failed(anyhow::anyhow!(error));
+                return Ok(None);
+            }
+            return match self.prepared_image() {
+                Ok(image)=>Ok(image),
+                Err(error)=>{self.motion_failed(error);Ok(None)}
+            };
+        }
+        let incoming={let mut m=self.next.lock().unwrap();let due=m.due.take().unwrap_or_else(std::time::Instant::now);m.next.take().map(|(info,buffer)|(info,buffer,due))};
+        let Some((info,buffer,due))=incoming else {return Ok(None);};
+        let pts=buffer.pts().map(|t|t.nseconds()).unwrap_or_else(||LAST_VIDEO_PTS.load(Ordering::Acquire));
+        let rate=info.fps();
+        self.source_fps=if rate.denom()>0 {rate.numer() as f32/rate.denom() as f32}else{0.};
+        let par=info.par();
+        self.display_aspect=display_aspect(info.width(),info.height(),par.numer(),par.denom());
+        if mode>0 && self.blocked.is_none() {
+            if let Some(period)=interpolation::policy::interval(info.width(),info.height(),rate.numer(),rate.denom()) {
+                let worker=interpolation::worker::Worker::new(self.context.as_ref().context("Missing display GL context")?,interpolation::worker::Input{info:info.clone(),buffer:buffer.clone(),due},mode,self.auto_fallback,self.motion_notify.as_ref().context("Missing redraw callback")?.clone());
+                match worker {
+                    Ok(worker)=>{
+                        self.next.lock().unwrap().motion=Some(Arc::downgrade(&worker.shared));
+                        self.motion=Some(worker);
+                        let offset=-((period*interpolation::policy::LOOKAHEAD_SOURCE_FRAMES+interpolation::policy::PREPARE_LEAD).as_nanos() as i64);
+                        self.appsink.set_property("ts-offset",offset);self.early_offset=offset;
+                        self.effect_status=format!("GPU prepare-ahead · {:.2} → {:.2} fps",self.source_fps,if mode==2{60.}else{self.source_fps*2.});
+                    }
+                    Err(error)=>self.motion_failed(error),
+                }
+            } else {self.effect_status="Native frames · trial supports ≤720p, 12–30 fps".into();}
+        } else if mode==0 {self.effect_status="Off · native frames".into();}
+        buffer.meta::<gst_gl::GLSyncMeta>().context("Missing GPU frame synchronization")?.wait(self.context.as_ref().context("Missing display GL context")?);
+        self.current=Some(gst_gl::GLVideoFrame::from_buffer_readable(buffer,&info).map_err(|_|anyhow::anyhow!("Cannot import the decoded OpenGL frame"))?);
+        self.current_pts=Some(pts);
+        self.current_image()
     }
     fn clear(&mut self) {
+        self.source_fps=0.;
+        self.reset_motion();self.current_pts=None;self.effect_status="Waiting for video".into();
         self.current = None;
         self.next.lock().unwrap().next.take();
         if let Some(surface) = self.surface.as_mut() {
@@ -1916,6 +2036,8 @@ impl TextureSink {
         }
     }
     fn release(&mut self) {
+        self.source_fps=0.;
+        self.reset_motion();self.current_pts=None;
         self.surface = None;
         self.current = None;
         self.next.lock().unwrap().next.take();
@@ -1957,14 +2079,28 @@ fn receive_frame(
         .caps()
         .and_then(|c| gst_video::VideoInfo::from_caps(c).ok())
         .ok_or(gst::FlowError::NotNegotiated)?;
+    let now=std::time::Instant::now();
+    let due=(|| {
+        let running=sample.segment()?.downcast_ref::<gst::ClockTime>()?.to_running_time(buffer.pts()?)?;
+        let target=sink.base_time()?.nseconds().saturating_add(running.nseconds()).saturating_add(gst_base::prelude::BaseSinkExt::latency(sink.upcast_ref::<gst::Element>().downcast_ref::<gst_base::BaseSink>()?).nseconds());
+        let clock=sink.clock()?.time()?.nseconds();
+        Some(if target>=clock {now+std::time::Duration::from_nanos(target-clock)}else{now.checked_sub(std::time::Duration::from_nanos(clock-target)).unwrap_or(now)})
+    })().unwrap_or(now);
+    let should_notify;
     {
         let mut frames = mailbox.lock().unwrap();
         if frames.flushing || frames.epoch != epoch {
             return Ok(gst::FlowSuccess::Ok);
         }
+        if let Some(worker)=frames.motion.as_ref().and_then(|w|w.upgrade()) {
+            worker.submit(interpolation::worker::Input{info,buffer,due});
+            return Ok(gst::FlowSuccess::Ok);
+        }
+        frames.received=Some(now);frames.due=Some(due);
         frames.next = Some((info, buffer));
+        should_notify=!frames.timed;
     }
-    notify.lock().unwrap()();
+    if should_notify {notify.lock().unwrap()();}
     Ok(gst::FlowSuccess::Ok)
 }
 
