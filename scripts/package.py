@@ -41,7 +41,7 @@ def bundle_gstreamer(sdk, stage):
     plugin_dir = sdk / "lib/gstreamer-1.0"
     output = stage / "lib/gstreamer-1.0"
     output.mkdir(parents=True)
-    selected = ["coreelements", "playback", "typefindfunctions", "autodetect", "audioconvert", "audioresample", "volume", "isomp4", "matroska", "mpegtsdemux", "videoconvertscale", "videoparsersbad", "audioparsers", "mediafoundation", "libav", "opus", "vpx", "dav1d", "soup", "wasapi", "d3d12", "adaptivedemux2", "app", "openh264", "ogg", "vorbis", "flac", "deinterlace", "videofilter", "rawparse"]
+    selected = ["coreelements", "playback", "typefindfunctions", "autodetect", "audioconvert", "audioresample", "volume", "isomp4", "matroska", "mpegtsdemux", "videoconvertscale", "videoparsersbad", "audioparsers", "mediafoundation", "libav", "opus", "vpx", "dav1d", "soup", "wasapi", "d3d12", "adaptivedemux2", "hls", "app", "openh264", "ogg", "vorbis", "flac", "deinterlace", "videofilter", "rawparse"]
     roots = list(stage.glob("*.exe"))
     for name in selected:
         matches = list(plugin_dir.glob("*gst" + name + ".dll"))

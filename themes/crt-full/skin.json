@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "Phosphor CRT \u00b7 Terminal-inspired \u00b7 Full music UI",
+  "name": "Mochune CRT",
   "palette": {
     "panel": "#0a0700",
     "surface": "#1a1206",
@@ -2054,12 +2054,50 @@
               "background": "#1a1206"
             }
           }
+        },
+        "sources-panel": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1
+        },
+        "manga-reader": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1
+        },
+        "sources-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#553508"
+            },
+            "active": {
+              "background": "#553508"
+            }
+          }
+        },
+        "sources-sidebar": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1
+        },
+        "downloads-panel": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1
+        },
+        "sources-bookmark-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#553508"
+            },
+            "active": {
+              "background": "#553508"
+            }
+          }
         }
       }
     }
-  },
-  "card_alternative": {
-    "file": "ducklife.gif",
-    "fit": "contain"
   }
 }

@@ -66,7 +66,10 @@ pub(super) fn tracks(info: &Value) -> Vec<Track> {
                 }) else {
                     continue;
                 };
-                let Some(url) = format["url"].as_str().filter(|u| u.starts_with("https://")) else {
+                let Some(url) = format["url"].as_str().filter(|u| {
+                    u.starts_with("https://")
+                        || (info["external_source"] == true && u.starts_with("http://127.0.0.1:"))
+                }) else {
                     continue;
                 };
                 let name = format["name"].as_str().unwrap_or(language);
@@ -226,6 +229,15 @@ impl Controller {
                 &tracks,
                 preference.enabled.then_some(preference.language.as_str()),
             )
+        } else if id.starts_with("external:1:") {
+            tracks
+                .iter()
+                .position(|t| {
+                    t.language == "en"
+                        || t.label.to_ascii_lowercase().starts_with("english")
+                        || t.label.eq_ignore_ascii_case("en")
+                })
+                .map_or(0, |i| i + 1)
         } else {
             0
         };
@@ -445,6 +457,60 @@ fn animate_music_step(old: &str, old_next: &str, previous: &str, current: &str) 
     !old.is_empty() && current != old && previous == old && current == old_next
 }
 
+// Source HLS captions are commonly one complete WebVTT file behind a tiny
+// playlist. Resolve only on explicit selection, with a fixed response budget.
+fn caption_document(url: &str, epoch: &AtomicU64, expected: u64) -> Result<Vec<u8>> {
+    const LIMIT: usize = 2 * 1024 * 1024;
+    let fetch = |url: &str, limit: usize| -> Result<Vec<u8>> {
+        anyhow::ensure!(
+            epoch.load(Ordering::Relaxed) == expected,
+            "Caption request cancelled"
+        );
+        let bytes = metadata_agent()
+            .get(url)
+            .call()?
+            .body_mut()
+            .with_config()
+            .limit((limit + 1) as u64)
+            .read_to_vec()?;
+        anyhow::ensure!(bytes.len() <= limit, "Caption text exceeds the size limit");
+        Ok(bytes)
+    };
+    let bytes = fetch(url, LIMIT)?;
+    if !bytes.starts_with(b"#EXTM3U") {
+        return Ok(bytes);
+    }
+    let base = url::Url::parse(url)?;
+    anyhow::ensure!(
+        base.scheme() == "http" && base.host_str() == Some("127.0.0.1"),
+        "Unsupported caption playlist"
+    );
+    let text = std::str::from_utf8(&bytes)?;
+    let targets = text
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .collect::<Vec<_>>();
+    anyhow::ensure!(
+        targets.len() == 1,
+        "This source uses segmented captions that are not supported yet"
+    );
+    let target = base.join(targets[0])?;
+    anyhow::ensure!(
+        target.scheme() == base.scheme()
+            && target.host_str() == base.host_str()
+            && target.port() == base.port()
+            && target.path_segments().and_then(|mut p| p.next())
+                == base.path_segments().and_then(|mut p| p.next()),
+        "Caption playlist left its source session"
+    );
+    let payload = fetch(target.as_str(), LIMIT.saturating_sub(bytes.len()))?;
+    anyhow::ensure!(
+        !payload.starts_with(b"#EXTM3U"),
+        "Nested caption playlists are not supported"
+    );
+    Ok(payload)
+}
 pub(super) fn install(w: &SetupWindow, paths: Paths) -> Guard {
     w.set_caption_labels(ModelRc::new(VecModel::from(vec![
         slint::SharedString::from("Captions off"),
@@ -492,13 +558,17 @@ pub(super) fn install(w: &SetupWindow, paths: Paths) -> Guard {
                     wait_for_playback(Some((&control.epoch, epoch))),
                     "Caption request cancelled"
                 );
-                let bytes = metadata_agent()
-                    .get(&track.url)
-                    .call()?
-                    .body_mut()
-                    .with_config()
-                    .limit(2 * 1024 * 1024)
-                    .read_to_vec()?;
+                let bytes = if track.url.starts_with("http://127.0.0.1:") {
+                    caption_document(&track.url, &control.epoch, epoch)?
+                } else {
+                    metadata_agent()
+                        .get(&track.url)
+                        .call()?
+                        .body_mut()
+                        .with_config()
+                        .limit(2 * 1024 * 1024)
+                        .read_to_vec()?
+                };
                 let text = std::str::from_utf8(&bytes)?;
                 let cues = if music && track.automatic {
                     parse_vtt(text, true)
@@ -592,7 +662,10 @@ pub(super) fn install(w: &SetupWindow, paths: Paths) -> Guard {
                     music_window(&loaded.cues, w.get_position() as f64);
                 let advanced = w.get_caption_text().as_str() != current;
                 let animate = animate_music_step(
-                    w.get_caption_text().as_str(), w.get_caption_next().as_str(), previous, current,
+                    w.get_caption_text().as_str(),
+                    w.get_caption_next().as_str(),
+                    previous,
+                    current,
                 );
                 if w.get_lyric_previous().as_str() != previous {
                     w.set_lyric_previous(previous.into());
@@ -670,15 +743,24 @@ mod tests {
     }
     #[test]
     fn music_animation_handles_overlaps_but_not_seek_or_language_jumps() {
-        let cues = parse("WEBVTT\n\n00:00:01.000 --> 00:00:06.000\nFirst\n\n00:00:04.000 --> 00:00:08.000\nSecond\n\n00:00:07.000 --> 00:00:10.000\nThird\n");
+        let cues = parse(
+            "WEBVTT\n\n00:00:01.000 --> 00:00:06.000\nFirst\n\n00:00:04.000 --> 00:00:08.000\nSecond\n\n00:00:07.000 --> 00:00:10.000\nThird\n",
+        );
         let before = music_window(&cues, 2.);
         let after = music_window(&cues, 4.);
         assert!(animate_music_step(before[1], before[2], after[0], after[1]));
         let jump = music_window(&cues, 8.);
         assert!(!animate_music_step(before[1], before[2], jump[0], jump[1]));
-        assert!(!animate_music_step(after[1], after[2], before[0], before[1]));
+        assert!(!animate_music_step(
+            after[1], after[2], before[0], before[1]
+        ));
         assert!(!animate_music_step("", "First", "", "First"));
-        assert!(!animate_music_step("First", "Second", "First", "Translated"));
+        assert!(!animate_music_step(
+            "First",
+            "Second",
+            "First",
+            "Translated"
+        ));
     }
 
     #[test]

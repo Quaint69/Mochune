@@ -1,0 +1,18 @@
+{
+  "mascot": "Mochune",
+  "order": [
+    "listen",
+    "dance",
+    "hop",
+    "sway",
+    "shuffle",
+    "spin",
+    "squish",
+    "peek",
+    "groove",
+    "nap"
+  ],
+  "source_frames_per_scene": 24,
+  "frame_ms": 90,
+  "runtime_shuffle": false
+}

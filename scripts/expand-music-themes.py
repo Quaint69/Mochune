@@ -264,6 +264,13 @@ def generate(name, mapping):
                 "image": "pixel-heart", "pixelated": True,
                 "states": {"active": {"image": "pixel-heart-liked"}},
             }
+    # Keep the branded header when regenerating component rules.
+    theme["theme_assets"]["brand-logo"] = {"file": "mochune-logo.png", "fit": "contain"}
+    for number, size, scale in ((1, 22, 28 / 24), (2, 30, 32 / 28)):
+        sections["header"]["components"][f"header-icon-{number}"].update(
+            image="brand-logo", scale=scale)
+        sections["header"]["components"][f"header-text-{number}"].update(
+            font_family="Mochune Display", font_size=size, font_weight=700)
     theme["sections"] = sections
     assert theme["palette"] == original["palette"]
     expected_style = dict(original["style"], font_family=style["font_family"])
@@ -318,6 +325,11 @@ def generate(name, mapping):
             "Remove the two heart `-icon` rules to restore the default glyphs; "
             "remove the parent `replace_chrome` overrides to restore button chrome.\n"
         ).encode()
+    # This authored section documents the generated animation clips.
+    readme = (source / "README.md").read_text()
+    marker = "\n## Mochune card animations\n"
+    if marker in readme and marker.encode() not in files["README.md"]:
+        files["README.md"] += (marker + readme.split(marker, 1)[1]).encode()
     return files
 
 

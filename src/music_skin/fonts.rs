@@ -35,7 +35,7 @@ pub(super) fn safe_path(file: &str) -> Result<()> {
 }
 fn inside(source: &Source, file: &str) -> Result<PathBuf> {
     safe_path(file)?;
-    let (Source::File(path) | Source::AlternateFile(path)) = source else {
+    let Source::File(path) = source else {
         bail!("Local fonts require an external theme")
     };
     let root = path
@@ -128,9 +128,15 @@ pub(super) fn prepare(c: &mut Config, source: &Source) -> Result<()> {
     }
     Ok(())
 }
-#[cfg(any(target_os="windows", feature="native-overlay-test"))]
+#[cfg(any(target_os = "windows", feature = "native-overlay-test"))]
 pub(super) fn registered_bytes() -> Vec<&'static [u8]> {
-    REGISTERED.with(|cache| cache.borrow().iter().filter_map(|(bytes,ok)| ok.then_some(*bytes)).collect())
+    REGISTERED.with(|cache| {
+        cache
+            .borrow()
+            .iter()
+            .filter_map(|(bytes, ok)| ok.then_some(*bytes))
+            .collect()
+    })
 }
 pub(super) fn register(w: &SetupWindow, c: &mut Config) {
     use slint::private_unstable_api::re_exports::WindowInner;

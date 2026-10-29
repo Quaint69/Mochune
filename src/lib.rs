@@ -1256,6 +1256,19 @@ pub fn run_ui(smoke: bool) -> Result<(), slint::PlatformError> {
                 && let Some(root) = std::env::var_os("RUST_EXTERNAL_ROOT")
             {
                 let mut report = serde_json::json!({"music_skin":crate::music_skin::stats(),"skin_status":w.get_skin_status().as_str(),"skin_error":w.get_skin_error(),"startup":crate::app::startup_stats(),"browse":crate::app::browse_stats(),"thumbnail_size":w.get_videos().row_data(0).map(|v|[v.thumbnail.size().width,v.thumbnail.size().height]),"status":w.get_status().as_str(),"music_layout":w.get_music_layout(),"paused":w.get_paused(),"playlist_count":w.get_playlists().row_count(),"collection":w.get_collection_title().as_str(),"rows":w.get_videos().iter().map(|v|v.title.to_string()).collect::<Vec<_>>(),"playback":w.get_playback_status().as_str(),"diagnostics":w.get_diagnostics().as_str(),"position":w.get_position(),"resolving":w.get_resolving(),"title":w.get_selected_title().as_str(),"music":w.get_music_only(),"quality_index":w.get_quality_index(),"embedded_video_visible":w.get_video_visible(),"gpu_frames":w.get_video_frames(),"graphics":w.get_graphics_info().as_str(),"fullscreen":w.get_fullscreen_mode(),"controls_shown":w.get_controls_shown(),"render_stats":crate::video::render_stats(),"visual_samples":*visual_samples.borrow(),"frame_timing":crate::video::frame_timing_stats(),"seek_results":*seek_results.borrow(),"video_position":crate::video::video_position(),"active_decoder":w.get_active_decoder().as_str(),"acceleration_verified":w.get_acceleration_verified(),"acceleration_status":w.get_acceleration_status().as_str(),"acceleration_details":w.get_acceleration_details().as_str(),"hardware_support":w.get_hardware_support().as_str(),"quality_labels":w.get_quality_labels().iter().map(|s|s.to_string()).collect::<Vec<_>>(),"quality_choice":w.get_quality_choice(),"video_size":[w.get_video_frame().size().width,w.get_video_frame().size().height],"source_frame_rate":true,"cache_enabled":w.get_cache_enabled(),"stream_cache_enabled":w.get_stream_cache_enabled()});
+                report["anime_mode"] = w.get_anime_mode().into();
+                report["anime_status"] = w.get_anime_status().to_string().into();
+                report["caption_choice"] = w.get_caption_choice().into();
+                report["caption_status"] = w.get_caption_status().to_string().into();
+                report["caption_labels"] = w.get_caption_labels().iter().map(|s|s.to_string()).collect::<Vec<_>>().into();
+                report["source_mode"] = w.global::<Sources>().get_mode().into();
+                report["source_rows"] = w.global::<Sources>().get_rows().row_count().into();
+                report["manga_page"] = w.global::<Sources>().get_page().into();
+                report["manga_prefetched"] = w.global::<Sources>().get_loaded_pages().into();
+                report["manga_reader_rows"] = w.global::<Sources>().get_reader_pages().row_count().into();
+                report["source_bookmarks"] = w.global::<Sources>().get_bookmarks().row_count().into();
+                report["manga_page_count"] = w.global::<Sources>().get_page_count().into();
+                report["manga_image_size"] = serde_json::json!([w.global::<Sources>().get_page_image().size().width,w.global::<Sources>().get_page_image().size().height]);
                 report["browse_page"] = w.global::<BrowsePages>().get_page().into();
                 report["search_loading"] = w.get_search_loading().into();
                 report["can_go_back"] = w.global::<BrowsePages>().get_can_go_back().into();

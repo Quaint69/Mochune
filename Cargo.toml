@@ -15,6 +15,17 @@ native-overlay-test = ["slint/renderer-software"]
 legacy-wgpu = ["slint/renderer-femtovg-wgpu", "slint/unstable-wgpu-30"]
 
 [dependencies]
+ani_lib = { package = "ani-cli-rs", git = "https://github.com/vorlie/ani-cli-rs", rev = "2d581060cce005a782f485f9ff398c23cb3688f5" }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "io-util"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
+scraper = "0.24"
+base64 = "0.22"
+futures-util = "0.3"
+hyper = { version = "1", features = ["server", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+bytes = "1"
+getrandom = "0.3"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp", "gif"] }
 ureq = { version = "3.4", features = ["json"] }
 serde = { version = "1", features = ["derive"] }

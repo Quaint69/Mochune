@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "PastelDuck \u00b7 Pink desktop",
+  "name": "Mochune Pastel",
   "palette": {
     "panel": "#fff0fa",
     "surface": "#eedfff",
@@ -2069,12 +2069,50 @@
               "background": "#eedfff"
             }
           }
+        },
+        "sources-panel": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1
+        },
+        "manga-reader": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1
+        },
+        "sources-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#e5b9f3"
+            },
+            "active": {
+              "background": "#e5b9f3"
+            }
+          }
+        },
+        "sources-sidebar": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1
+        },
+        "downloads-panel": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1
+        },
+        "sources-bookmark-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#e5b9f3"
+            },
+            "active": {
+              "background": "#e5b9f3"
+            }
+          }
         }
       }
     }
-  },
-  "card_alternative": {
-    "file": "walk.gif",
-    "fit": "contain"
   }
 }

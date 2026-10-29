@@ -746,6 +746,7 @@ fn worker_loop(
                     });
                 }
                 gst::MessageView::Buffering(b) if !terminal => {
+                    engine.observe_source_buffering(b.src().map_or(0,|s|s.as_ptr() as usize),b.percent());
                     let previous = buffering.waiting();
                     buffering.update(b.src().map_or(0, |s| s.as_ptr() as usize), b.percent());
                     if previous != buffering.waiting() {

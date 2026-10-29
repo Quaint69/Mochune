@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "Pixelduck \u00b7 Full music UI",
+  "name": "Mochune Pixel",
   "palette": {
     "panel": "#272b23",
     "surface": "#393a31",
@@ -2098,12 +2098,50 @@
               "background": "#393a31"
             }
           }
+        },
+        "sources-panel": {
+          "background": "#272b23",
+          "border": "#13170f",
+          "border_width": 1
+        },
+        "manga-reader": {
+          "background": "#272b23",
+          "border": "#13170f",
+          "border_width": 1
+        },
+        "sources-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#87906d"
+            },
+            "active": {
+              "background": "#87906d"
+            }
+          }
+        },
+        "sources-sidebar": {
+          "background": "#272b23",
+          "border": "#13170f",
+          "border_width": 1
+        },
+        "downloads-panel": {
+          "background": "#272b23",
+          "border": "#13170f",
+          "border_width": 1
+        },
+        "sources-bookmark-row": {
+          "background": "#00000000",
+          "states": {
+            "hover": {
+              "background": "#87906d"
+            },
+            "active": {
+              "background": "#87906d"
+            }
+          }
         }
       }
     }
-  },
-  "card_alternative": {
-    "file": "walk.gif",
-    "fit": "contain"
   }
 }

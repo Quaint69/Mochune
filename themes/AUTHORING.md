@@ -306,4 +306,28 @@ The outer application window is always opaque and square in normal, maximized, c
 
 The bundled themes use a fixed-palette `mochune-logo.png` through the header's `header-icon-1` and `header-icon-2` image rules. Customize that named asset to redraw the brand in your theme's style. Keep the front-facing squashed mochi, two eyes and symmetrical headphones recognizable.
 
-`assets.card` is the default animation. An optional top-level `card_alternative` uses the same `{ "file": "...", "fit": "contain" }` format. It appears as **Original duck card** in Settings; the three bundled themes use it to preserve their duck animation. Both paths obey the same confinement and resource limits. Only the selected card loads; switching replaces its worker animation epoch. Existing themes without an alternative remain supported.
+`assets.card.file` selects the card animation. All shipped themes reference `mochune.gif`, a combined loop of ten Mochune music scenes. Reference an individual `mochune-<scene>.gif` to use just one action. `scene-order.json` records the sequence and `scenes.png` previews the poses. No duck toggle or alternate-mascot field is supported.
+
+The card is enabled by default on fresh profiles; a saved visibility choice is remembered. The default appearance uses an embedded warm-colored Mochune animation, loaded only when the card is actually visible. It uses the same bounded worker, lazy frame decoding and animation switch as custom themes; hiding the card releases it. There is no runtime scene-shuffle process or full-frame preloading.
+
+### Anime, movies and manga
+
+The source selector uses header section `source-selector` / `source-selector-button`.
+The source browser and manga reader use the **video** section, including when no
+video is playing. Existing `button`, `text`, `surface` and `row` styles apply.
+Optional component overrides:
+
+- `sources-panel`, `sources-heading`, `sources-status`
+- `sources-row`, `sources-row-title`, `sources-row-detail` (`normal`, `hover`, `active`)
+- `sources-provider-button`, `sources-language-button`, `sources-autonext`
+- `sources-back`, `sources-retry`, `sources-more`
+- `manga-reader`, `manga-title`, `manga-position`, `manga-fit`
+- `manga-previous-page`, `manga-next-page`, `manga-previous-chapter`, `manga-next-chapter`
+
+These are fixed-layout components. Themes style their chrome, fonts and states;
+actual video and manga page pixels are not tinted or replaced by theme assets.
+The manga reader retains one scaled page and never preloads a chapter's images.
+
+Source bookmarks use `sources-sidebar`, `sources-bookmark-row`, `sources-bookmark-title`, and `sources-bookmark-progress` in the video section. Manga controls use `manga-reading-mode`, `manga-fullscreen`, `manga-zoom-in`, `manga-zoom-out`, `manga-zoom-reset`, and `manga-scrollbar`. Downloads expose `downloads-panel`, `downloads-text`, `downloads-action`, and `downloads-close` (header section in Music, video section otherwise). These hooks decorate chrome, never page pixels.
+
+Bookmark folder controls use `sources-folder-picker`, `sources-folder-new`, `sources-folder-edit`, `sources-folder-editor`, `sources-folder-input`, `sources-folder-save`, `sources-folder-delete`, `sources-bookmark-options`, `sources-bookmark-menu`, and `sources-bookmark-move` in the video section. Folder deletion moves bookmarks to Ungrouped and preserves reading progress. Manga edge taps navigate pages; right-click or Minus zooms out, including fullscreen.

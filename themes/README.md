@@ -9,7 +9,7 @@ no arbitrary JSON file picker and no embedded Pastel/DuckPixel preset list.
 
 - `pastelduck`: pink desktop appearance, with licensed PixelMplus10 regular/bold.
 - `pixelduck`: crisp pixel appearance, with the locally renamed DuckPixel font.
-- `crt-full`: amber Phosphor CRT appearance with a Mochune card and optional original animated duck scenes.
+- `crt-full`: amber Phosphor CRT appearance with a Mochune card and ten animated Mochune music scenes.
 - `reference`: small authoring example; not one of the three complete themes.
 
 All three complete themes ship with portable, per-user installer and Debian
@@ -54,7 +54,7 @@ not the deleted original presets. See `AUTHORING.md`, `TESTING.md`,
 
 ## GIFs
 
-Each artwork slot currently loops one GIF. CRT's `ducklife.gif` combines all ten
+Each artwork slot currently loops one GIF. `mochune.gif` combines all ten
 scenes into one fixed pre-shuffled sequence, so it plays every scene. Separate
 GIF runtime shuffle/sequencing is not implemented. Only the selected GIF is
 loaded; individual clips are retained for authoring. Animation visibility and
@@ -62,4 +62,4 @@ the Animate skin artwork switch still gate decoding/redraw work.
 
 Version-two themes may include a `video` section for browsing and video-player chrome. The three bundled themes cover both modes and share one artwork budget. See [AUTHORING.md](AUTHORING.md) and [component-map.json](component-map.json). Existing music-only and version-one files remain compatible.
 
-All three stock themes now default to the matching Mochune mascot. **Original duck card** in Settings → Themes restores their retained duck animation.
+Mochune Pastel, Mochune Pixel and Mochune CRT are the only shipped mascot variants. The original duck art is archived outside this tree. Each theme includes a combined loop and ten individual Mochune action clips; only the configured GIF is loaded.

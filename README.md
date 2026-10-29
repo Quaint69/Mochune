@@ -31,29 +31,42 @@ Observed samples, not limits. Windows and Linux columns use different memory met
 
 A lightweight Music player you can theme: colors, fonts, images and animated GIFs.
 
-![Music themes: Phosphor CRT, PastelDuck, then PixelDuck](docs/assets/themes-carousel.gif?v=mochune-20261028)
+![Music themes: Mochune CRT, Mochune Pastel, then Mochune Pixel](docs/assets/themes-carousel.gif?v=mochune-20261028)
 
-**Phosphor CRT → PastelDuck → PixelDuck** — all included. Open the themes folder from Settings to customize yours. [Make a theme →](themes/AUTHORING.md)
+**Mochune CRT → Mochune Pastel → Mochune Pixel** — all included. Open the themes folder from Settings to customize yours. [Make a theme →](themes/AUTHORING.md)
 
 ### Compact Music player
 
 Keep just the player, or shrink it to the mini controls.
 
 <table>
-  <tr><th>Phosphor CRT</th><th>PastelDuck</th></tr>
+  <tr><th>Mochune CRT</th><th>Mochune Pastel</th></tr>
   <tr>
     <td align="center" valign="top">
-      <img src="docs/assets/music-crt-compact.png?v=mochune-20261028" width="300" alt="Compact Phosphor CRT Music player">
+      <img src="docs/assets/music-crt-compact.png?v=mochune-20261028" width="300" alt="Compact Mochune CRT Music player">
       <br><br>
-      <img src="docs/assets/music-crt-mini.png?v=mochune-20261028" width="332" alt="Mini Phosphor CRT Music player">
+      <img src="docs/assets/music-crt-mini.png?v=mochune-20261028" width="332" alt="Mini Mochune CRT Music player">
     </td>
     <td align="center" valign="top">
-      <img src="docs/assets/music-pastel-compact.png?v=mochune-20261028" width="300" alt="Compact PastelDuck Music player">
+      <img src="docs/assets/music-pastel-compact.png?v=mochune-20261028" width="300" alt="Compact Mochune Pastel Music player">
       <br><br>
-      <img src="docs/assets/music-pastel-mini.png?v=mochune-20261028" width="332" alt="Mini PastelDuck Music player">
+      <img src="docs/assets/music-pastel-mini.png?v=mochune-20261028" width="332" alt="Mini Mochune Pastel Music player">
     </td>
   </tr>
 </table>
+
+## More sources
+
+In Video mode, use the source selector beside the Music/Video switch:
+
+- **Anime:** title search, Sub/Dub episodes, quality selection, captions when supplied, and automatic next episode.
+- **Movies:** search titles through Dramachi or VixSrc. VixSrc uses [Wikidata](https://www.wikidata.org/) title metadata and also accepts TMDB movie links/IDs.
+- **Manga:** MangaDex and MangaPill, scrolling/page modes, fullscreen, fit-width reading and Ctrl+wheel zoom.
+
+These views follow the selected theme. Manga keeps a small decoded viewport and bounded compressed lookahead;
+source playback stays separate from YouTube history and recommendations.
+Video decoding requires supported hardware; there is no CPU video-decoding fallback.
+Provider availability can change. Switching providers is explicit.
 
 ## Try Mochune
 

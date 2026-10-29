@@ -1,3 +1,5 @@
+import {Sources, SourceRow, ReaderPage, SourcePicker, SourcePanel, SourceSidebar, MangaReader} from "sources.slint";
+export {Sources, SourceRow, ReaderPage}
 import {VideoFrame} from "video-frame.slint";
 import {BrowsePages, HomeSection, PageRow, ChannelRow, CommentRow, PersonalPage, ChannelHits, CommentsPanel} from "pages.slint";
 export {BrowsePages, HomeSection, PageRow, ChannelRow, CommentRow}
@@ -483,12 +485,19 @@ export component SetupWindow inherits Window {
     // The native backend supplies a decoded icon, including taskbar identity.
     in-out property <bool> immersive: true;
     in-out property <bool> launch-maximized: true;
-    in-out property <bool> music-extra-card: false;
+    in-out property <bool> music-extra-card: true;
+    out property <bool> anime-mode: Sources.mode > 0;
+    out property <string> anime-status: Sources.status;
+    callback anime-mode-change(bool);
+    anime-mode-change(enabled)=>{Sources.select-mode(enabled ? 1 : 0);}
+    callback anime-search(string);
+    anime-search(query)=>{Sources.search(query);}
+    callback anime-replay();
+    anime-replay()=>{Sources.replay();}
+
+
     in-out property <int> music-skin-choice;
     in-out property <string> music-skin-path;
-    in-out property <bool> music-duck-card;
-    in property <bool> skin-has-alternate-card;
-    changed music-duck-card=>{ root.skin-reload(); }
     in-out property <[string]> skin-names: ["Mochune default"];
     in-out property <bool> skin-animations: true;
     in-out property <bool> theme-header: true;
@@ -618,7 +627,7 @@ export component SetupWindow inherits Window {
     callback open-music-artist(int);
     property <[ChannelRow]> music-artist-hits: BrowsePages.channel-hits;
     changed music-artist-hits=>{ if root.music-layout && root.music-artist-search { root.rebuild-recs(); } }
-    out property <bool> browsing-page: !root.music-layout && BrowsePages.page > 0;
+    out property <bool> browsing-page: !root.anime-mode && !root.music-layout && BrowsePages.page > 0;
     out property <bool> search-loading: root.browsing-page
         ? BrowsePages.busy && (BrowsePages.page == 3 || (BrowsePages.page == 2 && BrowsePages.channel-url == ""))
         : root.busy && root.browse-tab == -1;
@@ -814,6 +823,7 @@ export component SetupWindow inherits Window {
     in-out property <length> native-clip-bottom;
     in-out property <bool> main-player-controls-visible;
     in property <image> video-frame;
+    in property <float> video-display-aspect: 0;
     in property <bool> video-visible;
     in property <int> video-frames;
     in property <string> graphics-info;
@@ -979,6 +989,13 @@ export component SetupWindow inherits Window {
             if event.text == Key.Escape && root.fullscreen-mode {
                 root.toggle-fullscreen();
                 return accept;
+            }
+            if Sources.mode == 3 && !root.settings-open && !root.download-open {
+                if event.text == Key.RightArrow {Sources.turn-page(1);return accept;}
+                if event.text == Key.LeftArrow {Sources.turn-page(-1);return accept;}
+                if event.text=="-" || event.text=="_" {Sources.zoom=max(0.25,Sources.zoom - 0.1);return accept;}
+                if event.text=="+" || event.text=="=" {Sources.zoom=min(3,Sources.zoom+0.1);return accept;}
+                if event.text == " " {return accept;}
             }
             if !root.settings-open && !root.download-open && event.text == "f" {
                 root.toggle-fullscreen();
@@ -1194,14 +1211,15 @@ export component SetupWindow inherits Window {
                             }
                         }
                     }
-                    if !root.music-layout: MusicButton {
+                    if !root.music-layout: SourcePicker { width: root.width < 1060px ? 72px : 84px; }
+                    if !root.music-layout && !root.anime-mode: MusicButton {
                         theme-section: 0; theme-key: "video-back-button";
                         icon: @image-url("icons/video-player.svg");
                         label: "Video player";
                         available: root.has-selection && BrowsePages.page != 0;
                         clicked => { BrowsePages.close-page(); }
                     }
-                    if !root.music-layout: MusicButton {
+                    if !root.music-layout && !root.anime-mode: MusicButton {
                         theme-section: 0; theme-key: "video-home-button";
                         icon: BrowsePages.page == 2 ? @image-url("icons/return.svg") : @image-url("icons/home.svg");
                         label: BrowsePages.page == 2 ? "Back to Home" : "Home";
@@ -1216,7 +1234,7 @@ export component SetupWindow inherits Window {
                         theme-state: search-input.has-focus ? "focus" : "normal";
                         height: 36px;
                         // Reserve fixed header controls even at the minimum full-library width.
-                        width: root.music-layout ? max(96px,root.width - 788px) : max(96px,root.width - 407px - (root.width < 1060px ? 314px : 485px));
+                        width: root.music-layout ? max(96px,root.width - 788px) : max(96px,root.width - 407px - (root.width < 1060px ? 314px : 485px) + (root.anime-mode ? (root.width < 1060px ? 44px : 40px) : -96px));
                         horizontal-stretch: 0;
                         background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (AppColors.muted-surface);
                         border-width: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : (1px);
@@ -1236,7 +1254,7 @@ export component SetupWindow inherits Window {
                             y: 0px;
                             height: parent.height;
                             width: parent.width - 90px;
-                            text: "Search videos, @channels, or paste a YouTube link";
+                            text: Sources.mode == 1 ? "Search anime titles" : Sources.mode == 2 ? "Search movies or paste a TMDB movie link" : Sources.mode == 3 ? "Search manga titles" : "Search videos, @channels, or paste a YouTube link";
                             color: self.theme-paint.has-text ? self.theme-paint.text : (AppColors.muted);
                             overflow: elide;
                             vertical-alignment: center;
@@ -1417,7 +1435,9 @@ export component SetupWindow inherits Window {
                 padding: 0px;
                 spacing: root.fullscreen-mode ? 0px : 22px;
                 vertical-stretch: 1;
-                video-column := Rectangle {
+                if root.anime-mode && !root.fullscreen-mode: SourceSidebar {width:root.width<1000px ? 150px : 190px;vertical-stretch:1;}
+                if Sources.mode == 3: MangaReader { horizontal-stretch: 1; vertical-stretch: 1;is-fullscreen:root.fullscreen-mode;fullscreen=>{root.toggle-fullscreen();} }
+                if Sources.mode != 3: video-column := Rectangle {
                     // Rectangular scissor only. Styling this clipping ancestor
                     // would cache every video frame in an intermediate texture.
                     max-height: root.height;
@@ -1526,9 +1546,12 @@ export component SetupWindow inherits Window {
                                         Image {
                                             visible: root.video-visible && !root.music-only;
                                             source: root.video-frame;
-                                            image-fit: contain;
-                                            width: parent.width;
-                                            height: parent.height;
+                                            property <float> aspect: root.video-display-aspect > 0 ? root.video-display-aspect : (root.video-frame.height > 0 ? root.video-frame.width / root.video-frame.height : 1.7778);
+                                            width: min(parent.width, parent.height * self.aspect);
+                                            height: self.width / self.aspect;
+                                            x: (parent.width - self.width) / 2;
+                                            y: (parent.height - self.height) / 2;
+                                            image-fit: fill;
                                         }
                                         TouchArea {
                                             mouse-cursor: root.controls-over-video && root.video-visible && !root.controls-shown && root.playback-active && !root.paused && !root.resolving ? none : default;
@@ -1901,7 +1924,7 @@ export component SetupWindow inherits Window {
                                                     current-index <=> root.quality-choice;
                                                     width: root.legacy-quality ? min(270px, player.width * 0.36) : quality-menu.badge-width;
                                                     vertical-stretch: 0;
-                                                    enabled: !root.controls-loading;
+                                                    enabled: !root.controls-loading && (!root.anime-mode || root.quality-labels.length>1);
                                                     activity=>{
                                                         root.player-activity();
                                                     }
@@ -1958,7 +1981,7 @@ export component SetupWindow inherits Window {
                                 MusicButton { theme-section: 4; theme-key: "video-musicbutton";
                                     icon: @image-url("icons/plus.svg");
                                     label: "Save current video to playlist";
-                                    available: root.has-selection;
+                                    available: !root.anime-mode && root.has-selection;
                                     clicked=>{
                                         root.playlist-add(-1);
                                     }
@@ -1984,7 +2007,7 @@ export component SetupWindow inherits Window {
         theme-section: 4; theme-key: "video-player-text-9"; theme-kind: "text";
  text: root.selected-channel; color: self.theme-paint.has-text ? self.theme-paint.text : (creator-touch.has-hover ? AppColors.accent-text : AppColors.muted);
                                             font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : (12px); overflow: elide; vertical-alignment: top; }
-                                        creator-touch := TouchArea { mouse-cursor: pointer;
+                                        creator-touch := TouchArea { mouse-cursor: pointer; enabled: !root.anime-mode;
                                             clicked => { BrowsePages.open-channel(root.selected-channel-url != "" ? root.selected-channel-url : root.selected-channel); } }
                                     }
                                     ThemeText {
@@ -2079,7 +2102,7 @@ export component SetupWindow inherits Window {
                                             available: !BrowsePages.comments-busy; clicked=>{ BrowsePages.load-comments(); }
                                         }
                                         MusicButton { theme-section: 4; theme-key: "video-musicbutton";
-                                            icon: @image-url("icons/comment.svg"); active: BrowsePages.comments-open;
+                                            icon: @image-url("icons/comment.svg"); active: BrowsePages.comments-open; available: !root.anime-mode;
                                             label: BrowsePages.comments-open ? "Show description" : "Show comments";
                                             clicked=>{ BrowsePages.toggle-comments(); }
                                         }
@@ -2215,7 +2238,8 @@ export component SetupWindow inherits Window {
                     }
 
                 }
-                VerticalBox {
+                if root.anime-mode && !root.fullscreen-mode: SourcePanel { width: 320px; vertical-stretch: 1; }
+                if !root.anime-mode: VerticalBox {
                     visible: !root.fullscreen-mode;
                     padding: 0px; padding-top: 6px;
                     width: root.fullscreen-mode ? 0px : 365px;
@@ -2420,19 +2444,7 @@ export component SetupWindow inherits Window {
                                         }
                                     }
                                 }
-                                MusicButton { theme-section: 4; theme-key: "video-musicbutton";
-                                    visible: !skeleton;
-                                    icon-size: 17px;
-                                    icon: @image-url("icons/queue-add.svg");
-                                    label: "Add to queue";
-                                    width: 28px;
-                                    height: 28px;
-                                    x: parent.width - self.width - 4px;
-                                    y: 6px;
-                                    clicked=>{
-                                        root.queue-add(index);
-                                    }
-                                }
+
                                 MusicButton { theme-section: 4; theme-key: "video-musicbutton";
                                     visible: !skeleton;
                                     icon-size: 17px;
@@ -2441,7 +2453,7 @@ export component SetupWindow inherits Window {
                                     width: 28px;
                                     height: 28px;
                                     x: parent.width - self.width - 4px;
-                                    y: 34px;
+                                    y: 6px;
                                     clicked=>{
                                         root.playlist-add(index);
                                     }
@@ -3432,7 +3444,7 @@ export component SetupWindow inherits Window {
                                     border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : (MusicSkin.border);
                                     border-radius: self.theme-paint.replace-chrome ? 0px : self.theme-paint.has-radius ? self.theme-paint.radius * 1px : (MusicSkin.enabled ? MusicSkin.radius * 1px : 10px);
                                     clip: true;
-                                    if MusicSkin.enabled: SkinImage {
+                                    if MusicSkin.enabled || (MusicSkin.images.length > 1 && MusicSkin.images[1].width > 0): SkinImage {
                                         theme-section: 3;
                                         theme-key: "card-artwork";
                                         theme-kind: "card-artwork";
@@ -3988,10 +4000,6 @@ export component SetupWindow inherits Window {
                                                 root.music-skin-choice=self.current-index;
                                             }
                                         }
-                                        if root.skin-has-alternate-card: CheckBox {
-                                            text: "Original duck card";
-                                            checked <=> root.music-duck-card;
-                                        }
                                         HorizontalBox {
                                             padding: 0px;
                                             spacing: 8px;
@@ -4536,15 +4544,16 @@ export component SetupWindow inherits Window {
             }
         }
     }
-    if root.download-open: Rectangle {
+    if root.download-open: ThemeBox {
+        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-panel";theme-kind:"surface";
         width: min(root.width - 40px, 460px);
         height: 320px;
         x: root.width - self.width - 20px;
         y: root.fullscreen-mode ? 20px : 72px;
-        background: AppColors.raised;
-        border-radius: 12px;
-        border-width: 1px;
-        border-color: AppColors.border;
+        background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.raised;
+        border-radius: self.theme-paint.has-radius ? self.theme-paint.radius*1px : 12px;
+        border-width: self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 1px;
+        border-color: self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;
         TouchArea {
         }
         Rectangle {
@@ -4558,15 +4567,18 @@ export component SetupWindow inherits Window {
                 HorizontalBox {
                     padding: 0px;
                     height: 28px;
-                    Text {
+                    ThemeText {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-text";theme-kind:"text";
+                        font-family:self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
                         text: "Downloads";
-                        color: AppColors.text;
-                        font-size: 18px;
+                        color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.text;
+                        font-size:self.theme-paint.has-font-size ? self.theme-paint.font-size*1px : 18px;
                         font-weight: 700;
                         horizontal-stretch: 1;
                         vertical-alignment: center;
                     }
                     MusicButton {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-close";
                         width: 28px;
                         height: 28px;
                         icon-size: 16px;
@@ -4577,9 +4589,11 @@ export component SetupWindow inherits Window {
                         }
                     }
                 }
-                Text {
+                ThemeText {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-text";theme-kind:"text";
+                        font-family:self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
                     text: root.download-title == "" ? "Choose a video, then open Downloads here to choose its quality." : root.download-title;
-                    color: AppColors.text;
+                    color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.text;
                     wrap: word-wrap;
                     overflow: elide;
                     max-height: 44px;
@@ -4590,11 +4604,13 @@ export component SetupWindow inherits Window {
                     current-index <=> root.download-choice;
                     enabled: root.download-ready && !root.download-running && !root.download-preparing;
                 }
-                Text {
+                ThemeText {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-text";theme-kind:"text";
+                        font-family:self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
                     text: root.download-folder;
-                    color: AppColors.muted;
+                    color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;
                     overflow: elide;
-                    font-size: 11px;
+                    font-size:self.theme-paint.has-font-size ? self.theme-paint.font-size*1px : 11px;
                 }
                 if root.download-preparing: LoadingDots {
                     width: 22px;
@@ -4609,9 +4625,11 @@ export component SetupWindow inherits Window {
                         background: AppColors.accent;
                     }
                 }
-                Text {
+                ThemeText {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-text";theme-kind:"text";
+                        font-family:self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
                     text: root.download-status;
-                    color: AppColors.muted;
+                    color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;
                     wrap: word-wrap;
                     overflow: elide;
                     max-height: 56px;
@@ -4622,6 +4640,7 @@ export component SetupWindow inherits Window {
                     spacing: 8px;
                     height: 34px;
                     ActionButton {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-action";
                         label: "Download";
                         primary: true;
                         available: root.download-ready && !root.download-preparing && !root.download-running;
@@ -4630,12 +4649,14 @@ export component SetupWindow inherits Window {
                         }
                     }
                     if root.download-preparing || root.download-running: ActionButton {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-action";
                         label: "Cancel download";
                         clicked=>{
                             root.cancel-download();
                         }
                     }
                     ActionButton {
+                        theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-action";
                         label: "Close";
                         clicked=>{
                             root.download-open=false;
@@ -4647,7 +4668,7 @@ export component SetupWindow inherits Window {
     }
     // Experimental empty overlay; the invisible left-edge hover strip is native.
     Rectangle {
-        visible: !root.music-layout && !root.fullscreen-mode && !root.settings-open && !root.download-open && !root.playlist-editor;
+        visible: !root.music-layout && !root.anime-mode && !root.fullscreen-mode && !root.settings-open && !root.download-open && !root.playlist-editor;
         x: 2px;
         y: (root.height - self.height) / 2;
         width: 6px;
@@ -4671,7 +4692,7 @@ export component SetupWindow inherits Window {
         }
     }
     Rectangle {
-        visible: !root.music-layout && !root.fullscreen-mode && !root.settings-open && !root.download-open && !root.playlist-editor;
+        visible: !root.music-layout && !root.anime-mode && !root.fullscreen-mode && !root.settings-open && !root.download-open && !root.playlist-editor;
         x: 0px;
         y: root.left-pane-top;
         width: 220px;
@@ -4709,93 +4730,6 @@ export component SetupWindow inherits Window {
                         padding: 0px;
                         spacing: 4px;
                         Text {
-                            text: "QUEUE · " + root.queue-rows.length;
-                            color: AppColors.muted;
-                            font-size: 11px;
-                            font-weight: 700;
-                            horizontal-stretch: 1;
-                            vertical-alignment: center;
-                        }
-                        MusicButton {
-                            width: 26px;
-                            height: 26px;
-                            icon-size: 17px;
-                            icon: @image-url("icons/queue-add.svg");
-                            label: "Add current video to queue";
-                            clicked=>{
-                                root.queue-add(-1);
-                            }
-                        }
-                        MusicButton {
-                            width: 26px;
-                            height: 26px;
-                            icon-size: 15px;
-                            icon: @image-url("icons/trash.svg");
-                            label: "Clear queue";
-                            clicked=>{
-                                root.queue-clear();
-                            }
-                        }
-                    }
-                    ListView {
-                        height: max(60px, (root.height - root.left-pane-top - 159px) / 2);
-                        vertical-stretch: 0;
-                        content-y <=> root.queue-scroll;
-                        horizontal-scrollbar-policy: always-off;
-                        changed content-height=>{
-                            root.queue-scroll=clamp(root.queue-scroll, min(0px, self.visible-height - self.content-height),0px);
-                        }
-                        changed visible-height=>{
-                            root.queue-scroll=clamp(root.queue-scroll, min(0px, self.visible-height - self.content-height),0px);
-                        }
-                        for item[i] in root.queue-rows: Rectangle {
-                            height: 46px;
-                            background: item.active ? AppColors.selected : queue-hit.has-hover ? AppColors.hover : transparent;
-                            border-radius: 6px;
-                            queue-hit := TouchArea {
-                                clicked=>{
-                                    root.queue-choose(i);
-                                }
-                            }
-                            Text {
-                                x: 8px;
-                                y: 7px;
-                                width: item.active ? parent.width - 16px : parent.width - 50px;
-                                height: 32px;
-                                text: item.title;
-                                color: item.active ? AppColors.accent : AppColors.text;
-                                font-size: 12px;
-                                wrap: word-wrap;
-                                overflow: elide;
-                                vertical-alignment: top;
-                            }
-                            if !item.active: MusicButton {
-                                width: 26px;
-                                height: 26px;
-                                icon-size: 15px;
-                                x: parent.width - 43px;
-                                y: 10px;
-                                icon: @image-url("icons/close.svg");
-                                label: "Remove from queue";
-                                clicked=>{
-                                    root.queue-remove(i);
-                                }
-                            }
-                        }
-                    }
-                    Rectangle {
-                        height: 1px;
-                        Rectangle {
-                            x: parent.width * 0.1;
-                            width: parent.width * 0.8;
-                            height: 1px;
-                            background: AppColors.border;
-                        }
-                    }
-                    HorizontalBox {
-                        padding: 0px;
-                        spacing: 4px;
-                        Text {
                             text: "VIDEO PLAYLIST";
                             color: AppColors.muted;
                             font-size: 11px;
@@ -4803,17 +4737,7 @@ export component SetupWindow inherits Window {
                             horizontal-stretch: 1;
                             vertical-alignment: center;
                         }
-                        MusicButton {
-                            width: 24px;
-                            height: 26px;
-                            icon-size: 16px;
-                            icon: @image-url("icons/queue-add.svg");
-                            label: "Add entire playlist to queue";
-                            available: root.video-playlist-id!="" && root.video-playlist-rows.length > 0;
-                            clicked=>{
-                                root.playlist-enqueue-all();
-                            }
-                        }
+
                         MusicButton {
                             width: 24px;
                             height: 26px;
@@ -4849,8 +4773,8 @@ export component SetupWindow inherits Window {
                         }
                     }
                     ListView {
-                        height: max(60px, (root.height - root.left-pane-top - 179px) / 2);
-                        vertical-stretch: 0;
+                        vertical-stretch: 1;
+                        min-height:60px;
                         content-y <=> root.library-scroll;
                         horizontal-scrollbar-policy: always-off;
                         changed content-height=>{
@@ -4880,18 +4804,7 @@ export component SetupWindow inherits Window {
                                 wrap: word-wrap;
                                 overflow: elide;
                             }
-                            MusicButton {
-                                width: 24px;
-                                height: 25px;
-                                icon-size: 16px;
-                                x: parent.width - 40px;
-                                y: 2px;
-                                icon: @image-url("icons/queue-add.svg");
-                                label: "Add playlist video to queue";
-                                clicked=>{
-                                    root.playlist-enqueue(i);
-                                }
-                            }
+
                             MusicButton {
                                 width: 24px;
                                 height: 25px;

@@ -181,6 +181,10 @@ pub(super) fn install(w: &SetupWindow, state: Arc<Mutex<State>>, paths: Paths) -
         if control.busy.load(Ordering::Acquire) {
             return;
         }
+        if w.global::<crate::Sources>().get_mode()!=0 {
+            w.set_download_ready(false);w.set_download_preparing(false);w.set_download_title("Source downloads unavailable".into());w.set_download_labels(ModelRc::default());
+            w.set_download_status("Downloads for Anime, Movies and Manga are not supported yet. YouTube downloads remain available.".into());return;
+        }
         let (video, s, available) = {
             let st = st.lock().unwrap();
             (

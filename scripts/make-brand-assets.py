@@ -5,10 +5,10 @@ Requires Pillow. Pixel styles are normalized to a fixed 64px canvas and flat
 palette; card animation uses integer offsets, not runtime transforms.
 """
 from pathlib import Path
-import math
 import io
 import struct
 from PIL import Image, ImageColor
+from mochune_animation import generate
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / 'design/mascot'
@@ -52,16 +52,6 @@ def pixel_logo(path, colors):
     return output
 
 
-def indexed(frame, colors):
-    palette = [(0, 0, 0)] + [ImageColor.getrgb(c) for c in colors]
-    lookup = {c: i for i, c in enumerate(palette)}
-    image = Image.new('P', frame.size)
-    image.putpalette([v for c in palette for v in c] + [0] * (768 - len(palette) * 3))
-    image.putdata([lookup[p[:3]] if p[3] >= 128 else 0 for p in pixels(frame)])
-    image.info['transparency'] = 0
-    return image
-
-
 def main():
     master = MASTERS / 'mochune-front.png'
     sizes = (16, 20, 24, 28, 32, 40, 48, 64, 128, 256)
@@ -85,16 +75,13 @@ def main():
         folder = ROOT / 'themes' / theme
         logo = pixel_logo(MASTERS / filename, colors)
         logo.save(folder / 'mochune-logo.png', optimize=True)
-        frames = []
-        for i in range(12):
-            frame = Image.new('RGBA', (160, 80))
-            offset = round(-2 * (1 - math.cos(math.tau * i / 12)) / 2)
-            frame.alpha_composite(logo, (48, 8 + offset))
-            frames.append(indexed(frame, colors))
-        frames[0].save(folder / 'mochune.gif', save_all=True,
-                       append_images=frames[1:], duration=120, loop=0,
-                       transparency=0, disposal=2, optimize=False)
-        print(f'{theme}: 64px logo, 160x80 card, {len(frames)} source frames')
+        generate(folder, logo, colors)
+    # The normal appearance shares the same lazy card player; no custom skin.
+    colors = ['#30201b', '#fff1da', '#ff9f1a', '#e85a13', '#ffbf55', '#ffffff']
+    default = ROOT / 'design/mascot/default-animation'
+    generate(default, pixel_logo(master, colors), colors)
+    (ROOT / 'ui/assets/mochune-card.gif').write_bytes((default / 'mochune.gif').read_bytes())
+
 
 
 if __name__ == '__main__':

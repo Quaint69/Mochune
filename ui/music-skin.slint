@@ -54,7 +54,7 @@ export component SkinImage inherits Rectangle {
     min-height: 0px;
     preferred-width: 0px;
     preferred-height: 0px;
-    out property <bool> custom: MusicSkin.enabled && root.slot >= 0 && root.slot < MusicSkin.images.length && MusicSkin.images[root.slot].width > 0;
+    out property <bool> custom: (MusicSkin.enabled || (!MusicSkin.loaded && root.slot == 1)) && root.slot >= 0 && root.slot < MusicSkin.images.length && MusicSkin.images[root.slot].width > 0;
     Image {
         width: max(0px,parent.width - root.theme-paint.inset * 2px) * (root.theme-paint.has-scale ? root.theme-paint.scale : 1);
         height: max(0px,parent.height - root.theme-paint.inset * 2px) * (root.theme-paint.has-scale ? root.theme-paint.scale : 1);

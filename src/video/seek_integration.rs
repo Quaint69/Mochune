@@ -22,6 +22,7 @@ fn retained_http_seek_and_quality_reload() {
         transient: Vec::new(),
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
+        source_hls: source_hls::Gate::default(),
         ready: Arc::new(AtomicBool::new(true)),
         setup_error: Arc::new(Mutex::new(None)),
         volume: None,

@@ -88,8 +88,6 @@ struct Config {
     sections: BTreeMap<String, crate::music_theme::Section>,
     #[serde(default)]
     theme_assets: BTreeMap<String, Asset>,
-    #[serde(default)]
-    card_alternative: Option<Asset>,
 }
 #[derive(Clone, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -127,16 +125,7 @@ fn contain() -> String {
 enum Source {
     Default,
     File(PathBuf),
-    AlternateFile(PathBuf),
-}
-impl Source {
-    fn file(path: PathBuf, alternate: bool) -> Self {
-        if alternate {
-            Self::AlternateFile(path)
-        } else {
-            Self::File(path)
-        }
-    }
+    DefaultCard,
 }
 pub(crate) fn color(s: &str) -> Result<slint::Color> {
     let hex = s
@@ -181,9 +170,6 @@ fn config(bytes: &[u8]) -> Result<Config> {
     );
     crate::music_theme::validate(&c.sections, &c.theme_assets)?;
     fonts::declarations(&c.fonts)?;
-    if let Some(alternative) = &c.card_alternative {
-        validate_asset(alternative)?;
-    }
     let valid_family = |name: &str| -> Result<()> {
         ensure!(
             crate::music_theme::FONT_FAMILIES.contains(&name)
@@ -304,7 +290,9 @@ fn embedded(kind: usize, file: &str) -> Result<&'static [u8]> {
                 "track.png" => include_bytes!(concat!("../themes/", $dir, "/track.png")).as_slice(),
                 "fill.png" => include_bytes!(concat!("../themes/", $dir, "/fill.png")).as_slice(),
                 "thumb.png" => include_bytes!(concat!("../themes/", $dir, "/thumb.png")).as_slice(),
-                "walk.gif" => include_bytes!(concat!("../themes/", $dir, "/walk.gif")).as_slice(),
+                "mochune.gif" => {
+                    include_bytes!(concat!("../themes/", $dir, "/mochune.gif")).as_slice()
+                }
                 _ => bail!("Unknown bundled asset: {file}"),
             }
         };
@@ -334,7 +322,7 @@ fn limited_read(path: &Path, limit: usize) -> Result<Vec<u8>> {
 }
 fn asset_bytes(source: &Source, file: &str) -> Result<Arc<[u8]>> {
     Ok(match source {
-        Source::File(path) | Source::AlternateFile(path) => {
+        Source::File(path) => {
             let root = path
                 .parent()
                 .context("Skin directory missing")?
@@ -346,7 +334,7 @@ fn asset_bytes(source: &Source, file: &str) -> Result<Arc<[u8]>> {
             );
             limited_read(&candidate, 2 * 1024 * 1024)?.into()
         }
-        Source::Default => bail!("No skin selected"),
+        Source::Default | Source::DefaultCard => bail!("No skin selected"),
     })
 }
 fn limits() -> image::Limits {
@@ -508,8 +496,49 @@ fn asset_entries(c: &Config) -> Vec<(usize, &Asset)> {
         )
         .collect()
 }
+fn default_source(w: &SetupWindow) -> Source {
+    if w.get_music_layout() && !w.get_mini_music() && w.get_skin_card_visible() {
+        Source::DefaultCard
+    } else {
+        Source::Default
+    }
+}
+fn load_default_card() -> Result<(Option<Config>, Vec<Raster>, Vec<Gif>, usize)> {
+    let bytes: Arc<[u8]> = Arc::from(include_bytes!("../ui/assets/mochune-card.gif").as_slice());
+    ensure!(
+        bytes.len() <= ENCODED_LIMIT,
+        "Default card exceeds artwork budget"
+    );
+    let (w, h) = image::ImageReader::new(Cursor::new(bytes.clone()))
+        .with_guessed_format()?
+        .into_dimensions()?;
+    check_dimensions(1, w, h, true)?;
+    gif_structure(&bytes, w, h)?;
+    let memory = w as usize * h as usize * 4 * 8;
+    ensure!(
+        memory <= WORKING_LIMIT,
+        "Default card exceeds working budget"
+    );
+    let mut gif = Gif {
+        slot: 1,
+        bytes: bytes.clone(),
+        frames: gif_frames(bytes)?,
+        due: Instant::now(),
+        count: 0,
+        pending: None,
+        pixels: u64::from(w) * u64::from(h),
+    };
+    let first = gif.next()?;
+    let mut animations = Vec::new();
+    if let Some(frame) = gif.frames.next() {
+        gif.pending = Some(frame?);
+        FRAMES.fetch_add(1, Ordering::Relaxed);
+        animations.push(gif);
+    }
+    Ok((None, vec![first], animations, memory))
+}
 fn load(source: &Source) -> Result<(Option<Config>, Vec<Raster>, Vec<Gif>, usize)> {
-    if let Source::File(path) | Source::AlternateFile(path) = source {
+    if let Source::File(path) = source {
         catalog::confined(path, &catalog::root())?;
     }
     load_unconfined(source)
@@ -517,19 +546,17 @@ fn load(source: &Source) -> Result<(Option<Config>, Vec<Raster>, Vec<Gif>, usize
 // Private decoding helper for isolated safety tests and the already-confined
 // catalog scan. All user-facing entry points call load().
 fn load_unconfined(source: &Source) -> Result<(Option<Config>, Vec<Raster>, Vec<Gif>, usize)> {
+    if matches!(source, Source::DefaultCard) {
+        return load_default_card();
+    }
     if matches!(source, Source::Default) {
         return Ok((None, Vec::new(), Vec::new(), 0));
     }
     let bytes = match source {
-        Source::File(p) | Source::AlternateFile(p) => limited_read(p, 64 * 1024)?,
-        Source::Default => unreachable!(),
+        Source::File(p) => limited_read(p, 64 * 1024)?,
+        Source::Default | Source::DefaultCard => unreachable!(),
     };
     let mut c = config(&bytes)?;
-    if matches!(source, Source::AlternateFile(_)) {
-        if let Some(alternative) = c.card_alternative.clone() {
-            c.assets.insert("card".into(), alternative);
-        }
-    }
     fonts::prepare(&mut c, source)?;
     let mut first = Vec::new();
     let mut gifs = Vec::new();
@@ -714,7 +741,6 @@ pub(crate) fn registered_font_bytes() -> Vec<&'static [u8]> {
     fonts::registered_bytes()
 }
 fn apply(w: &SetupWindow, mut c: Option<Config>, frames: Vec<Raster>, memory: usize) -> Vec<usize> {
-    w.set_skin_has_alternate_card(c.as_ref().is_some_and(|c| c.card_alternative.is_some()));
     if let Some(c) = &mut c {
         fonts::register(w, c);
     }
@@ -780,7 +806,14 @@ fn apply(w: &SetupWindow, mut c: Option<Config>, frames: Vec<Raster>, memory: us
         skin.set_border_width(0.);
         skin.set_pixelated(false);
         skin.set_fits(ModelRc::default());
-        w.set_skin_status("Mochune default · no skin animation work".into());
+        w.set_skin_status(
+            if memory > 0 {
+                "Mochune default · card animation"
+            } else {
+                "Mochune default · no skin animation work"
+            }
+            .into(),
+        );
         crate::repaint_window(w.window());
         return aliases;
     };
@@ -887,7 +920,7 @@ pub fn install(w: &SetupWindow) -> Guard {
                                 *catalog_tick.borrow_mut() = entries;
                                 w.set_music_skin_choice(selected.map_or(0, |i| i as i32 + 1));
                                 rebuilding_tick.set(false);
-                                let source = selected.map(|i| Source::file(catalog_tick.borrow()[i].path.clone(), w.get_music_duck_card())).unwrap_or(Source::Default);
+                                let source = selected.map(|i| Source::File(catalog_tick.borrow()[i].path.clone())).unwrap_or_else(|| default_source(&w));
                                 if requested && selected.is_none() {
                                     w.set_skin_status("Saved/requested theme is not valid inside the themes folder; using default".into());
                                 }
@@ -968,9 +1001,9 @@ pub fn install(w: &SetupWindow) -> Guard {
                     _ => {}
                 }
             }
-            let preview = w.get_skin_preview_visible();
+            let preview = w.get_skin_preview_visible() && w.get_music_skin_choice() > 0;
             let video = !w.get_music_layout() && w.get_theme_video() && w.global::<crate::MusicTheme>().get_defined().row_data(4).unwrap_or(false);
-            let visible = w.get_skin_window_active() && ((w.get_theme_player() && w.get_music_layout() && !w.get_settings_open()) || (video && !w.get_settings_open()) || preview);
+            let visible = w.get_skin_window_active() && (((w.get_theme_player() || w.get_music_skin_path().is_empty()) && w.get_music_layout() && !w.get_settings_open()) || (video && !w.get_settings_open()) || preview);
             let mut mask = if preview {
                 (1 << 0) | (1 << 1) | (1 << 6) | (1 << 14)
             } else {
@@ -1050,8 +1083,8 @@ pub fn install(w: &SetupWindow) -> Guard {
                         .filter(|i| *i < entries.len())
                 };
                 let source = index
-                    .map(|i| Source::file(entries[i].path.clone(), w.get_music_duck_card()))
-                    .unwrap_or(Source::Default);
+                    .map(|i| Source::File(entries[i].path.clone()))
+                    .unwrap_or_else(|| default_source(&w));
                 rebuilding.set(true);
                 w.set_music_skin_choice(index.map_or(0, |i| i as i32 + 1));
                 w.set_music_skin_path(
@@ -1077,7 +1110,20 @@ pub fn install(w: &SetupWindow) -> Guard {
     let select = choose.clone();
     w.on_skin_reload(move || select(true));
     let t = timer.clone();
-    w.on_skin_visibility_change(move || t.restart());
+    let weak = w.as_weak();
+    let select = choose.clone();
+    let last_card = Cell::new(false);
+    w.on_skin_visibility_change(move || {
+        if let Some(w) = weak.upgrade() {
+            let visible = matches!(default_source(&w), Source::DefaultCard);
+            if visible != last_card.replace(visible) {
+                if w.get_music_skin_path().is_empty() {
+                    select(true);
+                }
+            }
+        }
+        t.restart();
+    });
     let weak = w.as_weak();
     let t = timer.clone();
     w.on_skin_open(move || {
@@ -1133,12 +1179,17 @@ pub fn install(w: &SetupWindow) -> Guard {
 }
 #[cfg(any(feature = "native-overlay-test", feature = "showcase"))]
 pub(crate) fn preview_file(w: &SetupWindow, path: &Path) -> Result<usize> {
-    let (c, mut frames, mut gifs, memory) = load(&Source::File(path.to_path_buf()))?;
+    let source = if path == Path::new("default") {
+        Source::DefaultCard
+    } else {
+        Source::File(path.to_path_buf())
+    };
+    let (c, mut frames, mut gifs, memory) = load(&source)?;
     let step = std::env::var("MOCHUNE_SHOWCASE_STEP")
         .ok()
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(0)
-        .min(32);
+        .min(300);
     for gif in &mut gifs {
         for _ in 0..step {
             let frame = gif.next()?;
@@ -1271,8 +1322,12 @@ mod tests {
             bytes,
             frames[0].image.width() as usize * frames[0].image.height() as usize * 8
         );
-        std::fs::write(dir.0.join("walk.gif"), embedded(1, "walk.gif").unwrap()).unwrap();
-        json["theme_assets"]["shared"]["file"] = "walk.gif".into();
+        std::fs::write(
+            dir.0.join("mochune.gif"),
+            embedded(1, "mochune.gif").unwrap(),
+        )
+        .unwrap();
+        json["theme_assets"]["shared"]["file"] = "mochune.gif".into();
         let (_, frames, gifs, bytes) = load_unconfined(&dir.source(json)).unwrap();
         assert!(!frames.is_empty());
         assert!(!gifs.is_empty(), "named GIF artwork is supported");
@@ -1350,14 +1405,18 @@ mod tests {
     #[test]
     fn shared_gifs_have_one_decoder_and_budget() {
         let dir = Temp::new();
-        std::fs::write(dir.0.join("walk.gif"), embedded(1, "walk.gif").unwrap()).unwrap();
+        std::fs::write(
+            dir.0.join("mochune.gif"),
+            embedded(1, "mochune.gif").unwrap(),
+        )
+        .unwrap();
         let mut j: serde_json::Value =
             serde_json::from_slice(embedded(1, "skin.json").unwrap()).unwrap();
-        j["assets"] = serde_json::json!({"card":{"file":"walk.gif"},"thumb":{"file":"walk.gif"},"play":{"file":"walk.gif"}});
+        j["assets"] = serde_json::json!({"card":{"file":"mochune.gif"},"thumb":{"file":"mochune.gif"},"play":{"file":"mochune.gif"}});
         let (c, frames, gifs, memory) = load_unconfined(&dir.source(j)).unwrap();
         assert_eq!(gifs.len(), 1);
         assert_eq!(frames.len(), 1);
-        assert_eq!(memory, 96 * 40 * 4 * 8);
+        assert_eq!(memory, 160 * 80 * 4 * 8);
         let a = aliases(&c.unwrap());
         assert_eq!(a[1], a[5]);
         assert_eq!(a[5], a[6]);
@@ -1472,8 +1531,13 @@ mod tests {
         // Wait for the selected animation's real delay, not an old duck timing.
         let source = Source::File(catalog::root().join("crt-full/skin.json"));
         let (_, _, animations, _) = load(&source).unwrap();
-        let wait = animations.iter().find(|g| g.slot == 1).unwrap().due
-            .saturating_duration_since(Instant::now()) + Duration::from_millis(30);
+        let wait = animations
+            .iter()
+            .find(|g| g.slot == 1)
+            .unwrap()
+            .due
+            .saturating_duration_since(Instant::now())
+            + Duration::from_millis(30);
         thread::sleep(wait);
         tx.send(Command::Tick(1, 1 << 1)).unwrap();
         assert!(
@@ -1484,26 +1548,26 @@ mod tests {
         worker.join().unwrap();
     }
     #[test]
-    fn bundled_mascots_default_to_mochune_and_load_only_the_selected_card() {
+    fn bundled_themes_have_one_mochune_card_and_no_duck_variant() {
         for folder in ["pastelduck", "pixelduck", "crt-full"] {
             let path = catalog::root().join(folder).join("skin.json");
-            let (normal, _, active, _) = load(&Source::File(path.clone())).unwrap();
-            let normal = normal.unwrap();
-            assert_eq!(normal.assets["card"].file, "mochune.gif");
-            assert_eq!(active.len(), 1, "Only the selected card should animate");
-            let original = normal.card_alternative.as_ref().unwrap().file.clone();
-            let (alternate, _, active, _) = load(&Source::AlternateFile(path)).unwrap();
-            assert_eq!(alternate.unwrap().assets["card"].file, original);
-            assert_eq!(active.len(), 1, "Do not decode the unused mascot");
+            let (config, _, active, memory) = load(&Source::File(path)).unwrap();
+            assert_eq!(config.unwrap().assets["card"].file, "mochune.gif");
+            assert_eq!(active.len(), 1);
+            assert!(memory < WORKING_LIMIT);
         }
     }
 
     #[test]
-    fn alternate_card_paths_are_confined_like_default_artwork() {
-        let path = catalog::root().join("pastelduck/skin.json");
-        let mut value: serde_json::Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
-        value["card_alternative"]["file"] = "../outside.gif".into();
-        assert!(config(&serde_json::to_vec(&value).unwrap()).is_err());
+    fn default_card_is_optional_bounded_and_streamed() {
+        let (_, frames, animations, memory) = load(&Source::Default).unwrap();
+        assert!(frames.is_empty() && animations.is_empty() && memory == 0);
+        let (config, frames, animations, memory) = load(&Source::DefaultCard).unwrap();
+        assert!(config.is_none());
+        assert_eq!(frames.len(), 1);
+        assert_eq!(frames[0].slot, 1);
+        assert_eq!(animations.len(), 1);
+        assert!(memory < WORKING_LIMIT);
+        assert!(gif_structure(&animations[0].bytes, 160, 80).unwrap() <= 300);
     }
-
 }

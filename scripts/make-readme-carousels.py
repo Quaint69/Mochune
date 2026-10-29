@@ -41,9 +41,9 @@ def save(name, frames, durations):
 def main():
     themes = []
     for i, (file, label) in enumerate([
-        ('music-crt.png', 'Phosphor CRT'),
-        ('music-pastelduck.png', 'PastelDuck'),
-        ('music-pixelduck.png', 'PixelDuck'),
+        ('music-crt.png', 'Mochune CRT'),
+        ('music-pastelduck.png', 'Mochune Pastel'),
+        ('music-pixelduck.png', 'Mochune Pixel'),
     ]):
         with Image.open(ASSETS / file) as image:
             themes.append(slide(image, label, i, 3))

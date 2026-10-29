@@ -30,6 +30,7 @@ enum Container {
 }
 impl Container {
     fn from_url(u: &url::Url) -> Option<Self> {
+        if u.fragment().is_some_and(|s|s.starts_with("mochune-mp4=")){return Some(Self::Mp4);}
         match u.query_pairs().find(|(k, _)| k == "mime")?.1.as_ref() {
             "video/mp4" | "audio/mp4" => Some(Self::Mp4),
             "audio/webm" => Some(Self::AudioWebm),
@@ -70,12 +71,8 @@ pub(super) fn prepare(uri: &str, range_enabled: bool) -> Result<String> {
 }
 
 fn declared_size(url: &url::Url) -> Option<u64> {
-    url.query_pairs()
-        .find(|(k, _)| k == "clen")?
-        .1
-        .parse::<u64>()
-        .ok()
-        .filter(|n| *n > 0 && *n < i64::MAX as u64 - 100_000)
+    let declared=url.query_pairs().find(|(k,_)|k=="clen").map(|(_,v)|v.into_owned()).or_else(||url.fragment()?.strip_prefix("mochune-mp4=").map(|s|s.split(';').next().unwrap_or(s).to_owned()));
+    declared?.parse::<u64>().ok().filter(|n|*n>0&&*n<i64::MAX as u64-100_000)
 }
 
 fn be32(data: &[u8], at: usize) -> Option<u32> {
@@ -505,8 +502,10 @@ mod imp {
             let result = (|| -> Result<Session> {
                 let settings = self.settings.lock().unwrap();
                 let uri = settings.uri.clone().context("Missing media URI")?;
-                let size =
-                    declared_size(&url::Url::parse(&uri)?).context("Missing media byte length")?;
+                let mut parsed=url::Url::parse(&uri)?;
+                let size=declared_size(&parsed).context("Missing media byte length")?;
+                let container=Container::from_url(&parsed).context("Unsupported media container")?;
+                let uri=if parsed.fragment().is_some_and(|s|s.starts_with("mochune-mp4=")){parsed.set_fragment(None);parsed.to_string()}else{uri};
                 let mut headers = Vec::new();
                 if !settings.agent.is_empty() {
                     headers.push(("User-Agent".into(), settings.agent.clone()));
@@ -531,8 +530,7 @@ mod imp {
                 Ok(Session {
                     client,
                     source_id: self.obj().path_string().to_string(),
-                    container: Container::from_url(&url::Url::parse(&uri)?)
-                        .context("Unsupported media container")?,
+                    container,
                     uri,
                     headers,
                     size,
@@ -663,6 +661,8 @@ mod tests {
         data.extend(atom(b"sidx", sidx));
         data
     }
+    #[test]
+    fn source_mp4_hint_supplies_container_and_exact_size_without_changing_http_url(){let u=url::Url::parse("https://example.test/movie.mp4#mochune-mp4=401204942").unwrap();assert_eq!(Container::from_url(&u),Some(Container::Mp4));assert_eq!(declared_size(&u),Some(401204942));assert!(Container::from_url(&url::Url::parse("https://example.test/movie.mp4").unwrap()).is_none());}
     #[test]
     fn cancelled_reads_and_expired_links_do_not_retry_the_same_request() {
         let cancel = AtomicBool::new(false);

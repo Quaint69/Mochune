@@ -1081,6 +1081,10 @@ fn advance(
     direction: i32,
     automatic: bool,
 ) {
+    if !w.get_music_layout() && w.get_anime_mode() {
+        w.global::<crate::Sources>().invoke_next(direction, automatic);
+        return;
+    }
     if !w.get_music_layout() {
         let next = {
             let mut st = state.lock().unwrap();

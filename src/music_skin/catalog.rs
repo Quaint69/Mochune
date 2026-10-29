@@ -170,10 +170,7 @@ mod tests {
         );
         std::fs::create_dir(runtime.join("themes")).unwrap();
         std::fs::create_dir(&expected).unwrap();
-        assert_eq!(
-            installed_root(&runtime.join("mochune.exe")),
-            Some(expected)
-        );
+        assert_eq!(installed_root(&runtime.join("mochune.exe")), Some(expected));
     }
 
     #[test]

@@ -13,6 +13,10 @@ fn count(info: &Value, key: &str) -> String {
         .unwrap_or_else(|| "Unavailable".into())
 }
 impl Details {
+    pub(super) fn capture(w:&SetupWindow)->Self {
+        Self {subscribers:w.get_subscriber_text().to_string(),channel_url:w.get_selected_channel_url().to_string(),ratings:w.get_rating_text().to_string(),stats:w.get_video_stats().to_string(),description:w.get_description().to_string()}
+    }
+
     pub fn from_info(info: &Value) -> Self {
         let date = info["upload_date"]
             .as_str()

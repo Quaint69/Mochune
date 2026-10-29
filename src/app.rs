@@ -1,4 +1,5 @@
 mod about;
+mod sources;
 pub(crate) mod audio_cache;
 mod availability;
 mod browse_view;
@@ -60,7 +61,6 @@ struct Settings {
     music_extra_card: bool,
     music_skin: i32,
     music_skin_path: String,
-    music_duck_card: bool,
     skin_animations: bool,
     theme_header: bool,
     theme_library: bool,
@@ -115,10 +115,9 @@ impl Default for Settings {
             light_mode: false,
             immersive: true,
             launch_maximized: true,
-            music_extra_card: false,
+            music_extra_card: true,
             music_skin: 0,
             music_skin_path: String::new(),
-            music_duck_card: false,
             skin_animations: true,
             theme_header: true,
             theme_library: true,
@@ -221,6 +220,7 @@ impl Video {
 }
 #[derive(Default)]
 struct State {
+    anime_playback: Option<Arc<sources::Playback>>,
     settings: Settings,
     history: [Vec<Video>; 2],
     history_error: Option<String>,
@@ -313,7 +313,6 @@ fn settings(window: &SetupWindow) -> Settings {
         music_extra_card: window.get_music_extra_card(),
         music_skin: window.get_music_skin_choice().clamp(0, 3),
         music_skin_path: window.get_music_skin_path().to_string(),
-        music_duck_card: window.get_music_duck_card(),
         skin_animations: window.get_skin_animations(),
         theme_header: window.get_theme_header(),
         theme_library: window.get_theme_library(),
@@ -363,7 +362,6 @@ fn apply_settings(w: &SetupWindow, s: &Settings) {
     w.set_music_extra_card(s.music_extra_card);
     w.set_music_skin_path(s.music_skin_path.clone().into());
     w.set_music_skin_choice(s.music_skin.max(0));
-    w.set_music_duck_card(s.music_duck_card);
     w.set_skin_animations(s.skin_animations);
     w.set_theme_header(s.theme_header);
     w.set_theme_library(s.theme_library);
@@ -1123,6 +1121,7 @@ pub struct Runtime {
     _captions: captions::Guard,
     _skin: crate::music_skin::Guard,
     _pages: pages::Guard,
+    _anime: sources::Guard,
     worker: Option<thread::JoinHandle<()>>,
 }
 impl Drop for Runtime {
@@ -1348,6 +1347,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
     let auth = state.clone();
     w.on_search(move |query| {
         if let Some(w) = weak.upgrade() {
+            if w.get_anime_mode() { w.invoke_anime_search(query); return; }
             let artist_query = pages::channel_search_query(&query);
             w.set_music_artist_search(w.get_music_layout() && artist_query.is_some());
             if let Some(uri) = pages::channel_url(&query) {
@@ -1671,6 +1671,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
     let browse_epoch = generation.clone();
     w.on_play(move || {
         if let Some(w) = weak.upgrade() {
+            if w.get_anime_mode() { w.invoke_anime_replay(); return; }
             let (video, option) = {
                 let st = st.lock().unwrap();
                 let option = (st.formats_for.as_ref() == st.selected.as_ref().map(|v| &v.id))
@@ -1755,6 +1756,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
         quality_clicks.stop();
         quality_click_state.borrow_mut().take();
         if let Some(w) = weak.upgrade() {
+            if w.get_anime_mode() { w.global::<crate::Sources>().invoke_choose_quality(index); return; }
             let option = {
                 let st = st.lock().unwrap();
                 st.format_options.get(index as usize).cloned()
@@ -2000,7 +2002,6 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
             // A changed index may invoke selection against a reordered catalog.
             // Restore the saved identity before asking the loader to resolve it.
             w.set_music_skin_path(s.music_skin_path.clone().into());
-            w.set_music_duck_card(s.music_duck_card);
             w.set_skin_animations(s.skin_animations);
             w.set_theme_header(s.theme_header);
             w.set_theme_library(s.theme_library);
@@ -2136,6 +2137,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
         }
     });
     let pages_guard = pages::install(w, state.clone(), paths.clone());
+    let anime_guard = sources::install(w, state.clone(), player_tx.clone(), player_generation.clone(), generation.clone(), smoke);
     #[cfg(target_os = "linux")]
     let restored_renderer_session = linux_renderer::restore(w, &state, &paths);
     #[cfg(not(target_os = "linux"))]
@@ -2157,6 +2159,7 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
         _captions: caption_guard,
         _skin: skin_guard,
         _pages: pages_guard,
+        _anime: anime_guard,
         worker: Some(worker),
     }
 }
@@ -2964,6 +2967,7 @@ fn player_worker(
     let mut last_request: Option<(Video, Settings, u64)> = None;
     let mut known_duration: Option<f64> = None;
     let mut preroll_started: Option<Instant> = None;
+    let mut preroll_budget=Duration::from_secs(20);
     let mut cached_request = false;
     let mut public_stream = false;
     let mut buffering = crate::video::playback_state::Buffering::default();
@@ -3049,6 +3053,7 @@ fn player_worker(
                         if generation.load(Ordering::Relaxed) != n {
                             return Ok(());
                         }
+                        preroll_budget=Duration::from_secs(20);
                         music_retry.begin(n);
                         crate::diagnostics::record(
                             "play_request",
@@ -3110,7 +3115,14 @@ fn player_worker(
                                 "Offline — video needs an Internet connection. Cached music is still available."
                             }
                         );
-                        let info = if let Some(saved) = saved {
+                        let info = if video.id.starts_with("external:") {
+                            resolver = "native source resolver";
+                            let st = state.lock().unwrap();
+                            let playback = st.anime_playback.as_ref()
+                                .filter(|v| v.video.id == video.id)
+                                .context("Source session expired; select the title again")?;
+                            playback.info.clone()
+                        } else if let Some(saved) = saved {
                             resolver = "completed audio cache";
                             let uri = gst::glib::filename_to_uri(&saved.path, None)?;
                             let info = serde_json::json!({"id":saved.video.id,"title":saved.video.title,"uploader":saved.video.channel,"duration":saved.video.duration,"url":uri.as_str(),"vcodec":"none"});
@@ -3270,11 +3282,15 @@ fn player_worker(
                         let details_id = video.id.clone();
                         ui_generation(&weak, &generation, n, move |w| {
                             details.apply(&w);
+                            if w.get_anime_mode() { w.set_subscriber_text("".into()); w.set_rating_text("".into()); }
                             if let Some(control) = caption_control {
                                 control.publish(&w, &details_id, tracks);
                             }
                         });
-                        let (options, selected) = playback_options(&info, &s);
+                        if video.id.starts_with("external:2:0:")&&info["external_source"]==true {let index=info["source_index_bytes"].as_u64().unwrap_or(0);if index>2*1024*1024 {preroll_budget=Duration::from_secs((20+index/(1024*1024)*5).min(120));crate::diagnostics::record("source_movie_large_index",serde_json::json!({"index_bytes":index,"startup_budget_seconds":preroll_budget.as_secs()}));}}
+                        let (options, selected) = if video.id.starts_with("external:") {
+                            (info["source_qualities"].as_array().into_iter().flatten().map(|v|FormatOption{label:v.as_str().unwrap_or("Auto").into(),selector:None,quality:2,music:false}).collect(),info["source_choice"].as_u64().unwrap_or(0) as usize)
+                        } else { playback_options(&info, &s) };
                         {
                             let mut st = state.lock().unwrap();
                             st.format_options = options.clone();
@@ -3869,6 +3885,7 @@ fn player_worker(
                         }
                     }
                     gst::MessageView::Buffering(message) => {
+                        p.observe_source_buffering(message.src().map_or(0,|s|s.as_ptr() as usize),message.percent());
                         let was_waiting = buffering.waiting();
                         buffering.update(
                             message.src().map_or(0, |s| s.as_ptr() as usize),
@@ -3964,7 +3981,7 @@ fn player_worker(
                                 recent.insert(0, video.id.clone());
                                 recent.truncate(20);
                             }
-                            if s.remember {
+                            if s.remember && !video.id.starts_with("external:") {
                                 let mut st = state.lock().unwrap();
                                 if st.settings.remember
                                     && st.history_error.is_none()
@@ -4068,14 +4085,14 @@ fn player_worker(
             }
             if pending.is_some()
                 && !p.seeking()
-                && preroll_started.is_some_and(|t| t.elapsed() > Duration::from_secs(20))
+                && preroll_started.is_some_and(|t| t.elapsed() > preroll_budget)
             {
                 crate::diagnostics::record(
                     "preroll_timeout",
-                    serde_json::json!({"seconds":20,"decoder":p.decoder.lock().unwrap().clone()}),
+                    serde_json::json!({"seconds":preroll_budget.as_secs(),"decoder":p.decoder.lock().unwrap().clone()}),
                 );
                 preroll_started = None;
-                let report = serde_json::json!({"platform":std::env::consts::OS,"video_id":last_request.as_ref().map(|v|v.0.id.as_str()),"audio_only":music,"error":"Playback preroll timed out after 20 seconds","decoder":p.decoder.lock().unwrap().clone()});
+                let report = serde_json::json!({"platform":std::env::consts::OS,"video_id":last_request.as_ref().map(|v|v.0.id.as_str()),"audio_only":music,"error":format!("Playback preroll timed out after {} seconds",preroll_budget.as_secs()),"decoder":p.decoder.lock().unwrap().clone()});
                 let _ = paths.save("playback-error.json", &report);
                 if music
                     && music_retry.schedule(

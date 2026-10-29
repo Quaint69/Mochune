@@ -20,6 +20,7 @@ pub(crate) mod playback_state;
 #[cfg(any(target_os = "windows", test))]
 mod process_protocol;
 mod rebuffer;
+mod source_hls;
 #[cfg(test)]
 mod seek_integration;
 #[cfg(all(target_os = "windows", feature = "legacy-wgpu"))]
@@ -282,6 +283,8 @@ struct SeekWatch {
     last_video_pts: Option<gst::ClockTime>,
 }
 
+fn range_movie_uri(uri:&str)->bool{url::Url::parse(uri).is_ok_and(|u|u.scheme()=="https"&&u.fragment().is_some_and(|s|s.starts_with("mochune-mp4=")))}
+
 /// One pipeline supplies a shared clock for adaptive video and audio URIs.
 /// Windows video runs in a disposable child process; music stays local. Linux
 /// imports GPU textures. Neither path copies decoded video pixels into Rust.
@@ -294,6 +297,7 @@ pub struct Engine {
     transient: Vec<gst::Element>,
     buffer_state: Mutex<buffered::Snapshot>,
     recovery: rebuffer::Recovery,
+    source_hls: source_hls::Gate,
     ready: Arc<AtomicBool>,
     setup_error: Arc<Mutex<Option<String>>>,
     volume: Option<gst::Element>,
@@ -363,6 +367,14 @@ impl Engine {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
         self.stop()?;
+        self.source_hls.reset(!music && source_hls::relay_uri(uri));
+        if self.source_hls.enabled {
+            let late=self.video_sink.find_property("max-lateness").map(|_|self.video_sink.property::<i64>("max-lateness"));
+            let qos=self.video_sink.find_property("qos").map(|_|self.video_sink.property::<bool>("qos"));
+            self.source_hls.sink_defaults=Some((late,qos));
+            if late.is_some(){self.video_sink.set_property("max-lateness",100_000_000i64);}
+            if qos.is_some(){self.video_sink.set_property("qos",true);}
+        }
         self.cache_capture = capture.clone();
         #[cfg(target_os = "windows")]
         if let Some(remote) = self.remote.as_mut() {
@@ -524,6 +536,23 @@ impl Engine {
             .property("ring-buffer-max-size", plan.ring)
             .property("buffer-size", plan.initial(video.is_some()))
             .build()?;
+        if range_movie_uri(uri) {
+            // Regular source MP4 files may put moov after the entire mdat.
+            // Do not hide the indexed source's pull/range scheduling behind a
+            // streaming ring; qtdemux must jump directly to the tail index.
+            source.set_property("ring-buffer-max-size",0u64);
+            source.set_property("buffer-size",-1i32);
+            crate::diagnostics::record("source_movie_range_adapter",serde_json::json!({"range_requests":true}));
+        }
+        if source_hls::relay_uri(uri) && video.is_some() {
+            // HLS has demuxed queues, not the indexed HTTP ring. Bound compressed
+            // lookahead independently; do not expand decoded/GPU frame queues.
+            source.set_property("ring-buffer-max-size",0u64);
+            source.set_property("use-buffering",true);
+            source.set_property("buffer-size",4i32*1024*1024);
+            source.set_property("buffer-duration",4_000_000_000i64);
+            crate::diagnostics::record("source_hls_buffer_policy",serde_json::json!({"compressed_bytes":4*1024*1024,"duration_ms":4000}));
+        }
         crate::diagnostics::record(
             "compressed_buffer_plan",
             serde_json::json!({"video":video.is_some(),"plan":plan,"initial_bytes":plan.initial(video.is_some())}),
@@ -709,6 +738,9 @@ impl Engine {
         Ok(())
     }
     pub fn stop(&mut self) -> Result<()> {
+        // Restore the exact previous sink properties before returning to YouTube/Music.
+        if let Some((late,qos))=self.source_hls.sink_defaults.take(){if let Some(late)=late{self.video_sink.set_property("max-lateness",late);}if let Some(qos)=qos{self.video_sink.set_property("qos",qos);}}
+        self.source_hls.reset(false);
         #[cfg(target_os = "windows")]
         if let Some(remote) = self.remote.as_mut() {
             remote.stop()?;
@@ -792,6 +824,7 @@ impl Engine {
         }
         self.pipeline.query_duration::<gst::ClockTime>()
     }
+    pub(crate) fn observe_source_buffering(&mut self,id:usize,percent:i32){self.source_hls.buffering(id,percent);}
     pub fn poll_rebuffer(&mut self, active: bool, paused: bool) -> Result<bool> {
         #[cfg(target_os = "windows")]
         if let Some(r) = self.remote.as_ref().filter(|r| r.active()) {
@@ -799,6 +832,15 @@ impl Engine {
         }
         let position = self.position().map(|t| t.seconds_f64());
         let duration = self.duration().map(|t| t.seconds_f64());
+        if self.source_hls.enabled {
+            let action=self.source_hls.step(active,paused,self.seeking(),video_position(),position,duration,std::time::Instant::now());
+            match action {
+                source_hls::Action::Pause=>{self.pipeline.set_state(gst::State::Paused)?;crate::diagnostics::record("source_hls_refill_started",serde_json::json!({"position":position,"video_pts":video_position()}));}
+                source_hls::Action::Resume=>{self.pipeline.set_state(gst::State::Playing)?;crate::diagnostics::record("source_hls_refill_finished",serde_json::json!({"position":position,"video_pts":video_position()}));}
+                source_hls::Action::None=>{}
+            }
+            return Ok(self.source_hls.waiting());
+        }
         // Refill only after measured video starvation/clock drift, never on a
         // queue percentage alone. Startup keeps its small initial threshold.
         self.recovery.observe_only = false;
@@ -1434,6 +1476,7 @@ fn install_software_music() -> Result<Engine> {
         transient: Vec::new(),
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
+            source_hls: source_hls::Gate::default(),
         ready: Arc::new(AtomicBool::new(true)),
         setup_error: Arc::new(Mutex::new(None)),
         volume: None,
@@ -1589,6 +1632,8 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
                                     w.set_video_frame(image);
                                     w.set_video_visible(true);
                                 }
+                                #[cfg(not(target_os = "windows"))]
+                                w.set_video_display_aspect(sink.display_aspect);
                                 w.set_video_frames(count);
                             }
                         }
@@ -1633,6 +1678,7 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
         transient: Vec::new(),
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
+            source_hls: source_hls::Gate::default(),
         ready,
         setup_error,
         volume: None,
@@ -1660,6 +1706,7 @@ struct TextureSink {
     context: Option<gst_gl::GLContext>,
     redraw_pending: Option<Arc<AtomicBool>>,
     surface: Option<Surface>,
+    display_aspect: f32,
 }
 #[cfg(not(target_os = "windows"))]
 impl TextureSink {
@@ -1668,8 +1715,7 @@ impl TextureSink {
             .features([gst_gl::CAPS_FEATURE_MEMORY_GL_MEMORY])
             .format(gst_video::VideoFormat::Rgba)
             .field("texture-target", "2D")
-            .field("pixel-aspect-ratio", gst::Fraction::new(1, 1))
-            .build();
+                        .build();
         let appsink = gst_app::AppSink::builder()
             .caps(&caps)
             .enable_last_sample(false)
@@ -1704,6 +1750,7 @@ impl TextureSink {
             context: None,
             redraw_pending: None,
             surface: None,
+            display_aspect: 0.,
         })
     }
     fn connect(
@@ -1852,6 +1899,8 @@ impl TextureSink {
             );
         let frame = gst_gl::GLVideoFrame::from_buffer_readable(buffer, &info)
             .map_err(|_| anyhow::anyhow!("Cannot import the decoded OpenGL frame"))?;
+        let par = info.par();
+        self.display_aspect = display_aspect(info.width(), info.height(), par.numer(), par.denom());
         let id = frame.texture_id(0).context("Missing video texture")?;
         let surface = self.surface.as_mut().context("Missing video surface")?;
         let changed = surface.copy(id, frame.width(), frame.height())?;
@@ -2147,6 +2196,13 @@ fn decoded_caps(video: bool, audio: bool) -> &'static str {
     }
 }
 
+// Preserve anamorphic display geometry without rescaling/copying decoded pixels.
+#[cfg(any(not(target_os = "windows"), test))]
+fn display_aspect(width: u32, height: u32, numerator: i32, denominator: i32) -> f32 {
+    let par = if numerator > 0 && denominator > 0 { numerator as f64 / denominator as f64 } else { 1. };
+    if width == 0 || height == 0 { return 0.; }
+    (width as f64 * par / height as f64).clamp(0.05, 20.) as f32
+}
 fn linear_volume(value: f64) -> f64 {
     if value.is_finite() {
         value.clamp(0., 100.) / 100.
@@ -2156,6 +2212,12 @@ fn linear_volume(value: f64) -> f64 {
 }
 #[cfg(test)]
 mod volume_tests {
+    #[test]
+    fn anamorphic_source_geometry_is_preserved() {
+        assert!((super::display_aspect(1280,534,801,800) - 2.4).abs()<0.001);
+        assert!((super::display_aspect(720,576,16,15) - 4./3.).abs()<0.001);
+        assert_eq!(super::display_aspect(1280,720,0,0),1280./720.);
+    }
     use super::*;
     #[test]
     fn windows_video_rejects_cpu_frames_without_restricting_audio() {
@@ -2259,6 +2321,7 @@ mod volume_tests {
             transient: Vec::new(),
             buffer_state: Mutex::new(buffered::Snapshot::default()),
             recovery: rebuffer::Recovery::default(),
+            source_hls: source_hls::Gate::default(),
             ready: Arc::new(AtomicBool::new(true)),
             setup_error: Arc::new(Mutex::new(None)),
             volume: None,
@@ -2594,6 +2657,7 @@ fn install_native_engine(separate_process: bool) -> Result<Engine> {
         transient: Vec::new(),
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
+            source_hls: source_hls::Gate::default(),
         ready: Arc::new(AtomicBool::new(false)),
         setup_error: Arc::new(Mutex::new(None)),
         volume: None,

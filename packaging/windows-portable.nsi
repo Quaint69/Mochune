@@ -1,3 +1,4 @@
+!include "${__FILEDIR__}/windows-theme-upgrade.nsh"
 ; Persistent portable app. Only the versioned runtime is replaced on update.
 Unicode true
 Name "Mochune Portable"
@@ -76,8 +77,9 @@ repair_themes:
 extract:
     Call ShowPreparation
     ; Prepare missing themes on first launch, update or repair.
-    ; Never replace the user's edited themes on an update.
+    ; Archive duck-era stock folders; preserve other edited themes.
     ClearErrors
+    !insertmacro ArchiveDuckThemes "$INSTDIR\themes" "$INSTDIR\theme-backups\${RUNTIME_ID}" "portable"
     SetOutPath "$INSTDIR\themes"
     SetOverwrite off
     File /r "${PAYLOAD}/themes/*"

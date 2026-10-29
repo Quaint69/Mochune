@@ -1,0 +1,285 @@
+import {PlaylistPicker} from "playlist-picker.slint";
+import {ThemeScrollBar} from "theme-scroll.slint";
+import {AppColors} from "theme.slint";
+import {MusicTheme,ThemeBox,ThemeText,ThemeImage,ThemeInput} from "music-theme.slint";
+import {ActionButton} from "action-button.slint";
+import {LoadingDots} from "loading.slint";
+import {ListView,VerticalBox,HorizontalBox,ScrollView} from "std-widgets.slint";
+export struct ReaderPage {image:image, ratio:float, offset:float, number:int}
+export struct SourceRow {title:string, detail:string, active:bool}
+export global Sources {
+    in-out property <int> mode: 0;
+    in-out property <int> provider: 0;
+    in-out property <bool> dubbed: false;
+    in-out property <bool> busy: false;
+    in-out property <bool> nested: false;
+    in-out property <bool> more: false;
+    in-out property <bool> auto-next: true;
+    in-out property <[SourceRow]> rows;
+    in-out property <string> title: "Search a title above";
+    in-out property <string> status;
+    in-out property <image> page-image;
+    in-out property <string> reader-title;
+    in-out property <int> page: 0;
+    in-out property <int> page-count: 0;
+    in-out property <bool> scrolling: true;
+    in-out property <float> zoom: 1;
+    in-out property <float> total-ratio: 0;
+    in-out property <int> jump-serial: 0;
+    in-out property <int> loaded-pages: 0;
+    in-out property <[ReaderPage]> reader-pages;
+    in-out property <[SourceRow]> bookmarks;
+    in-out property <bool> bookmarked: false;
+    in-out property <bool> can-bookmark: false;
+    in-out property <[string]> folder-names;
+    in-out property <[string]> move-folder-names;
+    in-out property <int> folder-index:0;
+    in-out property <bool> folder-editor:false;
+    in-out property <bool> folder-rename:false;
+    in-out property <string> folder-name;
+    in-out property <string> folder-error;
+    callback select-folder(int);
+    callback save-folder();
+    callback delete-folder();
+    callback move-bookmark(int,int);
+    callback remove-bookmark(int);
+    callback bookmark();
+    callback open-bookmark(int);
+    callback reader-scroll(float);
+    in-out property <bool> can-previous: false;
+    in-out property <bool> can-next: false;
+    callback select-mode(int);
+    callback select-provider(int);
+    callback set-dubbed(bool);
+    callback search(string);
+    callback pick(int);
+    callback back();
+    callback load-more();
+    callback next(int,bool);
+    callback turn-page(int);
+    callback retry();
+    callback replay();
+    callback choose-quality(int);
+}
+export component SourcePicker inherits ThemeBox {
+    theme-section: 0; theme-key: "source-selector"; theme-kind: "surface";
+    width: 84px; height: 34px;
+    ActionButton {
+        theme-section: 0; theme-key: "source-selector-button";
+        label: ["YouTube","Anime","Movies","Manga"][Sources.mode];
+        width: parent.width;
+        clicked => { menu.show(); }
+    }
+    menu := PopupWindow {
+        x: 0px; y: 36px; width: 150px; height: 172px;
+        ThemeBox {
+            theme-section: 4; theme-key: "source-menu"; theme-kind: "surface";
+            background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;
+            border-width: 1px; border-color: AppColors.border; border-radius: 8px;
+            VerticalBox { padding: 6px; spacing: 4px;
+                for label[index] in ["YouTube","Anime","Movies","Manga"]: ActionButton {
+                    theme-section: 4; theme-key: "source-menu-button";
+                    label: label;
+                    clicked=>{ menu.close(); Sources.select-mode(index); }
+                }
+            }
+        }
+    }
+}
+component SourceText inherits ThemeText {
+    theme-section: 4; theme-kind: "text";
+    color: self.theme-paint.has-text ? self.theme-paint.text : AppColors.text;
+    font-family: self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";
+    font-size: self.theme-paint.has-font-size ? self.theme-paint.font-size * 1px : 13px;
+    font-weight: self.theme-paint.has-font-weight ? self.theme-paint.font-weight : 400;
+}
+export component SourcePanel inherits ThemeBox {
+    theme-section: 4; theme-key: "sources-panel"; theme-kind: "surface";
+    background: self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;
+    border-radius: self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 12px;
+    border-color: self.theme-paint.has-border ? self.theme-paint.border : transparent;
+    border-width: self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+    VerticalBox {padding: 12px; spacing: 8px;
+        SourceText {theme-key: "sources-heading"; text: Sources.title; wrap: word-wrap; font-weight: 700;}
+        if Sources.mode == 2 || Sources.mode == 3: HorizontalBox {padding: 0px; spacing: 6px;
+            for title[index] in (Sources.mode == 2 ? ["Dramachi","VixSrc"] : ["MangaDex","MangaPill"]): ActionButton {
+                theme-section: 4; theme-key: "sources-provider-button"; theme-state: Sources.provider == index ? "active" : "normal";
+                primary: Sources.provider == index; label: title;
+                clicked=>{Sources.select-provider(index);}
+            }
+        }
+        if Sources.mode == 1: HorizontalBox {padding: 0px; spacing: 6px;
+            for label[index] in ["Sub","Dub"]: ActionButton {
+                theme-section: 4; theme-key: "sources-language-button";
+                theme-state: Sources.dubbed == (index == 1) ? "active" : "normal";
+                primary: Sources.dubbed == (index == 1); label: label;
+                clicked=>{Sources.set-dubbed(index == 1);}
+            }
+        }
+        if Sources.mode == 1 && Sources.nested: ActionButton {theme-section: 4; theme-key: "sources-autonext";label: Sources.auto-next ? "Auto next: On" : "Auto next: Off";clicked=>{Sources.auto-next = !Sources.auto-next;}}
+        HorizontalBox {padding: 0px; spacing: 6px;
+            if Sources.nested: ActionButton {theme-section:4; theme-key:"sources-back";label:"Back to results";clicked=>{Sources.back();}}
+            ActionButton {theme-section:4; theme-key:"sources-retry";label:Sources.busy ? "Cancel" : "Retry"; clicked=>{Sources.retry();}}
+        }
+        SourceText {theme-key:"sources-status";text:Sources.status;wrap:word-wrap;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+        if Sources.busy: LoadingDots {width:30px;height:18px;}
+        ListView {
+            vertical-stretch:1;
+            for row[index] in Sources.rows: ThemeBox {
+                theme-section:4;theme-key:"sources-row";theme-kind:"row";
+                theme-state: row.active ? "active" : hit.has-hover ? "hover" : "normal";
+                height:64px;
+                background:self.theme-paint.has-background ? self.theme-paint.background : row.active ? AppColors.hover : hit.has-hover ? AppColors.hover : transparent;
+                border-radius:self.theme-paint.has-radius ? self.theme-paint.radius * 1px : 6px;
+                border-color:self.theme-paint.has-border ? self.theme-paint.border : transparent;
+                border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width * 1px : 0px;
+                VerticalBox {padding:8px;spacing:2px;
+                    SourceText {theme-key:"sources-row-title";text:row.title;overflow:elide;wrap:word-wrap;font-weight:600;}
+                    SourceText {theme-key:"sources-row-detail";text:row.detail;overflow:elide;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;font-size:11px;}
+                }
+                hit := TouchArea {mouse-cursor:pointer; clicked=>{Sources.pick(index);}}
+            }
+        }
+        if Sources.more: ActionButton {theme-section:4;theme-key:"sources-more";label:"More chapters";available:!Sources.busy;clicked=>{Sources.load-more();}}
+    }
+}
+export component SourceSidebar inherits ThemeBox {
+    theme-section:4;theme-key:"sources-sidebar";theme-kind:"surface";
+    background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;
+    border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 12px;
+    border-color:self.theme-paint.has-border ? self.theme-paint.border : transparent;
+    border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 0px;
+    property <int> menu-index: -1;
+    VerticalBox {padding:12px;spacing:10px;
+        SourceText {theme-key:"sources-sidebar-heading";text:Sources.mode==1 ? "MY ANIME" : Sources.mode==2 ? "MY MOVIES" : "MY MANGA";font-weight:700;}
+        ActionButton {theme-section:4;theme-key:"sources-bookmark";label:Sources.bookmarked ? "★ Saved" : "+ Bookmark";available:Sources.can-bookmark;clicked=>{Sources.bookmark();}}
+        PlaylistPicker {theme-section:4;theme-key:"sources-folder-picker";label:"";accessible-name:"Bookmark folder";model:Sources.folder-names;current-index:Sources.folder-index;selected(index)=>{Sources.select-folder(index);}}
+        HorizontalBox {padding:0px;spacing:4px;
+            ActionButton {theme-section:4;theme-key:"sources-folder-new";label:"+";clicked=>{Sources.folder-name="";Sources.folder-error="";Sources.folder-rename=false;Sources.folder-editor=true;editor.show();}}
+            ActionButton {theme-section:4;theme-key:"sources-folder-edit";label:"Edit";available:Sources.folder-index>=2;clicked=>{Sources.folder-name=Sources.folder-names[Sources.folder-index];Sources.folder-error="";Sources.folder-rename=true;Sources.folder-editor=true;editor.show();}}
+        }
+        if Sources.bookmarks.length==0: SourceText {theme-key:"sources-bookmarks-empty";text:"Bookmark a title to find it here. Reading progress is saved automatically.";wrap:word-wrap;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+        ListView {vertical-stretch:1;
+            for row[index] in Sources.bookmarks: ThemeBox {
+                theme-section:4;theme-key:"sources-bookmark-row";theme-kind:"row";theme-state:hit.has-hover ? "hover" : row.active ? "active" : "normal";
+                background:self.theme-paint.has-background ? self.theme-paint.background : hit.has-hover || row.active ? AppColors.hover : transparent;
+                border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 8px;height:76px;
+                VerticalBox {padding:8px;padding-right:32px;spacing:4px;SourceText {theme-key:"sources-bookmark-title";text:row.title;wrap:word-wrap;overflow:elide;font-weight:600;}SourceText {theme-key:"sources-bookmark-progress";text:row.detail;overflow:elide;font-size:11px;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}}
+                hit:=TouchArea {mouse-cursor:pointer;clicked=>{Sources.open-bookmark(index);}}
+                ActionButton {theme-section:4;theme-key:"sources-bookmark-options";label:"⋯";width:26px;height:28px;x:parent.width - 28px;y:24px;clicked=>{root.menu-index=index;move-menu.show();}}
+            }
+        }
+    }
+    editor:=PopupWindow {x:0px;y:100px;width:280px;height:240px;
+        ThemeBox {theme-section:4;theme-key:"sources-folder-editor";theme-kind:"surface";background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.raised;border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 10px;border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 1px;border-color:self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;
+            VerticalBox {padding:14px;spacing:10px;
+                SourceText {theme-key:"sources-folder-heading";text:Sources.folder-rename ? "Edit folder" : "New folder";font-weight:700;}
+                ThemeBox {theme-section:4;theme-key:"sources-folder-input";theme-kind:"surface";height:36px;background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 1px;border-color:self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 6px;
+                    ThemeInput {theme-section:4;theme-key:"sources-folder-name";font-family:self.theme-paint.has-font-family ? self.theme-paint.font-family : "DejaVu Sans";text <=> Sources.folder-name;x:8px;y:6px;width:parent.width - 16px;height:24px;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.text;single-line:true;}
+                }
+                SourceText {theme-key:"sources-folder-error";text:Sources.folder-error;wrap:word-wrap;}
+                if Sources.folder-rename: SourceText {theme-key:"sources-folder-note";text:"Deleting a folder keeps its bookmarks in Ungrouped.";wrap:word-wrap;font-size:11px;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+                HorizontalBox {padding:0px;spacing:6px;
+                    ActionButton {theme-section:4;theme-key:"sources-folder-save";label:Sources.folder-rename ? "Save" : "Create";primary:true;clicked=>{Sources.save-folder();if !Sources.folder-editor {editor.close();}}}
+                    if Sources.folder-rename: ActionButton {theme-section:4;theme-key:"sources-folder-delete";label:"Delete";danger:true;clicked=>{Sources.delete-folder();Sources.folder-editor=false;editor.close();}}
+                    ActionButton {theme-section:4;theme-key:"sources-folder-cancel";label:"Cancel";clicked=>{Sources.folder-editor=false;editor.close();}}
+                }
+            }
+        }
+    }
+    move-menu:=PopupWindow {x:0px;y:180px;width:250px;height:146px;
+        ThemeBox {theme-section:4;theme-key:"sources-bookmark-menu";theme-kind:"surface";background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.raised;border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 1px;border-color:self.theme-paint.has-border ? self.theme-paint.border : AppColors.border;border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 10px;
+            VerticalBox {padding:12px;spacing:8px;
+                PlaylistPicker {theme-section:4;theme-key:"sources-bookmark-move";label:"Move to";model:Sources.move-folder-names;current-index:max(0,Sources.folder-index - 1);selected(index)=>{Sources.move-bookmark(root.menu-index,index+1);move-menu.close();}}
+                ActionButton {theme-section:4;theme-key:"sources-bookmark-remove";label:"Remove bookmark";danger:true;clicked=>{Sources.remove-bookmark(root.menu-index);move-menu.close();}}
+            }
+        }
+    }
+
+}
+export component MangaReader inherits ThemeBox {
+    callback fullscreen();
+    in property <bool> is-fullscreen;
+    theme-section:4;theme-key:"manga-reader";theme-kind:"surface";
+    background:self.theme-paint.has-background ? self.theme-paint.background : AppColors.panel;
+    border-radius:self.theme-paint.has-radius ? self.theme-paint.radius*1px : 12px;
+    border-width:self.theme-paint.has-border-width ? self.theme-paint.border-width*1px : 0px;
+    border-color:self.theme-paint.has-border ? self.theme-paint.border : transparent;
+    init=>{view.remembered-width=view.page-width;}
+    VerticalBox {padding:root.is-fullscreen ? 0px : 10px;spacing:8px;
+        HorizontalBox {padding:0px;spacing:6px;height:34px;
+            SourceText {theme-key:"manga-title";text:Sources.reader-title=="" ? "Choose a chapter to begin reading" : Sources.reader-title;overflow:elide;font-weight:700;vertical-alignment:center;horizontal-stretch:1;}
+            ActionButton {theme-section:4;theme-key:"manga-reading-mode";label:Sources.scrolling ? "Scroll" : "Pages";clicked=>{Sources.scrolling=!Sources.scrolling;Sources.jump-serial+=1;}}
+            ActionButton {theme-section:4;theme-key:"manga-zoom-out";label:"−";width:30px;clicked=>{Sources.zoom=max(0.25,Sources.zoom - 0.1);}}
+            ActionButton {theme-section:4;theme-key:"manga-zoom-reset";label:round(Sources.zoom*100)+"%";clicked=>{Sources.zoom=1;}}
+            ActionButton {theme-section:4;theme-key:"manga-zoom-in";label:"+";width:30px;clicked=>{Sources.zoom=min(3,Sources.zoom+0.1);}}
+            ActionButton {theme-section:4;theme-key:"manga-fullscreen";label:root.is-fullscreen ? "Exit fullscreen" : "Fullscreen";clicked=>{root.fullscreen();}}
+        }
+        view:=Rectangle {
+            vertical-stretch:1;clip:true;
+            property <length> page-width: max(1px,self.width - 14px)*Sources.zoom;
+            property <length> scroll-position: 0px;
+            property <length> scroll-y: -self.scroll-position;
+            property <length> scroll-x: 0px;
+            property <length> extent:Sources.scrolling ? Sources.total-ratio*self.page-width : (Sources.page<Sources.reader-pages.length ? Sources.reader-pages[Sources.page].ratio*self.page-width : self.height);
+            property <int> serial:Sources.jump-serial;
+            changed serial=>{self.scroll-position=Sources.scrolling && Sources.page<Sources.reader-pages.length ? -Sources.reader-pages[Sources.page].offset*self.page-width : 0px;}
+            property <length> remembered-width:0px;
+            changed page-width=>{
+                if self.remembered-width>0px {
+                    self.scroll-position=clamp(self.scroll-position*self.page-width/self.remembered-width,min(0px,self.height - self.extent),0px);
+                    self.scroll-x=clamp(self.scroll-x*self.page-width/self.remembered-width,0px,max(0px,self.page-width - self.width));
+                }
+                self.remembered-width=self.page-width;
+            }
+            property <length> clip-height:self.height;
+            changed clip-height=>{self.scroll-position=clamp(self.scroll-position,min(0px,self.height - self.extent),0px);}
+            for page[index] in Sources.reader-pages: Rectangle {
+                visible:Sources.scrolling || index==Sources.page;
+                x:(view.page-width<view.width ? (view.width - view.page-width)/2 :  - view.scroll-x);
+                y:Sources.scrolling ? page.offset*view.page-width - view.scroll-y :  - view.scroll-y;
+                width:view.page-width;height:page.ratio*view.page-width;
+                if page.image.width>0 && self.y<view.height && self.y+self.height>0px: Image {source:page.image;width:parent.width;height:parent.height;image-fit:fill;}
+                if page.image.width==0 && self.y<view.height && self.y+self.height>0px: SourceText {theme-key:"manga-page-placeholder";text:(Sources.busy && index==Sources.page ? "Loading page " : "Page ")+page.number;width:parent.width;height:min(parent.height,view.height);horizontal-alignment:center;vertical-alignment:center;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+            }
+            if Sources.reader-pages.length==0: SourceText {theme-key:"manga-empty";text:Sources.busy ? "Loading chapter…" : "Choose a manga title and chapter.";width:parent.width;height:parent.height;horizontal-alignment:center;vertical-alignment:center;color:self.theme-paint.has-text ? self.theme-paint.text : AppColors.muted;}
+            TouchArea {
+                property <length> anchor-x;
+                property <length> anchor-y;
+                property <length> initial-x;
+                property <length> initial-y;
+                property <bool> dragged:false;
+                property <bool> navigation-click:false;
+                pointer-event(e)=>{
+                    if e.button==PointerEventButton.right && e.kind==PointerEventKind.up {self.navigation-click=false;Sources.zoom=max(0.25,Sources.zoom - 0.1);}
+                    if e.button==PointerEventButton.left && e.kind==PointerEventKind.down {self.navigation-click=true;self.dragged=false;self.anchor-x=self.mouse-x;self.anchor-y=self.mouse-y;self.initial-x=view.scroll-x;self.initial-y=view.scroll-position;}
+                }
+                clicked=>{if self.navigation-click && !self.dragged {if self.mouse-x<self.width*0.35 {Sources.turn-page(-1);}else if self.mouse-x>self.width*0.65 {Sources.turn-page(1);}}}
+                moved=>{if self.pressed {
+                    if abs(self.mouse-x - self.anchor-x)>5px || abs(self.mouse-y - self.anchor-y)>5px {self.dragged=true;}
+                    view.scroll-x=clamp(self.initial-x - (self.mouse-x - self.anchor-x),0px,max(0px,view.page-width - view.width));
+                    view.scroll-position=clamp(self.initial-y + self.mouse-y - self.anchor-y,min(0px,view.height - view.extent),0px);
+                    if Sources.scrolling {Sources.reader-scroll(view.scroll-y/view.page-width);}
+                }}
+                scroll-event(e)=>{
+                    if e.modifiers.control {Sources.zoom=clamp(Sources.zoom+(e.delta-y>0px ? 0.1 : -0.1),0.25,3);return accept;}
+                    if e.modifiers.shift {view.scroll-x=clamp(view.scroll-x - e.delta-y,0px,max(0px,view.page-width - view.width));return accept;}
+                    view.scroll-position=-clamp(view.scroll-y - e.delta-y,0px,max(0px,view.extent - view.height));
+                    view.scroll-x=clamp(view.scroll-x - e.delta-x,0px,max(0px,view.page-width - view.width));
+                    if Sources.scrolling {Sources.reader-scroll(view.scroll-y/view.page-width);}
+                    return accept;
+                }
+            }
+            ThemeScrollBar {theme-section:4;theme-key:"manga-scrollbar";x:parent.width - 12px;width:12px;height:parent.height;maximum:max(0px,view.extent - view.height);page-size:view.height;value <=> view.scroll-position;
+                changed value=>{if Sources.scrolling {Sources.reader-scroll(view.scroll-y/view.page-width);}}
+            }
+        }
+        HorizontalBox {padding:0px;spacing:6px;height:34px;
+            ActionButton {theme-section:4;theme-key:"manga-previous-chapter";label:"‹ Chapter";available:Sources.can-previous;clicked=>{Sources.next(-1,false);}}
+            ActionButton {theme-section:4;theme-key:"manga-previous-page";label:"‹";width:34px;available:Sources.page>0;clicked=>{Sources.turn-page(-1);}}
+            SourceText {theme-key:"manga-position";text:Sources.page-count>0 ? "Page "+(Sources.page+1)+" / "+Sources.page-count : "";vertical-alignment:center;horizontal-alignment:center;horizontal-stretch:1;}
+            ActionButton {theme-section:4;theme-key:"manga-next-page";label:"›";width:34px;available:Sources.page+1<Sources.page-count;clicked=>{Sources.turn-page(1);}}
+            ActionButton {theme-section:4;theme-key:"manga-next-chapter";label:"Chapter ›";available:Sources.can-next;clicked=>{Sources.next(1,false);}}
+        }
+    }
+}

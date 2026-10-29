@@ -32,7 +32,7 @@ The Debian package includes editable theme templates in `/usr/share/mochune/them
 
 Installer artwork is generated from the existing app icon with `scripts/make-installer-art.py` (Pillow). It emits 2× static bitmaps and an RTF copy of the unchanged GPL text with explicit, high-contrast colors. `REVIEW_ONLY` builds a screenshot-only wizard whose install section and launch action cannot modify or start the installed application.
 
-Every packaging path requires PastelDuck, PixelDuck and Phosphor CRT, and verifies declared resources before compiling. Missing themes fail the build rather than silently shipping an incomplete theme selection. Portable warm starts repair missing stock themes/fonts without replacing the existing runtime or user-edited files.
+Every packaging path requires PastelDuck, PixelDuck and Phosphor CRT, and verifies declared resources before compiling. Missing themes fail the build rather than silently shipping an incomplete theme selection. Portable warm starts repair missing stock themes/fonts without replacing the existing runtime or user-edited files. The one-time duck-to-Mochune migration moves duck-era stock folders (identified by `walk.gif` or `ducklife.gif`) into `theme-backups/<bundle-id>/` before installing the replacement stock folders; this preserves any previous edits outside the active theme catalog. Portable backups live beside `themes/`; installed backups live in the per-user Mochune data folder.
 
 ## Release checklist
 

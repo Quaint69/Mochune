@@ -20,6 +20,7 @@ SetCompressorDictSize 8
 !include "nsDialogs.nsh"
 !include "FileFunc.nsh"
 !include "${__FILEDIR__}/windows-cleanup.nsh"
+!include "${__FILEDIR__}/windows-theme-upgrade.nsh"
 SetFont "Segoe UI" 10
 BrandingText " "
 !define MUI_ICON "${__FILEDIR__}/../ui/assets/app.ico"
@@ -276,6 +277,7 @@ Section "Mochune"
     IfErrors install_failed
 profile_ready:
     ; Editable themes are per-user data, preserved during updates.
+    !insertmacro ArchiveDuckThemes "$LOCALAPPDATA\Mochune\themes" "$LOCALAPPDATA\Mochune\theme-backups\${RUNTIME_ID}" "installed"
     SetOutPath "$LOCALAPPDATA\Mochune\themes"
     SetOverwrite off
     File /r "${PAYLOAD}/themes/*"

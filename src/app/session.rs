@@ -49,6 +49,7 @@ pub(super) fn install(
         let Some(w) = weak.upgrade() else {
             return;
         };
+        if music && w.get_anime_mode() { w.invoke_anime_mode_change(false); }
         if music == w.get_music_layout() {
             return;
         }

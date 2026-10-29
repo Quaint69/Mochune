@@ -4,7 +4,7 @@ The Mochune gallery is captured from the actual Slint interface by `examples/sho
 
 The top full and compact screenshots are separate images with matching display heights and spacing. Compact and mini screenshots also remain separate; they are not stitched together.
 
-`themes-carousel.gif` presents Phosphor CRT, PastelDuck and PixelDuck in that order. Labels and pagination sit outside the captures. Generate it with `python3 scripts/make-readme-carousels.py` (Pillow required). The animation has a 3 MiB compressed-size limit.
+`themes-carousel.gif` presents Mochune CRT, Mochune Pastel and Mochune Pixel in that order. Labels and pagination sit outside the captures. Generate it with `python3 scripts/make-readme-carousels.py` (Pillow required). The animation has a 3 MiB compressed-size limit.
 
 Compact GIFs show the actual themed interface with its bundled animated card artwork. They are visual previews, not live streaming benchmarks.
 
