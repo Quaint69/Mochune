@@ -1083,6 +1083,23 @@ pub fn run_ui(smoke: bool) -> Result<(), slint::PlatformError> {
             },
         );
     }
+    // Opt-in same-process lifecycle stress: exercise real UI quality callbacks
+    // repeatedly, retaining the normal resolver cache and playback state machine.
+    let quality_cycle=slint::Timer::default();
+    if smoke && std::env::var_os("MOCHUNE_SMOKE_QUALITY_CYCLE").is_some() {
+        let weak=window.as_weak();let step=std::cell::Cell::new(0usize);
+        quality_cycle.start(slint::TimerMode::Repeated,std::time::Duration::from_secs(3),move||{
+            let Some(w)=weak.upgrade()else{return;};
+            if step.get()>=24 || !w.get_has_selection() || w.get_resolving() || w.get_position()<1. {return;}
+            let desired=["480p","720p","360p","720p"][step.get()%4];
+            let labels=w.get_quality_labels();
+            let choice=labels.iter().position(|s|s.starts_with(desired));
+            crate::diagnostics::record("quality_cycle_smoke",serde_json::json!({"step":step.get(),"desired":desired,"position":w.get_position()}));
+            if let Some(choice)=choice {w.set_quality_choice(choice as i32);w.invoke_choose_quality(choice as i32);}
+            else {w.invoke_play();}
+            step.set(step.get()+1);
+        });
+    }
     if smoke && std::env::var_os("MOCHUNE_SMOKE_INTERPOLATION").is_some(){window.set_interpolation_mode(if std::env::var("MOCHUNE_SMOKE_INTERPOLATION").as_deref()==Ok("60"){2}else{1});}
     let visual_probe = slint::Timer::default();
     let visual_samples = std::rc::Rc::new(std::cell::RefCell::new(Vec::<u64>::new()));

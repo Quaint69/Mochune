@@ -2070,9 +2070,10 @@ fn receive_frame(
         .downcast_memory_ref::<gst_gl::GLBaseMemory>()
         .map(|m| m.context().clone())
         .ok_or(gst::FlowError::NotNegotiated)?;
-    if let Some(meta) = buffer.meta::<gst_gl::GLSyncMeta>() {
-        meta.set_sync_point(&context);
-    } else {
+    // The producer owns an existing sync point. In particular, appsink may
+    // deliver the same buffer as both preroll and a sample: resetting its fence
+    // would delete an object concurrently used by the UI/interpolation context.
+    if buffer.meta::<gst_gl::GLSyncMeta>().is_none() {
         gst_gl::GLSyncMeta::add(buffer.make_mut(), &context).set_sync_point(&context);
     }
     let info = sample
@@ -2262,6 +2263,16 @@ impl Surface {
             if scissor {
                 gl.enable(glow::SCISSOR_TEST);
             }
+            // Do not retain a producer-owned texture in the UI's read FBO across
+            // quality changes or worker destruction. The queued blit retains
+            // its own GPU references until the consumer fence completes.
+            gl.framebuffer_texture_2d(
+                glow::READ_FRAMEBUFFER,
+                glow::COLOR_ATTACHMENT0,
+                glow::TEXTURE_2D,
+                None,
+                0,
+            );
             gl.bind_framebuffer(
                 glow::READ_FRAMEBUFFER,
                 std::num::NonZeroU32::new(old_read).map(glow::NativeFramebuffer),

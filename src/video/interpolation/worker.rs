@@ -496,11 +496,22 @@ fn run(context: &gst_gl::GLContext, state: &Shared, mode: i32) -> Result<()> {
     while !state.owner_released.load(Ordering::Acquire) {
         wait(state);
     }
+    let teardown_started = Instant::now();
+    let pending_consumers;
     unsafe {
-        // Teardown only: finish remaining reads before dropping source leases.
+        let mut q = state.queues.lock().unwrap();
+        // The UI flushes these fences after copying our output. Finishing only
+        // this context does not cover that other context's reads: join them to
+        // this GPU queue before destroying shared textures. This blocks only
+        // teardown, never normal frame presentation.
+        pending_consumers = q.recycled.iter().filter(|(_, sync)| *sync != 0).count();
+        for &(_, sync) in &q.recycled {
+            if sync != 0 {
+                gl.wait_sync(fence(sync), 0, glow::TIMEOUT_IGNORED);
+            }
+        }
         gl.finish();
         source_leases.clear();
-        let mut q = state.queues.lock().unwrap();
         for frame in q.ready.drain(..) {
             if frame.fence != 0 {
                 gl.delete_sync(fence(frame.fence));
@@ -520,5 +531,9 @@ fn run(context: &gst_gl::GLContext, state: &Shared, mode: i32) -> Result<()> {
         }
     }
     gpu.release(&gl);
+    crate::diagnostics::record(
+        "interpolation_stopped",
+        serde_json::json!({"consumer_fences":pending_consumers,"teardown_ms":teardown_started.elapsed().as_secs_f64()*1000.0}),
+    );
     result
 }
