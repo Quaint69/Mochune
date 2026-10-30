@@ -68,9 +68,23 @@ Keep just the player, or shrink it to the mini controls.
 
 Use the mode picker to switch between YouTube and the other sources:
 
-- **Anime:** title search, Sub/Dub episodes, available source qualities and captions, and automatic next episode.
-- **Movies:** search titles through Dramachi or VixSrc. VixSrc uses [Wikidata](https://www.wikidata.org/) title metadata and also accepts TMDB movie links/IDs.
-- **Manga:** MangaDex and MangaPill, scrolling/page modes, fullscreen, fit-width reading and Ctrl+wheel zoom.
+### Anime
+
+Title search, Sub/Dub episodes, available source qualities and captions, and automatic next episode. Shown: **Frieren: Beyond Journey’s End**.
+
+![Frieren playing in Mochune’s anime mode, with episode navigation and captions](docs/assets/anime-frieren.png)
+
+### Movies
+
+Search titles through Dramachi or VixSrc. VixSrc uses [Wikidata](https://www.wikidata.org/) title metadata and also accepts TMDB movie links/IDs. Shown: **Harry Potter and the Philosopher’s Stone**.
+
+![Harry Potter and the Philosopher’s Stone playing in Mochune’s movie mode](docs/assets/movie-harry-potter.png)
+
+### Manga
+
+MangaDex and MangaPill, scrolling/page modes, fullscreen, fit-width reading and Ctrl+wheel zoom. Shown: **Frieren**, read through MangaPill.
+
+![Frieren open in Mochune’s manga reader, with chapters, zoom and reading progress](docs/assets/manga-frieren.png)
 
 Organize anime, movie and manga bookmarks in named folders, with saved manga reading progress.
 These views follow the selected theme. Manga keeps a small decoded viewport and bounded compressed lookahead;
