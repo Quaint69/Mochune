@@ -1,4 +1,4 @@
-//! About content is bundled; external links are a fixed project-owned allowlist.
+//! About content is bundled; external links use a fixed allowlist.
 use super::*;
 const KOFI_URL: Option<&str> = Some("https://ko-fi.com/duckeytubey");
 fn project_link(index: i32) -> Option<&'static str> {

@@ -26,6 +26,7 @@ pub fn run_video_worker(parent: isize) -> anyhow::Result<()> {
     video::run_video_worker(parent)
 }
 mod timeline;
+mod audio_effects;
 mod video;
 #[cfg(feature = "native-overlay-test")]
 pub fn probe_native_overlay() -> anyhow::Result<serde_json::Value> {
@@ -1185,7 +1186,7 @@ pub fn run_ui(smoke: bool) -> Result<(), slint::PlatformError> {
         if std::env::var_os("MOCHUNE_SMOKE_SETTINGS").is_some() {
             window.set_settings_open(true);
             if let Ok(tab) = std::env::var("MOCHUNE_SMOKE_SETTINGS_TAB") {
-                window.set_settings_tab(tab.parse::<i32>().unwrap_or(0).clamp(0, 5));
+                window.set_settings_tab(tab.parse::<i32>().unwrap_or(0).clamp(0, 6));
             }
 
             if std::env::var_os("MOCHUNE_SMOKE_SETTINGS_TRANSFER").is_some() {
@@ -1476,3 +1477,8 @@ pub fn doctor() -> anyhow::Result<serde_json::Value> {
         serde_json::json!({"backend":"GStreamer","version":gst::version_string().to_string(),"embedded":true,"presentation":presentation,"missing_plugins":missing}),
     )
 }
+
+#[cfg(target_os="windows")]
+pub fn check_interpolation_shaders()->anyhow::Result<()> {video::windows_interpolation::shader_check()}
+#[cfg(target_os="windows")]
+pub fn probe_windows_interpolation()->anyhow::Result<serde_json::Value> {video::windows_interpolation::probe()}

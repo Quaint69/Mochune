@@ -350,6 +350,8 @@ impl Client {
         audio_headers: &[(&str, &str)],
         start: (f64, bool),
         buffer_hints: buffering::Hints,
+        audio_effects: crate::audio_effects::Config,
+        interpolation_mode:i32,interpolation_auto_fallback:bool,
     ) -> Result<()> {
         if let Err(e) = self.start() {
             self.shutdown();
@@ -375,6 +377,8 @@ impl Client {
             start_position: start.0,
             paused: start.1,
             buffer_hints,
+            audio_effects,
+            interpolation_mode,interpolation_auto_fallback,
             headers: headers
                 .iter()
                 .map(|(k, v)| (k.to_string(), v.to_string()))
@@ -599,6 +603,7 @@ fn worker_loop(
     let mut revision = 0;
     let mut terminal = true;
     let mut loaded = false;
+    let mut warnings = 0u32;
     let mut intent_paused = false;
     let mut startup: Option<super::playback_state::Start> = None;
     let mut buffering = super::playback_state::Buffering::default();
@@ -623,9 +628,12 @@ fn worker_loop(
                         headers,
                         audio_headers,
                         buffer_hints,
+                        audio_effects,
+                        interpolation_mode,interpolation_auto_fallback,
                     } => {
                         load_started = Instant::now();
                         epoch = n;
+                        warnings = 0;
                         revision = 0;
                         terminal = false;
                         loaded = true;
@@ -638,6 +646,9 @@ fn worker_loop(
                             .iter()
                             .map(|(k, v)| (k.as_str(), v.as_str()))
                             .collect::<Vec<_>>();
+                        engine.audio_effects = audio_effects;
+                        engine.interpolation_mode=interpolation_mode;
+                        engine.interpolation_auto_fallback=interpolation_auto_fallback;
                         engine.load_buffered(
                             &uri,
                             audio.as_deref(),
@@ -724,6 +735,15 @@ fn worker_loop(
         }
         while let Ok(message) = engine.messages.try_recv() {
             match message.view() {
+                gst::MessageView::Latency(_) if engine.audio_effects.delay || engine.audio_effects.convolver => { let _ = engine.pipeline.recalculate_latency(); },
+                gst::MessageView::Warning(w) if !terminal && warnings < 8 => {
+                    warnings += 1;
+                    crate::diagnostics::record("video_worker_warning",serde_json::json!({
+                        "epoch":epoch,"element":w.src().map(|s|s.path_string().to_string()),
+                        "error":w.error().to_string(),"debug":w.debug().map(|s|s.chars().take(2048).collect::<String>()),
+                        "warning_limit_per_load":8
+                    }));
+                }
                 gst::MessageView::Error(e) if !terminal => {
                     terminal = true;
                     loaded = false;
@@ -885,6 +905,7 @@ fn worker_loop(
                 acceleration_details: report.details,
                 process_memory: crate::diagnostics::process_memory(),
                 seek_details,
+                interpolation:super::windows_interpolation::latest_stats(),
                 buffered_ranges,
                 buffered_estimated,
                 buffered_confirmed,

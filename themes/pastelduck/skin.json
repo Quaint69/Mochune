@@ -313,6 +313,14 @@
         },
         "video-home-button": {
           "radius": 2
+        },
+        "downloads-panel": {
+          "background": "#fff0fa",
+          "border": "#ba8ad7",
+          "border_width": 1
+        },
+        "downloads-text": {
+          "text": "#4f3269"
         }
       }
     },

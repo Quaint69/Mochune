@@ -65,6 +65,14 @@ fn run() -> anyhow::Result<()> {
         }));
     }
     let args: Vec<String> = std::env::args().collect();
+    #[cfg(target_os="windows")]
+    if let Some(index)=args.iter().position(|a|a=="--probe-windows-interpolation") {
+        let result=mochune_native::check_interpolation_shaders().and_then(|_|mochune_native::probe_windows_interpolation());
+        let report=match result{Ok(v)=>v,Err(e)=>serde_json::json!({"ok":false,"error":format!("{e:#}")})};
+        if let Some(path)=args.get(index+1){std::fs::write(path,serde_json::to_vec_pretty(&report)?)?;}
+        return Ok(());
+    }
+
     if let Some(index) = args.iter().position(|a| a == "--preview-theme") {
         let path = args
             .get(index + 1)

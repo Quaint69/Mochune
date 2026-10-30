@@ -21,7 +21,7 @@ use windows::Win32::{
             GWL_EXSTYLE, GWL_STYLE, GetWindowLongPtrW, MINMAXINFO, STYLESTRUCT, SWP_FRAMECHANGED,
             SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SetWindowLongPtrW, SetWindowPos,
             WM_DWMCOMPOSITIONCHANGED, WM_GETMINMAXINFO, WM_NCACTIVATE, WM_NCCALCSIZE, WM_NCDESTROY,
-            WM_NCPAINT, WM_STYLECHANGING, WS_BORDER, WS_CAPTION, WS_EX_CLIENTEDGE,
+            WM_NCPAINT, WM_STYLECHANGING, WM_MENUCHAR, WS_BORDER, WS_CAPTION, WS_EX_CLIENTEDGE,
             WS_EX_DLGMODALFRAME, WS_EX_STATICEDGE, WS_EX_WINDOWEDGE, WS_POPUP,
         },
     },
@@ -50,6 +50,12 @@ unsafe extern "system" fn procedure(
         state.alive.set(false);
         let _ = unsafe { RemoveWindowSubclass(hwnd, Some(procedure), id) };
         return unsafe { DefSubclassProc(hwnd, msg, wp, lp) };
+    }
+    // There is no native menu. DefWindowProc otherwise beeps for unclaimed
+    // menu characters (including duplicate text/IME messages on some layouts).
+    // Leave WM_CHAR/IME/key delivery to Winit; never mute system sounds globally.
+    if msg == WM_MENUCHAR {
+        return LRESULT(1 << 16); // MNC_CLOSE
     }
     let custom = state
         .ui

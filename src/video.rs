@@ -15,9 +15,16 @@ mod delivery;
 mod indexed_http;
 #[cfg(target_os = "linux")]
 mod interpolation;
+#[cfg(target_os = "windows")]
+pub(crate) mod windows_interpolation;
+#[cfg(target_os = "windows")]
+#[allow(dead_code)]
+#[path="video/interpolation/policy.rs"]
+mod interpolation_policy;
 pub(crate) fn interpolation_stats()->serde_json::Value {
     #[cfg(target_os="linux")] { interpolation::stats() }
-    #[cfg(not(target_os="linux"))] { serde_json::json!({"supported":false}) }
+    #[cfg(target_os="windows")] { windows_interpolation::latest_stats() }
+    #[cfg(not(any(target_os="linux",target_os="windows")))] { serde_json::json!({"supported":false}) }
 }
 #[cfg(any(target_os = "windows", feature = "native-overlay-test"))]
 #[cfg_attr(not(target_os = "windows"), allow(dead_code))]
@@ -305,6 +312,9 @@ fn range_movie_uri(uri:&str)->bool{url::Url::parse(uri).is_ok_and(|u|u.scheme()=
 /// imports GPU textures. Neither path copies decoded video pixels into Rust.
 pub struct Engine {
     pub pipeline: gst::Pipeline,
+    pub audio_effects: crate::audio_effects::Config,
+    pub interpolation_mode:i32,
+    pub interpolation_auto_fallback:bool,
     pub messages: mpsc::Receiver<gst::Message>,
     pub decoder: Arc<Mutex<String>>,
     evidence: Arc<acceleration::Evidence>,
@@ -382,14 +392,6 @@ impl Engine {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
         self.stop()?;
-        self.source_hls.reset(!music && source_hls::relay_uri(uri));
-        if self.source_hls.enabled {
-            let late=self.video_sink.find_property("max-lateness").map(|_|self.video_sink.property::<i64>("max-lateness"));
-            let qos=self.video_sink.find_property("qos").map(|_|self.video_sink.property::<bool>("qos"));
-            self.source_hls.sink_defaults=Some((late,qos));
-            if late.is_some(){self.video_sink.set_property("max-lateness",100_000_000i64);}
-            if qos.is_some(){self.video_sink.set_property("qos",true);}
-        }
         self.cache_capture = capture.clone();
         #[cfg(target_os = "windows")]
         if let Some(remote) = self.remote.as_mut() {
@@ -406,6 +408,8 @@ impl Engine {
                     audio_headers,
                     start.unwrap_or((0., false)),
                     buffer_hints,
+                    self.audio_effects.clone(),
+                    self.interpolation_mode,self.interpolation_auto_fallback,
                 );
             }
         }
@@ -414,9 +418,12 @@ impl Engine {
             && self.remote.is_none()
             && let Some(native) = &self.native
         {
-            self.video_sink = native.make_sink()?;
+            self.video_sink = native.make_sink(self.interpolation_mode,self.interpolation_auto_fallback)?;
             watch_seek_output(&self.video_sink, self.seek_progress.clone(), 2);
         }
+
+        self.source_hls.reset(!music && source_hls::relay_uri(uri));
+        self.source_hls.configure_sink(&self.video_sink);
 
         // Audio-only playback has no unconnected video sink waiting for preroll.
         if music {
@@ -490,8 +497,20 @@ impl Engine {
         if let Some(q) = &video_queue {
             self.transient.push(q.clone());
         }
+        let mut chain = vec![audio_queue.clone(), convert, resample];
+        if let Some(effect) = crate::audio_effects::element(&self.audio_effects) {
+            let output_convert = gst::ElementFactory::make("audioconvert").build()?;
+            let output_resample = gst::ElementFactory::make("audioresample").build()?;
+            self.transient.extend([effect.clone(), output_convert.clone(), output_resample.clone()]);
+            // Apply volume in float before conversion to integer-only devices,
+            // so IR boosts are not clipped before the user's volume reduction.
+            chain.extend([effect, gain.clone(), output_convert, output_resample]);
+        } else {
+            chain.push(gain.clone());
+        }
+        chain.push(audio_sink);
         self.pipeline.add_many(&self.transient)?;
-        gst::Element::link_many([&audio_queue, &convert, &resample, &gain, &audio_sink])?;
+        gst::Element::link_many(&chain)?;
         if let Some(q) = &video_queue {
             q.link(&self.video_sink)?;
         }
@@ -567,6 +586,16 @@ impl Engine {
             source.set_property("buffer-size",4i32*1024*1024);
             source.set_property("buffer-duration",4_000_000_000i64);
             crate::diagnostics::record("source_hls_buffer_policy",serde_json::json!({"compressed_bytes":4*1024*1024,"duration_ms":4000}));
+            // Do not present decoder-marked damaged pictures from source HLS.
+            // This is scoped to Anime/Movie; YouTube and audio are untouched.
+            if let Some(bin) = source.downcast_ref::<gst::Bin>() {
+                bin.connect_deep_element_added(|_,_,element| {
+                    if let Some(decoder) = element.downcast_ref::<gst_video::VideoDecoder>() {
+                        gst_video::prelude::VideoDecoderExt::set_discard_corrupted_frames(decoder,true);
+                        crate::diagnostics::record("source_decoder_corruption_guard",serde_json::json!({"decoder":element.factory().map(|f|f.name().to_string()),"discard_corrupted_frames":true}));
+                    }
+                });
+            }
         }
         crate::diagnostics::record(
             "compressed_buffer_plan",
@@ -753,8 +782,7 @@ impl Engine {
         Ok(())
     }
     pub fn stop(&mut self) -> Result<()> {
-        // Restore the exact previous sink properties before returning to YouTube/Music.
-        if let Some((late,qos))=self.source_hls.sink_defaults.take(){if let Some(late)=late{self.video_sink.set_property("max-lateness",late);}if let Some(qos)=qos{self.video_sink.set_property("qos",qos);}}
+        // Restores the original sink even when the presentation handle changed.
         self.source_hls.reset(false);
         #[cfg(target_os = "windows")]
         if let Some(remote) = self.remote.as_mut() {
@@ -1489,6 +1517,9 @@ fn install_software_music() -> Result<Engine> {
         pipeline, messages, decoder, evidence,
         video_sink: gst::ElementFactory::make("fakesink").property("sync", false).build()?,
         transient: Vec::new(),
+        audio_effects: Default::default(),
+        interpolation_mode:0,
+        interpolation_auto_fallback:true,
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
             source_hls: source_hls::Gate::default(),
@@ -1722,6 +1753,9 @@ fn install_texture(app: &SetupWindow) -> Result<Engine> {
         evidence,
         video_sink,
         transient: Vec::new(),
+        audio_effects: Default::default(),
+        interpolation_mode:0,
+        interpolation_auto_fallback:true,
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
             source_hls: source_hls::Gate::default(),
@@ -2466,6 +2500,9 @@ mod volume_tests {
             evidence: Arc::new(super::acceleration::Evidence::default()),
             video_sink: video,
             transient: Vec::new(),
+            audio_effects: Default::default(),
+            interpolation_mode:0,
+            interpolation_auto_fallback:true,
             buffer_state: Mutex::new(buffered::Snapshot::default()),
             recovery: rebuffer::Recovery::default(),
             source_hls: source_hls::Gate::default(),
@@ -2802,6 +2839,9 @@ fn install_native_engine(separate_process: bool) -> Result<Engine> {
         native: Some(native),
         video_sink: gst::ElementFactory::make("fakesink").build()?,
         transient: Vec::new(),
+        audio_effects: Default::default(),
+        interpolation_mode:0,
+        interpolation_auto_fallback:true,
         buffer_state: Mutex::new(buffered::Snapshot::default()),
         recovery: rebuffer::Recovery::default(),
             source_hls: source_hls::Gate::default(),

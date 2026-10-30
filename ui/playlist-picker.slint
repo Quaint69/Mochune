@@ -10,6 +10,10 @@ export component PlaylistPicker inherits ThemeBox {
     in property <bool> skinned;
     in property <bool> open-above;
     out property <bool> popup-open: menu.is-open;
+    out property <length> popup-x: root.absolute-position.x;
+    out property <length> popup-y: root.absolute-position.y + (root.open-above ? -root.popup-height - 5px : root.height + 5px);
+    out property <length> popup-width: root.width;
+    out property <length> popup-height: min(280px,root.model.length * 34px + 8px);
     in property <bool> available: true;
     changed available=>{
         if !root.available {

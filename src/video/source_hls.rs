@@ -1,6 +1,7 @@
 //! Only Mochune's nonce-protected Anime/Movie HLS relay uses this policy.
 //! YouTube, Music and ordinary HTTP playback never enter it.
 use base64::Engine as _;
+use gst::prelude::*;
 use std::{
     collections::BTreeMap,
     time::{Duration, Instant},
@@ -8,7 +9,7 @@ use std::{
 #[derive(Default)]
 pub(super) struct Gate {
     pub enabled: bool,
-    pub sink_defaults: Option<(Option<i64>, Option<bool>)>,
+    sink_defaults: Option<(gst::Element, i64, bool)>,
     levels: BTreeMap<usize, (i32, Instant)>,
     pts: Option<f64>,
     changed: Option<Instant>,
@@ -39,10 +40,38 @@ pub(super) fn relay_uri(uri: &str) -> bool {
 }
 impl Gate {
     pub fn reset(&mut self, enabled: bool) {
+        self.restore_sink_policy();
         *self = Self {
             enabled,
             ..Default::default()
         };
+    }
+    // The Windows presentation element is a Bin. Save the actual BaseSink,
+    // not the container or an element that may be replaced by the next load.
+    pub fn configure_sink(&mut self, root: &gst::Element) {
+        self.restore_sink_policy();
+        if !self.enabled { return; }
+        let sink = if root.is::<gst_base::BaseSink>() {
+            Some(root.clone())
+        } else {
+            root.downcast_ref::<gst::Bin>().and_then(|bin| {
+                bin.iterate_recurse().into_iter().filter_map(Result::ok)
+                    .find(|element| element.is::<gst_base::BaseSink>())
+            })
+        };
+        if let Some(sink) = sink {
+            let late = sink.property::<i64>("max-lateness");
+            let qos = sink.property::<bool>("qos");
+            sink.set_property("max-lateness",100_000_000i64);
+            sink.set_property("qos",true);
+            self.sink_defaults = Some((sink,late,qos));
+        }
+    }
+    fn restore_sink_policy(&mut self) {
+        if let Some((sink,late,qos)) = self.sink_defaults.take() {
+            sink.set_property("max-lateness",late);
+            sink.set_property("qos",qos);
+        }
     }
     pub fn buffering(&mut self, id: usize, percent: i32) {
         if self.enabled && (self.levels.len() < 16 || self.levels.contains_key(&id)) {
@@ -124,6 +153,27 @@ impl Gate {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn nested_sink_policy_restores_the_original_element() {
+        gst::init().unwrap();
+        let sink= gst::ElementFactory::make("fakesink").build().unwrap();
+        sink.set_property("max-lateness",250_000_000i64);
+        sink.set_property("qos",false);
+        let inner=gst::Bin::new(); inner.add(&sink).unwrap();
+        let outer=gst::Bin::new(); outer.add(&inner).unwrap();
+        let mut gate=Gate::default(); gate.reset(true);
+        gate.configure_sink(outer.upcast_ref());
+        assert_eq!(sink.property::<i64>("max-lateness"),100_000_000);
+        assert!(sink.property::<bool>("qos"));
+        // Even if the caller switches its presentation handle, restoration is
+        // tied to the exact sink that was configured, not that new container.
+        let replacement=gst::Bin::new();
+        assert!(replacement.find_property("max-lateness").is_none());
+        gate.reset(false);
+        assert_eq!(sink.property::<i64>("max-lateness"),250_000_000);
+        assert!(!sink.property::<bool>("qos"));
+        gate.reset(false);
+    }
     #[test]
     fn isolation_is_explicit() {
         assert!(!relay_uri("https://r1.googlevideo.com/videoplayback"));

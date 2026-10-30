@@ -24,6 +24,7 @@ import {BrowseMenu} from "browse-tools.slint";
 import {QualityPicker} from "quality.slint";
 import {AppColors} from "theme.slint";
 import {Button, LineEdit, ComboBox, CheckBox, Slider, ScrollView, ListView, VerticalBox, HorizontalBox, Palette} from "std-widgets.slint";
+export struct NativeOcclusion { visible: bool, x: length, y: length, width: length, height: length }
 export struct QueueCard {
     title: string, channel: string, active: bool
 }
@@ -560,6 +561,8 @@ export component SetupWindow inherits Window {
     }
     changed settings-open=>{
         root.skin-visibility-change();
+        if !root.settings-open { root.clear-audio-collection(); }
+        else if root.settings-tab == 6 && root.audio-impulse-source == 2 { root.refresh-audio-collection(); }
     }
     property <bool> skin-preview-in-view;
     out property <bool> skin-preview-visible: root.settings-open && root.settings-tab == 5 && root.skin-preview-in-view;
@@ -848,6 +851,20 @@ export component SetupWindow inherits Window {
     in-out property <bool> light-mode;
     in-out property <string> download-folder;
     in-out property <bool> download-open;
+    in-out property <bool> download-format-open;
+    in-out property <length> download-format-x;
+    in-out property <length> download-format-y;
+    in-out property <length> download-format-width;
+    in-out property <length> download-format-height;
+    in-out property <bool> source-menu-open;
+    in-out property <length> source-menu-x;
+    in-out property <length> source-menu-y;
+    // Keep native video playing; cut out only the UI rectangles drawn above it.
+    out property <[NativeOcclusion]> native-occlusions: [
+        {visible: root.download-open, x: root.width - min(root.width - 40px,460px) - 20px, y: root.fullscreen-mode ? 20px : 72px, width: min(root.width - 40px,460px), height: 320px},
+        {visible: !root.compact-music && !root.mini-music && !root.fullscreen-mode && root.source-menu-open, x: root.source-menu-x, y: root.source-menu-y, width: 150px, height: 206px},
+        {visible: root.download-open && root.download-format-open, x: root.download-format-x, y: root.download-format-y, width: root.download-format-width, height: root.download-format-height}
+    ];
     in property <bool> download-preparing;
     in property <bool> download-running;
     in property <bool> download-ready;
@@ -912,6 +929,31 @@ export component SetupWindow inherits Window {
     in property <bool> native-gpu-only;
     in-out property <bool> hardware: true;
     in-out property <int> settings-tab;
+    in-out property <bool> audio-delay-enabled: false;
+    in-out property <int> audio-delay-channel: 0;
+    in-out property <float> audio-delay-ms: 0;
+    in-out property <bool> audio-convolver-enabled: false;
+    in-out property <int> audio-impulse-source: 0;
+    in-out property <bool> audio-collection-downloading: false;
+    in-out property <string> audio-collection-status: "Collection not downloaded";
+    in-out property <string> audio-collection-filter;
+    in-out property <[string]> audio-collection-titles;
+    in-out property <int> audio-collection-choice: -1;
+    callback audio-source-change(int);
+    callback refresh-audio-collection();
+    callback clear-audio-collection();
+    callback download-audio-collection();
+    callback cancel-audio-collection();
+    callback select-audio-collection(int);
+    changed audio-collection-filter => {
+        if root.settings-open && root.settings-tab == 6 && root.audio-impulse-source == 2 { root.refresh-audio-collection(); }
+    }
+
+    in-out property <string> audio-impulse-path;
+    in-out property <string> audio-impulse-status: "Bundled Oxy · stereo · 48 kHz";
+    in-out property <float> audio-convolver-gain: 0;
+    callback pick-audio-impulse();
+
     in-out property <length> settings-scroll-offset;
     out property <length> settings-content-height;
     out property <length> settings-visible-height;
@@ -920,6 +962,8 @@ export component SetupWindow inherits Window {
     out property <length> settings-viewport-bottom;
     changed settings-tab=>{
         root.settings-scroll-offset=0px;
+        if root.settings-tab == 6 && root.audio-impulse-source == 2 { root.refresh-audio-collection(); }
+        else { root.clear-audio-collection(); }
     }
     in-out property <int> export-playlist;
     in-out property <bool> remember: true;
@@ -1184,6 +1228,9 @@ export component SetupWindow inherits Window {
                         }
                     }
                     SourcePicker {
+                        changed popup-open=>{root.source-menu-open=self.popup-open;}
+                        changed popup-x=>{root.source-menu-x=self.popup-x;}
+                        changed popup-y=>{root.source-menu-y=self.popup-y;}
                         width: !root.music-layout && root.width < 1060px ? 104px : 112px;
                         music: root.music-layout;
                         offline: root.offline;
@@ -3830,10 +3877,10 @@ export component SetupWindow inherits Window {
                             padding: 8px;
                             spacing: 4px;
                             alignment: start;
-                            for tab[index] in ["General", "Themes", "Recommendations", "Storage", "Playlists", "About"]: Rectangle {
+                            for tab[index] in ["General", "Themes", "Audio Effects", "Recommendations", "Storage", "Playlists", "About"]: Rectangle {
                                 height: 36px;
                                 border-radius: 6px;
-                                background: root.settings-tab == (index == 0 ? 0 : index == 1 ? 5 : index - 1) ? AppColors.selected : nav-hit.has-hover ? AppColors.hover : transparent;
+                                background: root.settings-tab == (index == 0 ? 0 : index == 1 ? 5 : index == 2 ? 6 : index - 2) ? AppColors.selected : nav-hit.has-hover ? AppColors.hover : transparent;
                                 Text {
                                     x: 10px;
                                     width: parent.width - 20px;
@@ -3843,11 +3890,11 @@ export component SetupWindow inherits Window {
                                     vertical-alignment: center;
                                     overflow: elide;
                                     font-size: 13px;
-                                    font-weight: root.settings-tab == (index == 0 ? 0 : index == 1 ? 5 : index - 1) ? 700 : 400;
+                                    font-weight: root.settings-tab == (index == 0 ? 0 : index == 1 ? 5 : index == 2 ? 6 : index - 2) ? 700 : 400;
                                 }
                                 nav-hit := TouchArea {
                                     clicked=>{
-                                        root.settings-tab=index == 0 ? 0 : index == 1 ? 5 : index - 1;
+                                        root.settings-tab=index == 0 ? 0 : index == 1 ? 5 : index == 2 ? 6 : index - 2;
                                     }
                                 }
                             }
@@ -3935,6 +3982,10 @@ export component SetupWindow inherits Window {
                                                     wrap: word-wrap;
                                                     font-size: 11px;
                                                 }
+                                                if !root.interpolation-supported: Text {
+                                                    text: "Frame interpolation is unavailable on this platform.";
+                                                    color: AppColors.muted; wrap: word-wrap; font-size: 11px;
+                                                }
                                                 if root.interpolation-supported: CheckBox {
                                                     text:"Automatically disable interpolation when GPU is slow";
                                                     checked <=> root.interpolation-auto-fallback;
@@ -3962,6 +4013,54 @@ export component SetupWindow inherits Window {
                                             checked <=> root.immersive;
                                         }
 
+                                    }
+                                    if root.settings-tab == 6: VerticalBox {
+                                        padding: 0px; spacing: 16px; alignment: start; vertical-stretch: 0;
+                                        Text { text: "Audio Effects"; color: AppColors.text; font-size: 18px; font-weight: 700; }
+                                        CheckBox { text: "Channel delay"; checked <=> root.audio-delay-enabled; }
+                                        HorizontalBox {
+                                            padding: 0px; spacing: 12px;
+                                            ComboBox { model: ["Left", "Right"]; current-index <=> root.audio-delay-channel; enabled: root.audio-delay-enabled; width: 110px; horizontal-stretch: 0; }
+                                            Slider { minimum: 0; maximum: 20; step: 0.1; value <=> root.audio-delay-ms; enabled: root.audio-delay-enabled; }
+                                            Text { text: round(root.audio-delay-ms * 10) / 10 + " ms"; width: 64px; color: AppColors.muted; vertical-alignment: center; }
+                                        }
+                                        Rectangle { height: 1px; background: AppColors.border; }
+                                        CheckBox { text: "Convolver"; checked <=> root.audio-convolver-enabled; }
+                                        ComboBox {
+                                            model: ["Oxy (bundled)", "Custom file", "Downloaded collection"];
+                                            current-index <=> root.audio-impulse-source;
+                                            selected(value) => { root.audio-source-change(self.current-index); }
+                                        }
+                                        if root.audio-impulse-source == 1: VerticalBox {
+                                            padding: 0px; spacing: 10px;
+                                            Text { text: root.audio-impulse-path == "" ? "Choose an impulse file" : root.audio-impulse-path; overflow: elide; color: AppColors.text; font-size: 13px; }
+                                            Button { text: "Choose .irs / .wav"; clicked => { root.pick-audio-impulse(); } }
+                                        }
+                                        if root.audio-impulse-source == 2: VerticalBox {
+                                            padding: 0px; spacing: 10px;
+                                            HorizontalBox {
+                                                padding: 0px; spacing: 10px;
+                                                Button { text: root.audio-collection-downloading ? "Downloading…" : "Download IRS collection"; enabled: !root.audio-collection-downloading; clicked => { root.download-audio-collection(); } }
+                                                if root.audio-collection-downloading: Button { text: "Cancel"; clicked => { root.cancel-audio-collection(); } }
+                                            }
+                                            Text { text: root.audio-collection-status; color: AppColors.muted; wrap: word-wrap; font-size: 12px; }
+                                            LineEdit { placeholder-text: "Filter impulses…"; text <=> root.audio-collection-filter; }
+                                            ComboBox {
+                                                model: root.audio-collection-titles;
+                                                current-index <=> root.audio-collection-choice;
+                                                enabled: root.audio-collection-titles.length > 0;
+                                                selected(value) => { root.select-audio-collection(self.current-index); }
+                                            }
+                                        }
+                                        Text { text: root.audio-impulse-status; color: AppColors.muted; wrap: word-wrap; font-size: 12px; }
+                                        HorizontalBox {
+                                            padding: 0px; spacing: 12px;
+                                            Text { text: "Output"; width: 64px; color: AppColors.text; vertical-alignment: center; }
+                                            Slider { minimum: -24; maximum: 0; step: 0.5; value <=> root.audio-convolver-gain; enabled: root.audio-convolver-enabled; }
+                                            Text { text: round(root.audio-convolver-gain * 10) / 10 + " dB"; width: 64px; color: AppColors.muted; vertical-alignment: center; }
+                                        }
+                                        Text { text: "Mono/stereo WAV impulses · up to 5 seconds and 8 MiB. External files stay in their original location."; color: AppColors.muted; wrap: word-wrap; font-size: 12px; }
+                                        Text { text: "Save to apply. Playback resumes at the current position. Disabled effects use no DSP buffers."; color: AppColors.muted; wrap: word-wrap; font-size: 12px; }
                                     }
                                     if root.settings-tab == 5: VerticalBox {
                                         padding: 0px; spacing: 14px; alignment: start; vertical-stretch: 0;
@@ -4103,7 +4202,7 @@ export component SetupWindow inherits Window {
                                             font-size: 11px;
                                         }
                                     }
-                                    CheckBox {
+                                    if root.settings-tab == 5: CheckBox {
                                         text: "Theme video mode" + (MusicTheme.available[4] ? "" : " · not provided");
                                         enabled: MusicTheme.available[4]; checked <=> root.theme-video;
                                     }
@@ -4140,7 +4239,7 @@ export component SetupWindow inherits Window {
                                             }
                                         }
                                         Text {
-                                            text: "A lightweight YouTube video and music player for Linux and Windows. Built by Quaint69 and contributors.";
+                                            text: "A low-RAM, fast app for YouTube music and videos, anime and movie streaming, and reading manga.";
                                             color: AppColors.muted;
                                             wrap: word-wrap;
                                         }
@@ -4206,7 +4305,7 @@ export component SetupWindow inherits Window {
                                             }
                                         }
                                         Text {
-                                            text: "Independent project; not affiliated with YouTube or Google. History and playlists are stored locally. Disk caches are optional. Media rights remain with their owners.";
+                                            text: "Independent project; not affiliated with YouTube or other media providers. History and playlists are stored locally. Content availability depends on third-party sources, and media rights remain with their owners.";
                                             color: AppColors.muted;
                                             wrap: word-wrap;
                                             font-size: 11px;
@@ -4594,11 +4693,21 @@ export component SetupWindow inherits Window {
                     overflow: elide;
                     max-height: 44px;
                 }
-                ComboBox {
+                PlaylistPicker {
+                    theme-section: root.music-layout ? 0 : 4;
+                    theme-key: "downloads-format-picker";
+                    changed popup-open=>{root.download-format-open=self.popup-open;}
+                    changed popup-x=>{root.download-format-x=self.popup-x;}
+                    changed popup-y=>{root.download-format-y=self.popup-y;}
+                    changed popup-width=>{root.download-format-width=self.popup-width;}
+                    changed popup-height=>{root.download-format-height=self.popup-height;}
                     height: 34px;
+                    label: "";
+                    placeholder: "Choose a format";
+                    accessible-name: "Download format";
                     model: root.download-labels;
                     current-index <=> root.download-choice;
-                    enabled: root.download-ready && !root.download-running && !root.download-preparing;
+                    available: root.download-ready && !root.download-running && !root.download-preparing;
                 }
                 ThemeText {
                         theme-section:root.music-layout ? 0 : 4;theme-key:"downloads-text";theme-kind:"text";

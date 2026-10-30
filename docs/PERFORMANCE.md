@@ -48,6 +48,22 @@ sampling time; its displayed number need not equal private bytes or working set.
 - No recording or per-frame screenshot collection ran during the memory sample
   interval. This is a small sample, not a long-duration leak or stress test.
 
+## Windows anime, movie and manga samples
+
+Additional short release-build measurements were collected over SSH on **30 October 2026**, using the same Ryzen 5 3550H / GTX 1650 / Vega 8 laptop. These use the current pre-release Windows binary (before the 0.1.1 version/About-text update), rather than the historical 25 October build above.
+
+| Mode | Private bytes | Private working set | Total working set |
+| --- | ---: | ---: | ---: |
+| Anime · 1080p | **277.4 MiB** | 176.1 MiB | 287.8 MiB |
+| Movies · 720p | **266.3 MiB** | 173.0 MiB | 283.4 MiB |
+| Manga · first page, two pages prefetched | **24.2 MiB** | 21.8 MiB | 54.0 MiB |
+
+The README uses **Private Bytes**, consistently with its original Windows Music/Video rows. This is committed private process memory, not Task Manager's usual private working-set figure. Private working set counts resident unshared pages and is shown separately above. GPU allocations are not included in either private-process figure.
+
+Each mode ran for 45 seconds, with medians from 16 samples between seconds 20 and 40. Samples include the main app and its own disposable video worker, and exclude the observer, any other running app instance and the compositor. These were real network playback/reading sessions, with an empty isolated profile, default appearance, a non-maximized window, muted volume, interpolation off and audio caching off. No screenshots were taken during sampling. Anime used Anikoto.cz, movies VixSrc, and manga MangaPill. Both video runs verified `d3d12h264dec` and `D3D12Memory`, with no CPU video readback. The manga image was loaded and chapter/page counts were verified.
+
+These are initial-session observations, not whole-book or long-session maxima. More pages, larger libraries, compressed buffers, stream quality and themes can change usage. Linux anime/movie/manga has not been measured; the README's dashes do not mean zero RAM.
+
 ## Linux software-rendered Music
 
 The README's **~85 MiB Linux Music** figure is an observed software-rendered Music sample, not the OpenGL release sample above. Music now uses software UI rendering by default; switching modes re-executes the app, preserving bounded session metadata. The normal Video renderer is unchanged.
@@ -85,7 +101,5 @@ A bounded Windows post-recovery test measured a **183 ms median** video seek; th
 ## Download size
 
 The application executable and the complete package are different measurements.
-The current locally produced Windows installer and portable download are each
-about **99 MiB compressed**, including playback/helper dependencies; the Debian
-package is about **79 MiB**. Personal data and optional caches add disk use.
-These are local artifacts, not published release sizes.
+Release packages include the playback/helper dependencies and stock themes.
+See the [release assets](https://github.com/Quaint69/Mochune/releases/latest) for exact download sizes. Personal data and optional caches add disk use.

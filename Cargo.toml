@@ -1,6 +1,6 @@
 [package]
 name = "mochune"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false
@@ -15,6 +15,10 @@ native-overlay-test = ["slint/renderer-software"]
 legacy-wgpu = ["slint/renderer-femtovg-wgpu", "slint/unstable-wgpu-30"]
 
 [dependencies]
+flate2 = "1"
+tar = "0.4"
+hound = "3.5"
+rustfft = "6.4"
 ani_lib = { package = "ani-cli-rs", git = "https://github.com/vorlie/ani-cli-rs", rev = "2d581060cce005a782f485f9ff398c23cb3688f5" }
 tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "io-util"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
@@ -59,6 +63,7 @@ windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem", "Win32
 version = "0.6"
 
 [build-dependencies]
+cc = "1"
 slint-build = "=1.18.1"
 
 [profile.dev]
@@ -84,3 +89,6 @@ opt-level = 2
 
 [profile.release]
 strip = "symbols"
+
+[profile.dev.package.rustfft]
+opt-level = 2

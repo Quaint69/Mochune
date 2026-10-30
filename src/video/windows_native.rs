@@ -5,7 +5,7 @@ use super::native_overlay::Artwork;
 use super::*;
 use gst_video::prelude::*;
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-use slint::winit_030::WinitWindowAccessor;
+use slint::{Model, winit_030::WinitWindowAccessor};
 use std::{
     collections::VecDeque,
     ffi::c_void,
@@ -16,7 +16,7 @@ use windows::{
         Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
         Graphics::Gdi::{
             BLACK_BRUSH, CombineRgn, CreateRectRgn, CreateRoundRectRgn, DeleteObject,
-            GetStockObject, HBRUSH, HGDIOBJ, RGN_AND, SetWindowRgn,
+            GetStockObject, HBRUSH, HGDIOBJ, HRGN, RGN_AND, RGN_DIFF, SetWindowRgn,
         },
         System::LibraryLoader::{GetModuleHandleW, GetProcAddress},
         UI::{
@@ -215,6 +215,23 @@ fn repaint_desktop(w: &SetupWindow) {
     crate::repaint_window(w.window());
 }
 
+// Physical cutouts relative to the video host. Shared by video and alpha UI
+// so app popups stay above both, without unmapping or restarting DXGI playback.
+fn occlusions(w: &SetupWindow, scale: f32, geo: [i32;8]) -> Vec<[i32;4]> {
+    w.get_native_occlusions().iter().filter(|r| r.visible).filter_map(|r| {
+        let rect=[(r.x*scale).floor() as i32-geo[0], (r.y*scale).floor() as i32-geo[1],
+            ((r.x+r.width)*scale).ceil() as i32-geo[0], ((r.y+r.height)*scale).ceil() as i32-geo[1]];
+        (rect[0]<geo[6] && rect[2]>geo[4] && rect[1]<geo[7] && rect[3]>geo[5]).then_some(rect)
+    }).collect()
+}
+pub(super) fn subtract_occlusions(region: HRGN, cuts: &[[i32;4]], origin: [i32;2]) {
+    for r in cuts {
+        let cut=unsafe {CreateRectRgn(r[0]-origin[0],r[1]-origin[1],r[2]-origin[0],r[3]-origin[1])};
+        if !cut.0.is_null() {
+            unsafe {CombineRgn(Some(region),Some(region),Some(cut),RGN_DIFF); let _=DeleteObject(HGDIOBJ(cut.0));}
+        }
+    }
+}
 struct Child {
     hwnd: HWND,
     // Owned by the UI thread; this stable allocation outlives every window callback.
@@ -222,6 +239,7 @@ struct Child {
     geometry: Option<[i32; 8]>,
     corner_radius: i32,
     border_inset: i32,
+    occlusions: Vec<[i32;4]>,
     shown: bool,
 }
 impl Child {
@@ -275,6 +293,7 @@ impl Child {
             geometry: None,
             corner_radius: -1,
             border_inset: -1,
+            occlusions: Vec::new(),
             shown: false,
         })
     }
@@ -314,16 +333,18 @@ impl Child {
             || w.get_browsing_page()
             || w.get_music_layout()
             || w.get_settings_open()
-            || w.get_download_open()
             || w.get_playlist_editor()
             || bottom <= top;
         let inset = (w.get_video_border_width() * scale).round().max(0.) as i32;
         let radius = ((w.get_video_corner_radius() * scale).round() as i32 - inset).max(0);
+        let cuts = occlusions(w,scale,geo);
+        let cuts_changed = self.occlusions != cuts;
         let changed = self.geometry != Some(geo)
             || self.corner_radius != radius
             || self.border_inset != inset
+            || cuts_changed
             || self.shown == hide;
-        if self.geometry != Some(geo) || self.corner_radius != radius || self.border_inset != inset
+        if self.geometry != Some(geo) || self.corner_radius != radius || self.border_inset != inset || cuts_changed
         {
             let _ = unsafe { MoveWindow(self.hwnd, geo[0], geo[1], geo[2], geo[3], true) };
             let region = unsafe {
@@ -352,12 +373,14 @@ impl Child {
                     let _ = unsafe { DeleteObject(HGDIOBJ(rounded.0)) };
                 }
             }
+            subtract_occlusions(region,&cuts,[0,0]);
             if unsafe { SetWindowRgn(self.hwnd, Some(region), true) } == 0 {
                 let _ = unsafe { DeleteObject(HGDIOBJ(region.0)) };
             }
             self.geometry = Some(geo);
             self.corner_radius = radius;
             self.border_inset = inset;
+            self.occlusions = cuts;
         }
         self.show(!hide);
         if changed {
@@ -478,6 +501,7 @@ impl Controller {
         )
     }
     pub fn stop(&self) {
+        super::windows_interpolation::inactive();
         self.0.requested.store(false, Ordering::Release);
         *self.0.process_transport.lock().unwrap() = std::sync::Weak::new();
         *PROCESS_HEALTH.lock().unwrap() = serde_json::Value::Null;
@@ -503,7 +527,7 @@ impl Controller {
         ACTIVE.store(false, Ordering::Relaxed);
         UI_BYTES.store(0, Ordering::Relaxed);
     }
-    pub fn make_sink(&self) -> Result<gst::Element> {
+    pub fn make_sink(&self,interpolation_mode:i32,auto_fallback:bool) -> Result<gst::Element> {
         struct Binding<'a>(&'a AtomicBool);
         impl Drop for Binding<'_> {
             fn drop(&mut self) {
@@ -577,7 +601,19 @@ impl Controller {
             .build()?;
         let bin = gst::Bin::new();
         bin.add_many([&filter, &sink])?;
-        filter.link(&sink)?;
+        if interpolation_mode>0 {
+            // Color conversion stays in D3D12 memory, inside the video worker.
+            // The normal/off path has neither the converter nor effect context.
+            let convert=gst::ElementFactory::make("d3d12convert").build()?;
+            let rgba=gst::ElementFactory::make("capsfilter").property("caps","video/x-raw(memory:D3D12Memory),format=RGBA".parse::<gst::Caps>()?).build()?;
+            let (effect,report)=super::windows_interpolation::make(interpolation_mode,auto_fallback);
+            super::windows_interpolation::publish(report);
+            bin.add_many([&convert,&rgba,&effect])?;
+            gst::Element::link_many([&filter,&convert,&rgba,&effect,&sink])?;
+        } else {
+            super::windows_interpolation::inactive();
+            filter.link(&sink)?;
+        }
         bin.add_pad(&gst::GhostPad::with_target(
             &filter.static_pad("sink").unwrap(),
         )?)?;
@@ -814,7 +850,7 @@ impl Controller {
                 layer.ui.sync(&w);
                 layer.ui.render(w.get_native_player_width(), w.get_native_player_height(), w.get_player_render_height());
                 if let Some(geo) = child.geometry {
-                    if let Err(error) = layer.present(geo, child.shown) {
+                    if let Err(error) = layer.present(geo, child.shown, &child.occlusions) {
                         controls_failure(&shared, &w, error);
                         layer.hide();
                         return;
@@ -830,6 +866,15 @@ impl Controller {
                     .and_then(|sink| sink.upgrade());
                 if let Some(t) = remote {
                     let status = t.status.lock().unwrap();
+                    let effect=&status.interpolation;
+                    super::windows_interpolation::remote_report(effect);
+                    if let Some(fps)=effect["source_fps"].as_f64(){w.set_video_source_fps(fps as f32);}
+                    if let Some(text)=effect["status"].as_str(){w.set_interpolation_status(text.into());}
+                    if effect["blocked"].as_bool()==Some(true) && w.get_interpolation_mode()>0 {
+                        w.set_interpolation_mode(0);
+                        let weak=w.as_weak();
+                        slint::Timer::single_shot(Duration::ZERO,move||{if let Some(w)=weak.upgrade(){w.invoke_change_interpolation(0);}});
+                    }
                     *PROCESS_HEALTH.lock().unwrap()=serde_json::json!({"memory":status.process_memory,"hardware_verified":status.verified,"rendered":status.rendered});
                     RENDERED.store(status.rendered, Ordering::Relaxed);
                     LAST_VIDEO_PTS.store((status.pts.max(0.) * 1e9) as u64, Ordering::Release);

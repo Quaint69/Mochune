@@ -68,6 +68,9 @@ export component SourcePicker inherits ThemeBox {
     in property <bool> music;
     in property <bool> offline;
     property <int> active-index: Sources.mode == 0 ? (root.music ? 0 : 1) : Sources.mode == 1 ? 2 : Sources.mode == 3 ? 3 : 4;
+    out property <bool> popup-open: menu.is-open;
+    out property <length> popup-x: root.absolute-position.x;
+    out property <length> popup-y: root.absolute-position.y + 36px;
     width: 112px; height: 34px;
     ActionButton {
         theme-section: 0; theme-key: "source-selector-button";

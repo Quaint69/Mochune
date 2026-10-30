@@ -1,4 +1,5 @@
 mod about;
+mod audio_collection;
 mod sources;
 pub(crate) mod audio_cache;
 mod availability;
@@ -72,6 +73,7 @@ struct Settings {
     interpolation_enabled:bool,
     interpolation_mode:i32,
     interpolation_auto_fallback:bool,
+    audio_effects: crate::audio_effects::Config,
     interests: String,
     recommendation_mode: i32,
     recommendation_count: i32,
@@ -132,6 +134,7 @@ impl Default for Settings {
             interpolation_enabled:false,
             interpolation_mode:0,
             interpolation_auto_fallback:true,
+            audio_effects: Default::default(),
             interests: "technology, music, science".into(),
             recommendation_mode: 0,
             recommendation_count: 30,
@@ -330,6 +333,7 @@ fn settings(window: &SetupWindow) -> Settings {
         interpolation_enabled:window.get_interpolation_enabled(),
         interpolation_mode:window.get_interpolation_mode().clamp(0,2),
         interpolation_auto_fallback:window.get_interpolation_auto_fallback(),
+        audio_effects: crate::audio_effects::Config::read(window),
         interests: String::new(),
         recommendation_mode: 0,
         recommendation_count: recommendations::video_limit(window.get_recommendation_count()),
@@ -361,6 +365,7 @@ fn settings(window: &SetupWindow) -> Settings {
     }
 }
 fn apply_settings(w: &SetupWindow, s: &Settings) {
+    s.audio_effects.show(w);
     w.set_quality_index(s.quality.clamp(0, 4));
     w.set_music_only(s.music);
     w.set_volume(sanitize_volume(s.volume));
@@ -368,8 +373,8 @@ fn apply_settings(w: &SetupWindow, s: &Settings) {
     w.set_light_mode(s.light_mode);
     w.set_immersive(s.immersive);
     w.set_launch_maximized(s.launch_maximized);
-    w.set_interpolation_supported(cfg!(target_os="linux"));
-    w.set_interpolation_mode(s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0}));
+    w.set_interpolation_supported(cfg!(any(target_os="linux",target_os="windows")));
+    w.set_interpolation_mode(if w.get_interpolation_supported() {s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0})} else {0});
             w.set_interpolation_auto_fallback(s.interpolation_auto_fallback);
     w.set_music_extra_card(s.music_extra_card);
     w.set_music_skin_path(s.music_skin_path.clone().into());
@@ -1121,6 +1126,8 @@ enum PlayerCommand {
     Connection(bool),
     RepeatVideo(bool),
     RepeatMusic(bool),
+    #[cfg(target_os="windows")]
+    Interpolation(i32,bool),
     SeekState(f64, bool, u64),
 }
 pub struct Runtime {
@@ -1264,14 +1271,6 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
             w.invoke_notify("Control position changed for this session; could not save it.".into());
         }
     });
-    let interpolation_state=state.clone();let interpolation_paths=paths.clone();let weak=w.as_weak();
-    w.on_change_interpolation(move |mode|{
-        let Some(w)=weak.upgrade()else{return;};
-        if !w.get_interpolation_supported(){return;}
-        let mode=mode.clamp(0,2);w.set_interpolation_mode(mode);
-        let mut state=interpolation_state.lock().unwrap();state.settings.interpolation_mode=mode;state.settings.interpolation_enabled=mode>0;
-        if interpolation_paths.save("settings.json",&state.settings).is_err(){w.invoke_notify("Interpolation changed for this session; could not save it.".into());}
-    });
     browse_view::install(w, state.clone());
     settings_terms::install(w);
     let repaint = w.as_weak();
@@ -1299,6 +1298,22 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
     let cache = stream_cache.clone();
     thread::spawn(move || browse_worker(browse_rx, weak, st, p, gen_id, cache));
     let (player_tx, player_rx) = mpsc::channel();
+    let interpolation_state=state.clone();let interpolation_paths=paths.clone();let weak=w.as_weak();
+    #[cfg(target_os="windows")]
+    let interpolation_tx=player_tx.clone();
+    w.on_change_interpolation(move |mode|{
+        let Some(w)=weak.upgrade()else{return;};
+        if !w.get_interpolation_supported(){return;}
+        let mode=mode.clamp(0,2);w.set_interpolation_mode(mode);
+        let mut state=interpolation_state.lock().unwrap();state.settings.interpolation_mode=mode;state.settings.interpolation_enabled=mode>0;
+        if interpolation_paths.save("settings.json",&state.settings).is_err(){w.invoke_notify("Interpolation changed for this session; could not save it.".into());}
+        drop(state);
+        #[cfg(target_os="windows")]
+        if !w.get_music_only() && (w.get_playback_active() || w.get_resolving() || w.get_video_visible()) {
+            let _=interpolation_tx.send(PlayerCommand::Interpolation(mode,w.get_interpolation_auto_fallback()));
+        }
+    });
+
     let player_generation = Arc::new(AtomicU64::new(0));
     let pg = player_generation.clone();
     let weak = w.as_weak();
@@ -2012,11 +2027,12 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
     w.on_cancel_settings(move || {
         if let Some(w) = weak.upgrade() {
             let s = cancel_state.lock().unwrap().settings.clone();
+            s.audio_effects.show(&w);
             w.set_download_folder(s.download_folder.clone().into());
             w.set_light_mode(s.light_mode);
             w.set_immersive(s.immersive);
             w.set_launch_maximized(s.launch_maximized);
-            w.set_interpolation_mode(s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0}));
+            w.set_interpolation_mode(if w.get_interpolation_supported() {s.interpolation_mode.clamp(0,2).max(if s.interpolation_enabled{1}else{0})} else {0});
             w.set_interpolation_auto_fallback(s.interpolation_auto_fallback);
             w.set_music_extra_card(s.music_extra_card);
             w.set_music_skin_path(s.music_skin_path.clone().into());
@@ -2052,13 +2068,43 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
         }
     });
 
+    let weak = w.as_weak();
+    w.on_pick_audio_impulse(move || {
+        let weak = weak.clone();
+        thread::spawn(move || {
+            let Some(file) = rfd::FileDialog::new().set_title("Choose impulse response").add_filter("Impulse response", &["irs", "wav"]).pick_file() else { return; };
+            let path = file.to_string_lossy().into_owned();
+            let result = crate::audio_effects::validate(&path);
+            let _ = weak.upgrade_in_event_loop(move |w| {
+                if !w.get_settings_open() { return; }
+                w.set_audio_impulse_source(1);
+                w.set_audio_impulse_path(path.into());
+                match result {
+                    Ok(info) => w.set_audio_impulse_status(info.into()),
+                    Err(error) => { w.set_audio_convolver_enabled(false); w.set_audio_impulse_status(format!("Convolution off: {error:#}").into()); }
+                }
+            });
+        });
+    });
+    audio_collection::install(w, paths.data.join("irs-collection"));
     let resolver_cache = stream_cache.clone();
     let st = state.clone();
     let weak = w.as_weak();
     let p = paths.clone();
     w.on_save_settings(move || {
         if let Some(w) = weak.upgrade() {
-            let s = settings(&w);
+            let mut s = settings(&w);
+            if s.audio_effects.convolver {
+                match s.audio_effects.validate() {
+                    Ok(info) => w.set_audio_impulse_status(info.into()),
+                    Err(error) => {
+                        s.audio_effects.convolver = false;
+                        w.set_audio_convolver_enabled(false);
+                        w.set_audio_impulse_status(format!("Convolution off: {error:#}").into());
+                        w.invoke_notify(format!("Convolution off: {error:#}").into());
+                    }
+                }
+            }
             let mut st = st.lock().unwrap();
             if s.remember && !st.settings.remember && st.history_error.is_none() {
                 match history::load(&p) {
@@ -2075,7 +2121,8 @@ pub fn attach(w: &SetupWindow, smoke: bool) -> Runtime {
                 w.set_status(format!("Could not save settings: {e}").into());
                 return;
             }
-            let restart = !s.music && w.get_position() > 0. && s.hardware != st.settings.hardware;
+            let restart = (w.get_playback_active() || w.get_paused() || w.get_resolving()) && (s.audio_effects != st.settings.audio_effects || (!s.music && s.hardware != st.settings.hardware) || (cfg!(target_os="windows") && !s.music && s.interpolation_auto_fallback != st.settings.interpolation_auto_fallback));
+            if restart { st.resume_position = Some(f64::from(w.get_position())); }
             let recommendation_limit_changed =
                 s.recommendation_count != st.settings.recommendation_count;
             let cache_changed = s.cache_enabled != st.settings.cache_enabled;
@@ -2190,6 +2237,10 @@ fn minimum_views_choice(views: u64) -> i32 {
 }
 
 fn committed_preferences(settings: &mut Settings, active: &Settings) {
+    settings.audio_effects = active.audio_effects.clone();
+    settings.interpolation_mode=active.interpolation_mode;
+    settings.interpolation_enabled=active.interpolation_enabled;
+    settings.interpolation_auto_fallback=active.interpolation_auto_fallback;
     settings.cache_enabled = active.cache_enabled;
     settings.stream_cache_enabled = active.stream_cache_enabled;
     settings.audio_cache_enabled = active.audio_cache_enabled;
@@ -3386,6 +3437,19 @@ fn player_worker(
                             .as_f64()
                             .filter(|d| d.is_finite() && *d > 0.);
                         let load_started = Instant::now();
+                        p.audio_effects = s.audio_effects.clone();
+                        p.interpolation_mode=s.interpolation_mode;
+                        p.interpolation_auto_fallback=s.interpolation_auto_fallback;
+                        if p.audio_effects.convolver && let Err(error) = p.audio_effects.validate() {
+                            let notice = format!("Convolution off: {error:#}");
+                            p.audio_effects.convolver = false;
+                            {
+                                let mut state = state.lock().unwrap();
+                                state.settings.audio_effects.convolver = false;
+                                let _ = paths.save("settings.json", &state.settings);
+                            }
+                            ui(&weak, move |w| { w.set_audio_convolver_enabled(false); w.set_audio_impulse_status(notice.clone().into()); w.invoke_notify(notice.into()); });
+                        }
                         p.load_buffered(
                             uri,
                             audio,
@@ -3473,6 +3537,15 @@ fn player_worker(
                             p.seek_with_state(time, paused)?;
                             playing = true;
                             video_idle_since = None;
+                        }
+                    }
+                    #[cfg(target_os="windows")]
+                    PlayerCommand::Interpolation(mode,auto) => {
+                        if !music && let Some((video,mut settings,n))=last_request.clone() {
+                            settings.interpolation_mode=mode;settings.interpolation_enabled=mode>0;
+                            settings.interpolation_auto_fallback=auto;
+                            retry_position=Some((p.position().map(|t|t.seconds_f64()).unwrap_or(resume_checkpoint),user_paused));
+                            queued=Some(PlayerCommand::Play(video,settings,n));
                         }
                     }
                     PlayerCommand::Connection(online) => {
@@ -3651,6 +3724,7 @@ fn player_worker(
                     continue;
                 }
                 match message.view() {
+                    gst::MessageView::Latency(_) if p.audio_effects.delay || p.audio_effects.convolver => { let _ = p.pipeline.recalculate_latency(); },
                     gst::MessageView::Error(error) => {
                         let origin = error
                             .src()

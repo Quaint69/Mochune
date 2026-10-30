@@ -84,6 +84,7 @@ pub(super) struct Layer {
     origin: [i32; 2],
     last: Option<(u64, [i32; 8])>,
     corner_shape: Option<[i32; 8]>,
+    occlusions: Vec<[i32;4]>,
     shown: bool,
     pub uploads: u64,
 }
@@ -136,6 +137,7 @@ impl Layer {
             origin: [0; 2],
             last: None,
             corner_shape: None,
+            occlusions: Vec::new(),
             shown: false,
             uploads: 0,
         })
@@ -168,7 +170,7 @@ impl Layer {
             .as_ref()
             .map_or(0, |b| (b.size[0] * b.size[1]) as usize * 4)
     }
-    pub fn present(&mut self, geo: [i32; 8], host_shown: bool) -> Result<()> {
+    pub fn present(&mut self, geo: [i32; 8], host_shown: bool, cuts: &[[i32;4]]) -> Result<()> {
         let foreground = unsafe { GetAncestor(GetForegroundWindow(), GA_ROOTOWNER) };
         if !host_shown || foreground != self.owner || unsafe { IsIconic(self.owner) }.as_bool() {
             self.hide();
@@ -216,7 +218,8 @@ impl Layer {
             art.version,
             [screen.x, screen.y, size[0], size[1], x, y, radius, inset],
         );
-        if self.last == Some(signature) && self.shown {
+        let cuts_changed = self.occlusions != cuts;
+        if self.last == Some(signature) && self.shown && !cuts_changed {
             return Ok(());
         }
         if self.bitmap.as_ref().is_none_or(|b| b.size != size) {
@@ -264,27 +267,20 @@ impl Layer {
         // Translate the full picture's rounded region into this small crop.
         // No full-frame UI bitmap or decoded-frame readback is needed.
         let shape = [geo[2], geo[3], x, y, size[0], size[1], radius, inset];
-        if self.corner_shape != Some(shape) {
-            if radius > 0 || inset > 0 {
-                let region = unsafe {
-                    CreateRoundRectRgn(
-                        inset - x,
-                        inset - y,
-                        geo[2] - inset - x + i32::from(inset == 0),
-                        geo[3] - inset - y + i32::from(inset == 0),
-                        radius * 2,
-                        radius * 2,
-                    )
-                };
-                if unsafe { SetWindowRgn(self.hwnd, Some(region), true) } == 0 {
-                    let _ = unsafe { DeleteObject(HGDIOBJ(region.0)) };
-                }
+        if self.corner_shape != Some(shape) || cuts_changed {
+            let region = if radius > 0 {
+                unsafe {CreateRoundRectRgn(inset-x,inset-y,geo[2]-inset-x+1,geo[3]-inset-y+1,radius*2,radius*2)}
             } else {
-                unsafe {
-                    SetWindowRgn(self.hwnd, None, true);
+                unsafe {CreateRectRgn(inset-x,inset-y,geo[2]-inset-x,geo[3]-inset-y)}
+            };
+            if !region.0.is_null() {
+                super::windows_native::subtract_occlusions(region,cuts,[x,y]);
+                if unsafe {SetWindowRgn(self.hwnd,Some(region),true)} == 0 {
+                    let _=unsafe {DeleteObject(HGDIOBJ(region.0))};
                 }
             }
-            self.corner_shape = Some(shape);
+            self.corner_shape=Some(shape);
+            self.occlusions=cuts.to_vec();
         }
         self.origin = [x, y];
         self.last = Some(signature);

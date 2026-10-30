@@ -1,6 +1,6 @@
 <p align="center"><img src="ui/assets/logo-128.png?v=mochune-20261028" width="80" alt="Mochune"></p>
 <h1 align="center">Mochune</h1>
-<p align="center"><strong>A low-RAM, fast app for YouTube music and videos, anime and movie streaming, and reading manga. Built with Rust and Slint using AI.</strong></p>
+<p align="center"><strong>A low-RAM, fast app for YT-DLP music and videos, anime and movie streaming, and reading manga. Built with Rust and Slint using AI.</strong></p>
 <p align="center">
   <a href="LICENSE"><img alt="GPL v3" src="https://img.shields.io/badge/license-GPLv3-F4A62A?style=flat-square"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-35302A?style=flat-square">
@@ -18,14 +18,17 @@
 
 Optimized to launch quickly, keep playback and seeking responsive, and switch smoothly between Music and Video. Playback resources are released when you leave Video or close the app. Rust and Slint keep the interface native, without a bundled browser engine.
 
-| Playing | Windows · private memory | Linux · RAM (RSS) |
+| Playing | Windows · private bytes | Linux · RAM (RSS) |
 | --- | ---: | ---: |
 | Music | ~37 MiB | ~85 MiB* |
 | Video · 720p60 | ~312 MiB | ~191 MiB |
+| Anime · 1080p | ~277 MiB | — |
+| Movies · 720p | ~266 MiB | — |
+| Manga · first page | ~24 MiB | — |
 
 *Linux Music uses software UI rendering by default, measured with local audio playback in a development build. Mode changes relaunch the app.
 
-Observed samples, not limits. Windows and Linux columns use different memory metrics; video includes the Windows worker. [Measurements →](docs/PERFORMANCE.md)
+Observed samples, not limits. Windows and Linux columns use different memory metrics; video includes the Windows worker. A dash means unmeasured. Interpolation was off for the anime/movie samples. [Measurements →](docs/PERFORMANCE.md)
 
 ## Listen, watch and read
 

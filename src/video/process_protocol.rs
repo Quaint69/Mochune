@@ -4,6 +4,7 @@
 use anyhow::{Context, Result, ensure};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::io::{Read, Write};
+fn default_true()->bool{true}
 pub const MAX_CONTROL: usize = 64 * 1024;
 pub const MAX_ARTWORK: usize = 4_194_304 * 4;
 #[derive(Serialize, Deserialize, Debug)]
@@ -20,6 +21,12 @@ pub enum Request {
         audio_headers: Vec<(String, String)>,
         #[serde(default)]
         buffer_hints: super::buffering::Hints,
+        #[serde(default)]
+        audio_effects: crate::audio_effects::Config,
+        #[serde(default)]
+        interpolation_mode:i32,
+        #[serde(default="default_true")]
+        interpolation_auto_fallback:bool,
     },
     Stop,
     Seek {
@@ -92,6 +99,8 @@ pub struct Status {
     pub process_memory: serde_json::Value,
     #[serde(default)]
     pub seek_details: serde_json::Value,
+    #[serde(default)]
+    pub interpolation:serde_json::Value,
 }
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Input {
@@ -161,6 +170,9 @@ mod tests {
             headers: vec![],
             audio_headers: vec![],
             buffer_hints: Default::default(),
+            audio_effects: Default::default(),
+            interpolation_mode:0,
+            interpolation_auto_fallback:true,
         };
         let mut bytes = Vec::new();
         write_packet(&mut bytes, &request, &[]).unwrap();

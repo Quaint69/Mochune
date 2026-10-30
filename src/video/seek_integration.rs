@@ -14,6 +14,9 @@ fn retained_http_seek_and_quality_reload() {
     watch_seek_output(&sink, progress.clone(), 2);
     let (_, messages) = mpsc::channel();
     let mut e = Engine {
+        audio_effects: Default::default(),
+        interpolation_mode:0,
+        interpolation_auto_fallback:true,
         pipeline,
         messages,
         decoder: Arc::new(Mutex::new(String::new())),

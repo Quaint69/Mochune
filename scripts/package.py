@@ -240,7 +240,7 @@ def main():
         prerm = (PROJECT / "packaging/debian-prerm.in").read_text().replace("@PROFILE_CLEANUP@", cleanup)
         (stage / "DEBIAN/prerm").write_text(prerm)
         (stage / "DEBIAN/prerm").chmod(0o755)
-        (stage / "DEBIAN/control").write_text(f"Package: mochune\nVersion: {version}\nArchitecture: {arch}\nMaintainer: Local build <local@localhost>\nDepends: {dependencies}\nDescription: Mochune native YouTube browser and player\n")
+        (stage / "DEBIAN/control").write_text(f"Package: mochune\nVersion: {version}\nArchitecture: {arch}\nMaintainer: Local build <local@localhost>\nDepends: {dependencies}\nDescription: Mochune music, video, anime and movie player and manga reader\n")
         output = packages / f"mochune_{version}_{arch}.deb"
         # TemporaryDirectory starts at 0700; never ship that mode as the archive root.
         stage.chmod(0o755)

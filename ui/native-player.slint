@@ -58,6 +58,11 @@ export component NativePlayerOverlay inherits Window {
     property <bool> controls-loading: root.resolving && (!root.video-visible || !root.playback-active);
     in-out property <bool> video-visible;
     in-out property <bool> music-only;
+    in-out property <bool> interpolation-supported;
+    in-out property <int> interpolation-mode;
+    in-out property <float> source-fps;
+    callback change-interpolation(int);
+    out property <string> interpolation-badge:root.interpolation-mode==0 ? "fps" : root.interpolation-mode==2 ? "60fps" : root.source-fps>0 ? round(root.source-fps*2)+"fps" : "2×";
     in-out property <bool> legacy-quality;
     in-out property <bool> repeat-video;
     in-out property <[BufferedRange]> buffered-ranges;
@@ -98,13 +103,13 @@ export component NativePlayerOverlay inherits Window {
     out property <length> quality-y: quality-menu.absolute-position.y;
     out property <length> quality-popup-x: quality-menu.popup-x;
     out property <length> quality-popup-y: quality-menu.popup-y;
-    out property <bool> menu-active: quality-menu.popup-open || caption-menu.popup-open;
+    out property <bool> menu-active: quality-menu.popup-open || caption-menu.popup-open || interpolation-menu.popup-open;
     callback scroll-popup(float) -> bool;
-    scroll-popup(delta)=>{return quality-menu.native-scroll(delta) || caption-menu.native-scroll(delta);}
+    scroll-popup(delta)=>{return interpolation-menu.native-scroll(delta) || quality-menu.native-scroll(delta) || caption-menu.native-scroll(delta);}
     callback popup-pointer(float,float,bool) -> bool;
-    popup-pointer(x,y,pressed)=>{return quality-menu.native-pointer(x,y,pressed) || caption-menu.native-pointer(x,y,pressed);}
+    popup-pointer(x,y,pressed)=>{return interpolation-menu.native-pointer(x,y,pressed) || quality-menu.native-pointer(x,y,pressed) || caption-menu.native-pointer(x,y,pressed);}
     callback dismiss-menus();
-    dismiss-menus=>{quality-menu.close();caption-menu.close();keys.focus();}
+    dismiss-menus=>{quality-menu.close();caption-menu.close();interpolation-menu.close();keys.focus();}
     callback global-key(string);
     callback focus-request();
     focus-request=>{keys.focus();}
@@ -211,7 +216,7 @@ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url(
         border-color: root.controls-over-video ? transparent : self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
         theme-section: 4; theme-key: "video-controls"; theme-kind: "surface";
 
-                            visible: !root.controls-over-video || root.controls-shown || !root.video-visible || root.paused || root.resolving || quality-menu.popup-open || caption-menu.popup-open;
+                            visible: !root.controls-over-video || root.controls-shown || !root.video-visible || root.paused || root.resolving || quality-menu.popup-open || caption-menu.popup-open || interpolation-menu.popup-open;
                             height: 72px; width: parent.width; y: parent.height - self.height;
                             background: root.controls-over-video ? @linear-gradient(180deg, #00000000, #000000c0 35%, #000000ed) : (self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (root.controls-over-video ? @linear-gradient(180deg, #00000000, #000000c0 35%, #000000ed) : #171717));
                             // Consume gaps/padding too; only the picture toggles playback.
@@ -256,6 +261,18 @@ source: self.theme-paint.image.width > 0 ? self.theme-paint.image : (@image-url(
         border-color: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-border ? self.theme-paint.border : transparent;
         theme-section: 4; theme-key: "video-native-surface-9"; theme-kind: "surface";
  horizontal-stretch: 1; background: self.theme-paint.replace-chrome ? transparent : self.theme-paint.has-background ? self.theme-paint.background : (transparent); }
+                                    interpolation-menu := QualityPicker {
+                                        theme-key:"video-interpolation";theme-kind:"button";
+                                        visible:root.interpolation-supported && !root.music-only;
+                                        width:self.visible ? 46px : 0px; compact:true;
+                                        model:["Off","2×","60 fps"];
+                                        button-label:root.interpolation-badge;
+                                        accessible-name:"Frame interpolation (experimental)";
+                                        popup-above:true;popup-bottom-limit:root.popup-boundary;
+                                        current-index <=> root.interpolation-mode;
+                                        activity=>{root.player-activity();}
+                                        selected(index)=>{root.focus-request();root.player-activity();root.change-interpolation(index);}
+                                    }
                                     if !root.fullscreen-mode: PlayerButton {width: 28px; label: root.controls-outside ? "Move controls into video" : "Move controls below video"; icon: root.controls-outside ? @image-url("icons/arrow-up.svg") : @image-url("icons/arrow-down.svg"); activity=>{root.player-activity();} clicked=>{root.toggle-controls-position();}}
                                     caption-menu := QualityPicker { theme-key: "video-captions"; theme-kind: "button"; over-video: root.controls-over-video;popup-bottom-limit: root.popup-boundary;open-request: root.caption-open-request; model: root.caption-labels; compact: false; button-label: "CC"; accessible-name: "Captions"; popup-above: true; current-index <=> root.caption-choice; width: 34px; enabled: root.caption-labels.length > 1 && !root.music-only; activity=>{root.player-activity();} selected(index)=>{root.focus-request();root.player-activity();root.choose-caption(index);}}
                                     PlayerButton {width: root.width < 560px ? 28px : 34px; label: "Repeat video"; icon: @image-url("icons/repeat.svg"); active: root.repeat-video;toggle-marker:true; clicked=>{root.toggle-video-repeat();} activity=>{root.player-activity();}}

@@ -198,6 +198,8 @@ impl Overlay {
                 w.invoke_toggle_video_repeat();
             }
         });
+        let weak=main.clone();
+        view.on_change_interpolation(move |mode| {if let Some(w)=weak.as_ref().and_then(|w|w.upgrade()){w.invoke_change_interpolation(mode);}});
         let weak = main.clone();
         view.on_choose_quality(move |value| {
             if let Some(w) = weak.as_ref().and_then(|w| w.upgrade()) {
@@ -274,6 +276,9 @@ impl Overlay {
         self.view
             .set_picture_border_width(main.get_video_border_width());
         self.view.set_light_mode(main.get_light_mode());
+        self.view.set_interpolation_supported(main.get_interpolation_supported());
+        self.view.set_interpolation_mode(main.get_interpolation_mode());
+        self.view.set_source_fps(main.get_video_source_fps());
         self.view.set_previous_volume(main.get_previous_volume());
         self.view.set_playback_active(main.get_playback_active());
         let requests = (
@@ -1185,7 +1190,7 @@ pub(crate) fn probe_main_layout() -> anyhow::Result<serde_json::Value> {
             .join(", ")
             .into(),
     );
-    for tab in [0, 1, 2, 3, 4, 5] {
+    for tab in [0, 1, 2, 3, 4, 5, 6] {
         view.set_settings_tab(tab);
         for _ in 0..6 {
             draw(1180, 600);

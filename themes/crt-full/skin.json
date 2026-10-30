@@ -298,6 +298,14 @@
         },
         "video-home-button": {
           "radius": 0
+        },
+        "downloads-panel": {
+          "background": "#0a0700",
+          "border": "#663d00",
+          "border_width": 1
+        },
+        "downloads-text": {
+          "text": "#ffb000"
         }
       }
     },
