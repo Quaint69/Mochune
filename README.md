@@ -1,6 +1,6 @@
 <p align="center"><img src="ui/assets/logo-128.png?v=mochune-20261028" width="80" alt="Mochune"></p>
 <h1 align="center">Mochune</h1>
-<p align="center"><strong>A low-ram and fast yt-dlp wrapper for listening to music and playing videos. Built with Rust and Slint using AI.</strong></p>
+<p align="center"><strong>A low-RAM, fast app for YouTube music and videos, anime and movie streaming, and reading manga. Built with Rust and Slint using AI.</strong></p>
 <p align="center">
   <a href="LICENSE"><img alt="GPL v3" src="https://img.shields.io/badge/license-GPLv3-F4A62A?style=flat-square"></a>
   <img alt="Windows and Linux" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux-35302A?style=flat-square">
@@ -27,9 +27,18 @@ Optimized to launch quickly, keep playback and seeking responsive, and switch sm
 
 Observed samples, not limits. Windows and Linux columns use different memory metrics; video includes the Windows worker. [Measurements →](docs/PERFORMANCE.md)
 
+## Listen, watch and read
+
+Choose **YT Music · YT Video · Anime · Manga · Movie** from the mode picker.
+
+- **Music:** playlists, likes, synced lyrics, shuffle/repeat, and compact or mini players.
+- **YouTube video:** a Home feed, channel pages, quality selection, captions, queues and comments loaded only when requested.
+- **Audio effects:** optional one-sided channel delay (0–20 ms) and an impulse-response convolver. Use the included `.irs`, select your own file, or download the optional collection.
+- **Experimental interpolation:** 2× or 60-fps GPU frame generation on Linux and Windows, for supported 12–30-fps sources at 720p or lower. Off by default, with automatic fallback when the GPU cannot sustain it. Motion artifacts can occur.
+
 ## Music with your own look
 
-A lightweight Music player you can theme: colors, fonts, images and animated GIFs.
+Theme Music and Video with colors, borders, rounded corners, fonts, images and animated GIFs. Layout stays managed by the app.
 
 ![Music themes: Mochune CRT, Mochune Pastel, then Mochune Pixel](docs/assets/themes-carousel.gif?v=mochune-20261028)
 
@@ -57,12 +66,13 @@ Keep just the player, or shrink it to the mini controls.
 
 ## More sources
 
-In Video mode, use the source selector beside the Music/Video switch:
+Use the mode picker to switch between YouTube and the other sources:
 
-- **Anime:** title search, Sub/Dub episodes, quality selection, captions when supplied, and automatic next episode.
+- **Anime:** title search, Sub/Dub episodes, available source qualities and captions, and automatic next episode.
 - **Movies:** search titles through Dramachi or VixSrc. VixSrc uses [Wikidata](https://www.wikidata.org/) title metadata and also accepts TMDB movie links/IDs.
 - **Manga:** MangaDex and MangaPill, scrolling/page modes, fullscreen, fit-width reading and Ctrl+wheel zoom.
 
+Organize anime, movie and manga bookmarks in named folders, with saved manga reading progress.
 These views follow the selected theme. Manga keeps a small decoded viewport and bounded compressed lookahead;
 source playback stays separate from YouTube history and recommendations.
 Video decoding requires supported hardware; there is no CPU video-decoding fallback.
