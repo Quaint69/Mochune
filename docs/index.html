@@ -165,7 +165,39 @@
     <span>© 2026 MOCHUNE · GPL-3.0 · BUILT WITH RUST &amp; SLINT</span>
     <span><a href="https://github.com/Quaint69/Mochune">github.com/quaint69/mochune</a> · <a href="https://github.com/Quaint69/Mochune/releases/latest">download 0.1.1 →</a></span>
   </div>
+  <div class="modal" id="lightbox" aria-hidden="true">
+    <div class="crt" role="dialog" aria-label=" enlarged capture">
+      <div class="bar"><i class="on"></i><i></i><i></i><span class="t mono" id="lb-title">mochune@local — fullscreen</span></div>
+      <img id="lb-img" src="" alt="">
+    </div>
+  </div>
 </footer>
 
+<script>
+(function () {
+  var box = document.getElementById('lightbox'),
+      lbImg = document.getElementById('lb-img'),
+      lbTitle = document.getElementById('lb-title');
+  function open(img) {
+    var crt = img.closest('.crt'), t = crt && crt.querySelector('.bar .t');
+    lbImg.src = img.currentSrc || img.src;
+    lbImg.alt = img.alt || '';
+    lbTitle.textContent = (t ? t.textContent : '') + ' — [ fullscreen ]';
+    box.classList.add('open');
+    box.setAttribute('aria-hidden', 'false');
+  }
+  function close() {
+    box.classList.remove('open');
+    box.setAttribute('aria-hidden', 'true');
+    lbImg.src = '';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('main .crt img'), function (img) {
+    img.setAttribute('title', 'click to view fullscreen');
+    img.addEventListener('click', function () { open(img); });
+  });
+  box.addEventListener('click', function (e) { if (e.target === box || e.target === lbImg) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})();
+</script>
 </body>
 </html>

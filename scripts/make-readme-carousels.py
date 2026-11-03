@@ -20,10 +20,39 @@ def slide(source, label, index, total):
     draw = ImageDraw.Draw(canvas)
     draw.line((0, 532, SIZE[0], 532), fill='#30363d')
     draw.text((18, 544), label, fill='#e6edf3', font=FONT)
+    dots_x0 = SIZE[0] - (total * 17 + 15)
     for dot in range(total):
-        x = SIZE[0] - (total * 17 + 15) + dot * 17
+        x = dots_x0 + dot * 17
         draw.ellipse((x, 549, x + 6, 555), fill='#f4a62a' if dot == index else '#484f58')
+    draw_cursor(canvas, dots_x0 + index * 17)
     return canvas
+
+
+CURSOR_ROWS = [
+    'X.......',
+    'XX......',
+    'XXX.....',
+    'XXXX....',
+    'XXXXX...',
+    'XXXXXX..',
+    'XXXXXXX.',
+    'XXXX....',
+    'XX......',
+    'X.......',
+]
+
+
+def draw_cursor(canvas, dot_x, dot_y=549, scale=2):
+    """Chunky pixel arrow resting on the active pagination dot."""
+    draw = ImageDraw.Draw(canvas)
+    tip_x, tip_y = dot_x - 7, dot_y - 7
+    for offset, color in ((2, '#050703'), (0, '#f4f9ee')):
+        for row, cells in enumerate(CURSOR_ROWS):
+            y = tip_y + row * scale + offset
+            for col, cell in enumerate(cells):
+                if cell == 'X':
+                    x = tip_x + col * scale + offset
+                    draw.rectangle((x, y, x + scale - 1, y + scale - 1), fill=color)
 
 
 def save(name, frames, durations):

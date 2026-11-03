@@ -211,6 +211,22 @@ table.mem td:first-child { color: var(--text); }
 .carousel img { width: min(660px, 100%); border: 1px solid var(--line-bright); border-radius: 12px; box-shadow: 0 0 44px -8px rgba(184,244,100,.14), 0 24px 60px -24px #000; }
 .carousel p { color: var(--faint); font-size: 12px; margin-top: 10px; }
 
+/* pixel mouse cursor over capture imagery */
+.crt img, .modal img {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 16 16'%3E%3Cpath d='M2 1 L2 12.2 L4.9 9.6 L7 14.4 L9.2 13.4 L7.1 8.7 L11 8.7 Z' fill='%23f4f9ee' stroke='%23050703' stroke-width='1'/%3E%3C/svg%3E") 2 2, pointer;
+}
+
+/* lightbox: same chrome, bigger picture */
+.modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10, 13, 8, .92);
+  padding: 40px;
+}
+.modal.open { display: flex; align-items: center; justify-content: center; }
+.modal .crt { width: auto; max-width: min(1500px, 94vw); }
+.modal img { width: auto !important; max-width: 100%; max-height: 82vh; display: block; }
+
 /* other */
 .other { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .other ul { list-style: none; }
