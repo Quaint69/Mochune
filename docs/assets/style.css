@@ -211,10 +211,21 @@ table.mem td:first-child { color: var(--text); }
 .carousel img { width: min(660px, 100%); border: 1px solid var(--line-bright); border-radius: 12px; box-shadow: 0 0 44px -8px rgba(184,244,100,.14), 0 24px 60px -24px #000; }
 .carousel p { color: var(--faint); font-size: 12px; margin-top: 10px; }
 
-/* pixel mouse cursor over capture imagery */
-.crt img, .modal img {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 16 16'%3E%3Cpath d='M2 1 L2 12.2 L4.9 9.6 L7 14.4 L9.2 13.4 L7.1 8.7 L11 8.7 Z' fill='%23f4f9ee' stroke='%23050703' stroke-width='1'/%3E%3C/svg%3E") 2 2, pointer;
+/* signpost: invite the click */
+.crt { position: relative; }
+.crt .zoom-hint {
+  position: absolute; right: 14px; bottom: 46px;
+  font-family: "Silkscreen", ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: .08em;
+  color: var(--phos);
+  background: rgba(10, 13, 8, .86);
+  border: 1px solid var(--line-bright);
+  border-radius: 7px;
+  padding: 6px 10px;
+  pointer-events: none;
+  transition: opacity .15s ease, background .15s ease, color .15s ease;
 }
+.crt:hover .zoom-hint { background: var(--phos); color: #0a0d08; border-color: var(--phos); }
 
 /* lightbox: same chrome, bigger picture */
 .modal {
