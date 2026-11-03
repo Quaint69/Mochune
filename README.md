@@ -43,7 +43,7 @@ Choose **YT Music · YT Video · Anime · Manga · Movie** from the mode picker.
 
 Theme Music and Video with colors, borders, rounded corners, fonts, images and animated GIFs. Layout stays managed by the app.
 
-![Music themes: Mochune CRT, Mochune Pastel, then Mochune Pixel](docs/assets/themes-carousel.gif?v=mochune-20261028)
+![Music themes: Mochune Default, then CRT, Pastel, and Pixel](docs/assets/themes-carousel.gif?v=mochune-20261103)
 
 **Mochune CRT → Mochune Pastel → Mochune Pixel** — all included. Open the themes folder from Settings to customize yours. [Make a theme →](themes/AUTHORING.md)
 

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mochune — music, video, anime and manga in one native player</title>
+<meta name="description" content="Mochune plays yt-dlp music and video, streams anime and movies, and reads manga. Native Rust and Slint app for Windows and Debian.">
+<meta name="theme-color" content="#0a0d08">
+<link rel="icon" href="assets/logo-128.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <img src="assets/logo-128.png" alt="">
+    <span class="name px">MOCHUNE</span>
+    <span class="ver mono">v0.1.1</span>
+    <span class="status">SYS.OK <i></i></span>
+    <nav>
+      <a class="mono" href="#modes">modes</a>
+      <a class="mono" href="#ram">ram</a>
+      <a class="mono" href="#other">docs</a>
+      <a class="mono" href="https://github.com/Quaint69/Mochune">github</a>
+      <a class="nav-cta px" href="https://github.com/Quaint69/Mochune/releases/latest">DOWNLOAD</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- hero -->
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="kicker">init mochune --all-modes ----- GPL-3.0 · rust + slint</span>
+        <h1 class="px">
+          <span class="w-music">MUSIC.</span>
+          <span class="w-video">VIDEO.</span>
+          <span class="w-anime">ANIME.</span>
+          <span class="w-movies">MOVIES.</span>
+          <span class="w-manga">MANGA.</span><br>
+          ONE <span class="w-native">NATIVE</span> PLAYER.
+        </h1>
+        <p class="sub">
+          A yt-dlp player wired in <b>Rust and Slint</b> — no browser engine, no bundled bloat.
+          Leave a mode and its resources are released on the spot.
+        </p>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="https://github.com/Quaint69/Mochune/releases/latest/download/Mochune-Windows-x64-setup.exe">DOWNLOAD FOR WINDOWS <small>installer · x64</small></a>
+          <a class="btn btn-ghost" href="https://github.com/Quaint69/Mochune/releases/latest/download/mochune_0.1.1_amd64.deb">DEBIAN .DEB <small>amd64</small></a>
+          <a class="btn btn-ghost" href="https://github.com/Quaint69/Mochune/releases/latest/download/Mochune-Windows-x64-portable.exe">PORTABLE <small>.exe</small></a>
+        </div>
+        <p class="fine">alpha (0.1.1) — <a href="https://github.com/Quaint69/Mochune/issues">report bugs</a> · <a href="https://github.com/Quaint69/Mochune/releases/latest">all files + sha256</a></p>
+      </div>
+
+      <div>
+        <div class="crt">
+          <div class="bar"><i class="on"></i><i></i><i></i><span class="t">mochune@local — themes — [ cycling ]</span></div>
+          <img src="assets/themes-carousel.gif" alt="Mochune themes cycling: CRT, Pastel, Pixel">
+          <div class="cap"><b>themes</b> · Default / CRT / Pastel / Pixel · swap in settings</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- modes -->
+  <section id="modes">
+    <div class="wrap">
+      <span class="kicker">load module list ----- five modes, one window</span>
+      <h2 class="px">SWITCH THE <span class="accent">WHOLE INTERFACE</span>, KILL THE REST.</h2>
+      <p class="sec-sub">The mode picker hands everything over to the next mode. Nothing from the previous one keeps running.</p>
+      <div class="tabs">
+        <span class="tab g">music</span><span class="tab a">video</span><span class="tab g">anime</span><span class="tab a">movies</span><span class="tab r">manga</span>
+      </div>
+      <div class="mode-grid">
+        <div class="terminal">
+          <div class="bar"><i></i><i class="o"></i><i></i><span>mochune@local — ~/modules</span></div>
+          <pre><span class="dim">$</span> <b>mochune --list-modes</b>
+<span class="g">music</span>   · playlists.md · lyrics.lrc · shuffle · mini-dock
+<span class="a">video</span>   · quality-select · captions · cues · home-feed (lazy)
+<span class="g">anime</span>   · sub/dub · source-qualities · auto-next-episode
+<span class="a">movies</span>  · vixsrc [wikidata + tmdb-id] · dramachi
+<span class="r">manga</span>   · mangadex · mangapill · progress: saved
+<span class="dim">exit — mode change = clean restart, nothing resumes behind your back</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ram -->
+  <section id="ram">
+    <div class="wrap ram-grid">
+      <div>
+        <span class="kicker">recorded on real hardware ----- ····· running build 0.1.1</span>
+        <h2 class="px">RAM, <span class="accent-amb">MEASURED</span> ON THE MACHINE.</h2>
+        <p class="sec-sub">Straight from the running 0.1.1 build — not marketing, published methodology.</p>
+        <div class="terminal">
+          <div class="bar"><i></i><i></i><i></i><span>mochune@local — ~/tools/measure</span></div>
+          <pre><span class="dim">$</span> <b>mochune --status</b>
+<span class="dim">metric          windows (priv-bytes)   linux (rss)</span>
+<span class="g">music</span>                 ~37 MiB           ~85 MiB
+<span class="a">video 720p60</span>         ~312 MiB          ~191 MiB
+<span class="g">anime 1080p</span>          ~277 MiB          <span class="dim">—</span>
+<span class="a">movies 720p</span>          ~266 MiB          <span class="dim">—</span>
+<span class="r">manga first page</span>      ~24 MiB          <span class="dim">—</span></pre>
+        </div>
+      </div>
+      <aside class="note">
+        <p><b>Why it stays light.</b> Native Rust and Slint, no bundled browser engine — each mode tells the OS what it no longer needs the moment you switch.</p>
+        <p><b>The one catch.</b> Hardware decoding only, no CPU fallback.</p>
+        <p class="sig"><a href="https://github.com/Quaint69/Mochune/blob/main/docs/PERFORMANCE.md">read the full methodology →</a></p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- extras -->
+  <section id="themes">
+    <div class="wrap">
+      <span class="kicker">load module list ----- beyond playback</span>
+      <h2 class="px">THE MACHINE ALSO HAS <span class="accent">RANGE</span>.</h2>
+      <div class="cards" style="margin-top:26px">
+        <div class="card"><span class="no">MOD.01</span><h3><span class="a">AUDIO EFFECTS</span></h3><p>Channel delay (0–20 ms) and an <b>IR convolver</b> — include the Oxy impulse or a local file.</p></div>
+        <div class="card"><span class="no">MOD.02</span><h3><span class="g">INTERPOLATION</span></h3><p>Experimental <b>2× / 60 fps GPU frame generation</b> for 12–30 fps sources. Auto fallback.</p></div>
+        <div class="card"><span class="no">MOD.03</span><h3><span class="r">THEMES</span></h3><p>Colors, borders, fonts, <b>animated GIFs</b>. CRT, Pastel and Pixel ship with the app.</p></div>
+        <div class="card"><span class="no">MOD.04</span><h3><span class="g">BOOKMARKS</span></h3><p>Named folders across anime, movies and manga. <b>Reading progress</b> saved per series.</p></div>
+        <div class="card"><span class="no">MOD.05</span><h3><span class="a">IMPORT / EXPORT</span></h3><p>Library data goes with you, plus optional <b>audio caching</b>.</p></div>
+        <div class="card"><span class="no">MOD.06</span><h3><span class="r">LEGACY-FRIENDLY</span></h3><p>Existing libraries migrate intact — old profiles are never overwritten.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- other -->
+  <section id="other">
+    <div class="wrap">
+      <span class="kicker">man pages ----- docs and fine print</span>
+      <h2 class="px">READ THE <span class="accent">MAN</span> PAGES.</h2>
+      <div class="other" style="margin-top:24px">
+        <div class="card">
+          <ul>
+            <li><a href="https://github.com/Quaint69/Mochune/blob/main/docs/USAGE.md">user guide</a></li>
+            <li><a href="https://github.com/Quaint69/Mochune/blob/main/docs/PERFORMANCE.md">performance measurements</a></li>
+            <li><a href="https://github.com/Quaint69/Mochune/blob/main/docs/DEVELOPMENT.md">build from source</a></li>
+            <li><a href="https://github.com/Quaint69/Mochune/blob/main/packaging/README.md">packaging</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <ul>
+            <li>hardware decoding only — no CPU fallback</li>
+            <li>mode changes relaunch the app</li>
+            <li>providers can change at any time</li>
+            <li>independent project · GPL-3.0 · not affiliated with YouTube or Google</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 MOCHUNE · GPL-3.0 · BUILT WITH RUST &amp; SLINT</span>
+    <span><a href="https://github.com/Quaint69/Mochune">github.com/quaint69/mochune</a> · <a href="https://github.com/Quaint69/Mochune/releases/latest">download 0.1.1 →</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -41,12 +41,13 @@ def save(name, frames, durations):
 def main():
     themes = []
     for i, (file, label) in enumerate([
+        ('music-full.png', 'Mochune Default'),
         ('music-crt.png', 'Mochune CRT'),
         ('music-pastelduck.png', 'Mochune Pastel'),
         ('music-pixelduck.png', 'Mochune Pixel'),
     ]):
         with Image.open(ASSETS / file) as image:
-            themes.append(slide(image, label, i, 3))
+            themes.append(slide(image, label, i, 4))
     save('themes-carousel.gif', themes, [4000] * len(themes))
 
 
