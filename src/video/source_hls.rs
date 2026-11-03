@@ -1,5 +1,10 @@
 //! Only Mochune's nonce-protected Anime/Movie HLS relay uses this policy.
 //! YouTube, Music and ordinary HTTP playback never enter it.
+#[path = "source_hls/transport.rs"]
+mod transport;
+
+pub(super) fn configure_transport(element: &gst::Element) { transport::install(element); }
+
 use base64::Engine as _;
 use gst::prelude::*;
 use std::{
@@ -37,6 +42,43 @@ pub(super) fn relay_uri(uri: &str) -> bool {
             .decode(nonce)
             .is_ok_and(|v| v.len() == 16)
         && path.next().is_some_and(|p| !p.is_empty())
+}
+// Source HLS can report packet loss or restart between non-key pictures.
+// Marking only the immediately damaged picture is insufficient: later pictures
+// can still depend on it. Wait for a clean sync point before decoding again.
+// This helper is installed ONLY for the nonce-protected Anime/Movie relay.
+pub(super) fn configure_decoder(element: &gst::Element) -> bool {
+    use gst_video::prelude::VideoDecoderExt;
+    let Some(decoder) = element.downcast_ref::<gst_video::VideoDecoder>() else {
+        return false;
+    };
+    if let Some(pad) = element.static_pad("sink") {
+        pad.add_probe(gst::PadProbeType::EVENT_DOWNSTREAM, |_, info| {
+            if let Some(event) = info.event() && let gst::EventView::Caps(c) = event.view() {
+                crate::diagnostics::record("source_encoded_video_format", serde_json::json!({"caps":c.caps().to_string()}));
+            }
+            gst::PadProbeReturn::Ok
+        });
+    }
+    decoder.set_discard_corrupted_frames(true);
+    decoder.set_automatic_request_sync_point_flags(
+        gst_video::VideoDecoderRequestSyncPointFlags::DISCARD_INPUT
+            | gst_video::VideoDecoderRequestSyncPointFlags::CORRUPT_OUTPUT,
+    );
+    decoder.set_automatic_request_sync_points(true);
+    decoder.set_needs_sync_point(true);
+    // Preserve decoding dependencies. The presentation sink can still discard
+    // late output pictures without throwing away compressed reference pictures.
+    element.set_property("qos", false);
+    crate::diagnostics::record(
+        "source_decoder_corruption_guard",
+        serde_json::json!({
+            "decoder":element.factory().map(|f|f.name().to_string()),
+            "discard_corrupted_frames":true,"automatic_sync_recovery":true,
+            "discard_until_sync_point":true,"decoder_qos":false
+        }),
+    );
+    true
 }
 impl Gate {
     pub fn reset(&mut self, enabled: bool) {
@@ -153,6 +195,32 @@ impl Gate {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn source_decoder_policy_preserves_references_and_requests_sync() {
+        use gst_video::prelude::VideoDecoderExt;
+        gst::init().unwrap();
+        let sink = gst::ElementFactory::make("fakesink").build().unwrap();
+        assert!(!configure_decoder(&sink));
+        // No software video decoder is constructed or selected by this test.
+        let factory = ["vah264dec", "d3d12h264dec"]
+            .into_iter()
+            .find(|name| gst::ElementFactory::find(name).is_some());
+        let Some(factory) = factory else {
+            return;
+        };
+        let element = gst::ElementFactory::make(factory).build().unwrap();
+        assert!(configure_decoder(&element));
+        let decoder = element.downcast_ref::<gst_video::VideoDecoder>().unwrap();
+        assert!(decoder.is_discard_corrupted_frames());
+        assert!(decoder.is_automatic_request_sync_points());
+        assert!(decoder.needs_sync_point());
+        assert_eq!(
+            decoder.automatic_request_sync_point_flags(),
+            gst_video::VideoDecoderRequestSyncPointFlags::DISCARD_INPUT
+                | gst_video::VideoDecoderRequestSyncPointFlags::CORRUPT_OUTPUT
+        );
+        assert!(!element.property::<bool>("qos"));
+    }
     #[test]
     fn nested_sink_policy_restores_the_original_element() {
         gst::init().unwrap();

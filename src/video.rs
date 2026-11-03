@@ -590,10 +590,8 @@ impl Engine {
             // This is scoped to Anime/Movie; YouTube and audio are untouched.
             if let Some(bin) = source.downcast_ref::<gst::Bin>() {
                 bin.connect_deep_element_added(|_,_,element| {
-                    if let Some(decoder) = element.downcast_ref::<gst_video::VideoDecoder>() {
-                        gst_video::prelude::VideoDecoderExt::set_discard_corrupted_frames(decoder,true);
-                        crate::diagnostics::record("source_decoder_corruption_guard",serde_json::json!({"decoder":element.factory().map(|f|f.name().to_string()),"discard_corrupted_frames":true}));
-                    }
+                    source_hls::configure_transport(element);
+                    source_hls::configure_decoder(element);
                 });
             }
         }
