@@ -449,7 +449,7 @@ fn helper(name: &str) -> PathBuf {
     } else {
         name.to_owned()
     };
-    if let Some(root) = std::env::var_os("RUST_EXTERNAL_ROOT") {
+    if let Some(root) = crate::identity::dev_external_root() {
         let path = PathBuf::from(root).join("tools/bin").join(&file);
         if path.exists() {
             return path;

@@ -1,11 +1,35 @@
 //! Current identity plus narrowly scoped compatibility with earlier releases.
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+
+/// RUST_EXTERNAL_ROOT is the external build drive. ~/.profile exports it to
+/// every desktop session, so an installed release binary would otherwise
+/// store data and resolve helpers on the development SSD. Only a launch
+/// through run.sh (MOCHUNE_DEV_LAUNCH=1) or a direct debug build adopts it.
+pub fn dev_external_root() -> Option<OsString> {
+    adopt_external_root(
+        std::env::var_os("MOCHUNE_DEV_LAUNCH").is_some(),
+        cfg!(debug_assertions),
+        std::env::var_os("RUST_EXTERNAL_ROOT"),
+    )
+}
+
+fn adopt_external_root(
+    dev_launch: bool,
+    debug_assertions: bool,
+    root: Option<OsString>,
+) -> Option<OsString> {
+    if !dev_launch && !debug_assertions {
+        return None;
+    }
+    root
+}
 
 pub fn data_directory() -> PathBuf {
     if let Some(path) = std::env::var_os("MOCHUNE_DATA_DIR") {
         return path.into();
     }
-    if let Some(root) = std::env::var_os("RUST_EXTERNAL_ROOT") {
+    if let Some(root) = dev_external_root() {
         return PathBuf::from(root).join("data/Mochune");
     }
     directories::BaseDirs::new()
@@ -14,7 +38,7 @@ pub fn data_directory() -> PathBuf {
 }
 
 fn legacy_directories() -> Vec<PathBuf> {
-    if let Some(root) = std::env::var_os("RUST_EXTERNAL_ROOT") {
+    if let Some(root) = dev_external_root() {
         let root = PathBuf::from(root).join("data");
         return vec![root.join("DuckTube"), root.join("ytlite")];
     }
@@ -165,6 +189,40 @@ fn normalize_settings(current: &Path) -> anyhow::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn installed_release_builds_ignore_the_external_build_root() {
+        let root: Option<OsString> = Some(OsString::from("/media/ssd/Development/rust"));
+        // Desktop-launched installed release binary: neither a dev launch
+        // through run.sh nor a debug build. It must never adopt the SSD.
+        assert!(adopt_external_root(false, false, root.clone()).is_none());
+        // run.sh sets MOCHUNE_DEV_LAUNCH; a direct debug dev build has that.
+        assert_eq!(adopt_external_root(true, false, root.clone()), root);
+        assert_eq!(adopt_external_root(true, true, root.clone()), root);
+        // Without any external root nothing is invented.
+        assert!(adopt_external_root(true, true, None).is_none());
+    }
+    // Debug build: dev adoption is unconditional, matching run.sh launches.
+    #[cfg(debug_assertions)]
+    #[test]
+    fn debug_dev_build_keeps_the_external_build_root() {
+        if let Some(root) = std::env::var_os("RUST_EXTERNAL_ROOT") {
+            assert_eq!(dev_external_root(), Some(root));
+        }
+    }
+    // Release test binary: no MOCHUNE_DEV_LAUNCH and not a debug build, which
+    // is exactly how a desktop-launched installed binary runs.
+    #[cfg(not(debug_assertions))]
+    #[test]
+    fn installed_release_binary_ignores_the_desktop_exported_build_root() {
+        assert!(dev_external_root().is_none());
+        assert_eq!(
+            data_directory(),
+            directories::BaseDirs::new()
+                .unwrap()
+                .data_local_dir()
+                .join("Mochune")
+        );
+    }
     #[test]
     fn migration_preserves_library_rebases_themes_and_never_overwrites() {
         let root = std::env::temp_dir().join(format!("mochune-migration-{}", std::process::id()));
