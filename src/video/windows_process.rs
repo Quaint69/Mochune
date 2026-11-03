@@ -604,6 +604,8 @@ fn worker_loop(
     let mut terminal = true;
     let mut loaded = false;
     let mut warnings = 0u32;
+    let mut last_warning: Option<Instant> = None;
+    let mut suppressed_warnings = 0u64;
     let mut intent_paused = false;
     let mut startup: Option<super::playback_state::Start> = None;
     let mut buffering = super::playback_state::Buffering::default();
@@ -634,6 +636,8 @@ fn worker_loop(
                         load_started = Instant::now();
                         epoch = n;
                         warnings = 0;
+                        last_warning = None;
+                        suppressed_warnings = 0;
                         revision = 0;
                         terminal = false;
                         loaded = true;
@@ -736,13 +740,23 @@ fn worker_loop(
         while let Ok(message) = engine.messages.try_recv() {
             match message.view() {
                 gst::MessageView::Latency(_) if engine.audio_effects.delay || engine.audio_effects.convolver => { let _ = engine.pipeline.recalculate_latency(); },
-                gst::MessageView::Warning(w) if !terminal && warnings < 8 => {
-                    warnings += 1;
-                    crate::diagnostics::record("video_worker_warning",serde_json::json!({
-                        "epoch":epoch,"element":w.src().map(|s|s.path_string().to_string()),
-                        "error":w.error().to_string(),"debug":w.debug().map(|s|s.chars().take(2048).collect::<String>()),
-                        "warning_limit_per_load":8
-                    }));
+                gst::MessageView::Warning(w) if !terminal => {
+                    warnings = warnings.saturating_add(1);
+                    // Keep later seek/decoder evidence without per-packet spam.
+                    // Previously, the first eight TS warnings silenced the
+                    // remainder of the load, including recovery failures.
+                    if warnings <= 8 || last_warning.is_none_or(|t| t.elapsed() >= Duration::from_secs(5)) {
+                        crate::diagnostics::record("video_worker_warning",serde_json::json!({
+                            "epoch":epoch,"element":w.src().map(|s|s.path_string().to_string()),
+                            "error":w.error().to_string(),"debug":w.debug().map(|s|s.chars().take(2048).collect::<String>()),
+                            "warning_number":warnings,"suppressed_since_previous":suppressed_warnings,
+                            "subsequent_min_interval_ms":5000
+                        }));
+                        last_warning = Some(Instant::now());
+                        suppressed_warnings = 0;
+                    } else {
+                        suppressed_warnings = suppressed_warnings.saturating_add(1);
+                    }
                 }
                 gst::MessageView::Error(e) if !terminal => {
                     terminal = true;

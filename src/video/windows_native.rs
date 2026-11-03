@@ -875,7 +875,7 @@ impl Controller {
                         let weak=w.as_weak();
                         slint::Timer::single_shot(Duration::ZERO,move||{if let Some(w)=weak.upgrade(){w.invoke_change_interpolation(0);}});
                     }
-                    *PROCESS_HEALTH.lock().unwrap()=serde_json::json!({"memory":status.process_memory,"hardware_verified":status.verified,"rendered":status.rendered});
+                    *PROCESS_HEALTH.lock().unwrap()=serde_json::json!({"memory":status.process_memory,"hardware_verified":status.verified,"rendered":status.rendered,"interpolation":status.interpolation});
                     RENDERED.store(status.rendered, Ordering::Relaxed);
                     LAST_VIDEO_PTS.store((status.pts.max(0.) * 1e9) as u64, Ordering::Release);
                     w.set_video_frames(status.rendered.min(i32::MAX as u64) as i32);
